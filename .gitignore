@@ -1,0 +1,13 @@
+build/
+archive/
+__pycache__
+sam-build/
+scratchpad/
+temp-build/
+user-input-to-be-integrated/
+.idea/
+.DS_Store
+serwo/.DS_Store
+ocularone-lambda-exps/
+analysis/
+serwo/examples

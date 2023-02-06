@@ -1,0 +1,11 @@
+jinja2
+stickytape
+aws-sfn-builder
+networkx
+boto3
+autopep8
+pycocotools
+azure-storage-queue==2.1.0
+seaborn
+scikit-learn
+psutil
