@@ -1,0 +1,191 @@
+{
+  "WorkflowName": "SmartGridSingleCloudAzure",
+  "Nodes": [
+    {
+      "NodeId": "1",
+      "NodeName": "TaskA",
+      "Path": "examples/jpdc-artifact/src/xmlparse_23KB_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 128
+    },
+    {
+      "NodeId": "2",
+      "NodeName": "TaskB",
+      "Path": "examples/jpdc-artifact/src/memstress_128MB_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 256
+    },
+    {
+      "NodeId": "3",
+      "NodeName": "TaskC",
+      "Path": "examples/jpdc-artifact/src/resnet_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 512
+    },
+    {
+      "NodeId": "4",
+      "NodeName": "TaskD",
+      "Path": "examples/jpdc-artifact/src/iostress_512wr_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 128
+    },
+    {
+      "NodeId": "5",
+      "NodeName": "TaskE",
+      "Path": "examples/jpdc-artifact/src/memstress_128MB_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 256
+    },
+    {
+      "NodeId": "6",
+      "NodeName": "TaskF",
+      "Path": "examples/jpdc-artifact/src/xmlparse_23KB_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 128
+    },
+    {
+      "NodeId": "7",
+      "NodeName": "TaskG",
+      "Path": "examples/jpdc-artifact/src/iostress_512wr_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 128
+    },
+    {
+      "NodeId": "8",
+      "NodeName": "TaskH",
+      "Path": "examples/jpdc-artifact/src/resnet_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 512
+    },
+    {
+      "NodeId": "9",
+      "NodeName": "TaskI",
+      "Path": "examples/jpdc-artifact/src/memstress_128MB_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 256
+    },
+    {
+      "NodeId": "10",
+      "NodeName": "TaskJ",
+      "Path": "examples/jpdc-artifact/src/iostress_512wr_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 128
+    },
+    {
+      "NodeId": "11",
+      "NodeName": "TaskK",
+      "Path": "examples/jpdc-artifact/src/memstress_128MB_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 256
+    },
+    {
+      "NodeId": "12",
+      "NodeName": "TaskL",
+      "Path": "examples/jpdc-artifact/src/resnet_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 512
+    },
+    {
+      "NodeId": "13",
+      "NodeName": "TaskM",
+      "Path": "examples/jpdc-artifact/src/xmlparse_23KB_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 128
+    },
+    {
+      "NodeId": "14",
+      "NodeName": "TaskN",
+      "Path": "examples/jpdc-artifact/src/iostress_512wr_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 128
+    },
+    {
+      "NodeId": "15",
+      "NodeName": "TaskO",
+      "Path": "examples/jpdc-artifact/src/memstress_128MB_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 256
+    },
+    {
+      "NodeId": "16",
+      "NodeName": "TaskP",
+      "Path": "examples/jpdc-artifact/src/resnet_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 512
+    },
+    {
+      "NodeId": "17",
+      "NodeName": "TaskQ",
+      "Path": "examples/jpdc-artifact/src/xmlparse_23KB_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 128
+    }
+  ],
+  "Edges": [
+    {
+      "TaskA": ["TaskB"]
+    },
+    {
+      "TaskB": ["TaskC"]
+    },
+    {
+      "TaskC": ["TaskD", "TaskE"]
+    },
+    {
+      "TaskD": ["TaskM"]
+    },
+    {
+      "TaskE": ["TaskF"]
+    },
+    {
+      "TaskF": ["TaskG", "TaskH", "TaskI"]
+    },
+    {
+      "TaskG": ["TaskK"]
+    },
+    {
+      "TaskH": ["TaskK"]
+    },
+    {
+      "TaskI": ["TaskJ"]
+    },
+    {
+      "TaskJ": ["TaskK"]
+    },
+    {
+      "TaskK": ["TaskL"]
+    },
+    {
+      "TaskL": ["TaskP"]
+    },
+    {
+      "TaskM": ["TaskN"]
+    },
+    {
+      "TaskN": ["TaskO"]
+    },
+    {
+      "TaskO": ["TaskL"]
+    },
+    {
+      "TaskP": ["TaskQ"]
+    }
+  ]
+}
