@@ -10,11 +10,9 @@ import logging
 NOTE - Currently the access_key_id = , secret_access_key =  are HARDCODED. WE NEED TO TEMPLATE THIS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '''
-sqs = boto3.client('sqs',  
-                  region_name='ap-south-1',
-                  aws_access_key_id='AKIATNSRHJCDU663BO7B',
-                  aws_secret_access_key='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'
-                  )
+
+# Do not expose Key
+# Check the file outside XFaaS on local system
 
 queue_url = '{{queue_url}}'
 
