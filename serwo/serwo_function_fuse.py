@@ -1086,7 +1086,14 @@ if __name__ == "__main__":
     
     
     # resources dir
-    resources_dir=pathlib.Path.joinpath(pathlib.Path(USER_DIR), "build/workflow/resources")
+    # resources dir
+    cwd = os.getcwd()
+    user_dir = USER_DIR
+    if 'serwo' not in cwd:
+        user_dir = f"serwo/{USER_DIR}"
+    
+    resources_dir=pathlib.Path.joinpath(pathlib.Path(user_dir), "build/workflow/resources")
+    # resources_dir=pathlib.Path.joinpath(pathlib.Path(USER_DIR), "build/workflow/resources")
     provenance_artifacts = {
         "workflow_id": wf_id,
         "refactored_workflow_id": refactored_wf_id,

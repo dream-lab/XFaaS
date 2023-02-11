@@ -60,36 +60,39 @@ def add_invocations_to_dynamodb():
 
                 print(f"[INFO]PushToDynamo::Adding Item - deployment {workflow_deployment_id}, InvocationId - {metadata['workflow_instance_id']}")
                 dynPartiQLWrapper = PartiQLWrapper('workflow_invocation_table')
-                dynPartiQLWrapper.put(dynamo_item)
+                try:
+                    dynPartiQLWrapper.put(dynamo_item)
+                except:
+                    pass
 
 
-# NOTE - The timings will be sorted by the sortkey [workflow_invocation_id] by default
-def get_function_timings(table_name, function_id, workflow_deployment_id):
-    function_timings = []
-    output = partiQLWrapper.run_partiql(
-            f"SELECT request_timestamp, functions.\"{function_id}\" FROM \"{table_name}\" WHERE workflow_instance_id=?", [workflow_deployment_id])
-    for item in output['Items']:
-        function_timings.append(int(item[function_id]['end_delta'] - item[function_id]['start_delta']))
-    return function_timings
+# # NOTE - The timings will be sorted by the sortkey [workflow_invocation_id] by default
+# def get_function_timings(table_name, function_id, workflow_deployment_id):
+#     function_timings = []
+#     output = partiQLWrapper.run_partiql(
+#             f"SELECT request_timestamp, functions.\"{function_id}\" FROM \"{table_name}\" WHERE workflow_instance_id=?", [workflow_deployment_id])
+#     for item in output['Items']:
+#         function_timings.append(int(item[function_id]['end_delta'] - item[function_id]['start_delta']))
+#     return function_timings
 
-# NOTE - The timings will be sorted by the sortkey [workflow_invocation_id] by default
-def get_interfunction_timings(table_name, src_id, sink_id, workflow_deployment_id):
-    function_timings = []
+# # NOTE - The timings will be sorted by the sortkey [workflow_invocation_id] by default
+# def get_interfunction_timings(table_name, src_id, sink_id, workflow_deployment_id):
+#     function_timings = []
     
-    output = partiQLWrapper.run_partiql(
-            f"SELECT request_timestamp, functions.\"{src_id}\", functions.\"{sink_id}\" FROM \"{table_name}\" WHERE workflow_instance_id=?", [workflow_deployment_id])
-    for item in output['Items']:
-        function_timings.append(int(item[sink_id]['start_delta'] - item[src_id]['end_delta']))
-    return function_timings
+#     output = partiQLWrapper.run_partiql(
+#             f"SELECT request_timestamp, functions.\"{src_id}\", functions.\"{sink_id}\" FROM \"{table_name}\" WHERE workflow_instance_id=?", [workflow_deployment_id])
+#     for item in output['Items']:
+#         function_timings.append(int(item[sink_id]['start_delta'] - item[src_id]['end_delta']))
+#     return function_timings
 
-def get_invocations_sorted_by_client_time(workflow_deployment_id):
-    items = []
-    output = partiQLWrapper.run_partiql(
-            f"SELECT functions FROM workflow_invocation_table WHERE workflow_deployment_id=?", [workflow_deployment_id])
-    for item in output['Items']:
-        functions = item['functions']
+# def get_invocations_sorted_by_client_time(workflow_deployment_id):
+#     items = []
+#     output = partiQLWrapper.run_partiql(
+#             f"SELECT functions FROM workflow_invocation_table WHERE workflow_deployment_id=?", [workflow_deployment_id])
+#     for item in output['Items']:
+#         functions = item['functions']
 
-    return items
+#     return items
 
 def get_e2e_timeline(workflow_deployment_id):
     last_func_id = "17"
