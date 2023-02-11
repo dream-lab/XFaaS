@@ -92,14 +92,13 @@ def get_invocations_sorted_by_client_time(workflow_deployment_id):
     return items
 
 def get_e2e_timeline(workflow_deployment_id):
-    first_func_id = "1"
-    last_func_id = "15"
+    last_func_id = "17"
     e2e_timings = []
     partiQLWrapper = PartiQLWrapper('workflow_invocation_table')
     output = partiQLWrapper.run_partiql(statement=f"SELECT * FROM workflow_invocation_table WHERE workflow_deployment_id=?", params=[workflow_deployment_id])
     for item in output['Items']:
         print(f"[INFO]::Processing {item['workflow_invocation_id']}")
-        e2e_timings.append(item['functions'][last_func_id]['end_delta'] - item['functions'][first_func_id]['start_delta'])
+        e2e_timings.append(item['functions'][last_func_id]['end_delta'])
     print(e2e_timings)
     return e2e_timings
 
@@ -122,7 +121,7 @@ def plot_from_dynamo():
 
 if __name__ == "__main__":
     print("[INFO]::Adding invocations to DynamoDB")
-    # add_invocations_to_dynamodb()
+    add_invocations_to_dynamodb()
     print("[INFO]::Plotting Timeline")
     plot_from_dynamo()
 

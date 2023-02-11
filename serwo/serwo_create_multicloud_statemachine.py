@@ -1,9 +1,11 @@
 import os
+import os.path
 import sys
 import json
 import pathlib
 import networkx as nx
 import uuid
+import python.src.utils.generators.commons.jmx_generator as JMXGenerator
 from distutils.dir_util import copy_tree
 from python.src.utils.classes.commons.serwo_user_dag import SerWOUserDag
 from python.src.utils.classes.commons.csp import CSP
@@ -48,7 +50,7 @@ def get_egress_function_details(left_csp: CSP, right_csp: CSP, serwo_root_dir):
         path = f"{serwo_root_dir}/python/src/faas-templates/aws/push-to-sqs-template/{function_name}"
         return function_id, function_name, entry_point, path
 
-def template_push_to_queue(user_source_dir: str, egress_fn_name: str, egress_fn_entrypoint: str, resource_dict: dict):
+def template_push_to_queue(user_source_dir: str, egress_fn_name: str, egress_fn_entrypoint: str, resource_dict: dict, aws_credentials=None):
     template_dir = f"{user_source_dir}/{egress_fn_name}"
     try:
         file_loader = FileSystemLoader(template_dir)
@@ -91,7 +93,11 @@ def template_push_to_queue(user_source_dir: str, egress_fn_name: str, egress_fn_
                 raise Exception(f"Invalid File parsing for {resource_dict['filename']}")
             else:
                 try:
-                    output = template.render(queue_url=queue_url)
+                    access_key_id = aws_credentials['access_key_id']
+                    secret_access_key = aws_credentials['secret_access_key']
+                    output = template.render(queue_url=queue_url,
+                                            access_key_id=access_key_id,
+                                            secret_access_key=secret_access_key)
                 except:
                     raise Exception(f"Error in rendering {egress_fn_name} template")
                 
@@ -106,12 +112,15 @@ def template_push_to_queue(user_source_dir: str, egress_fn_name: str, egress_fn_
 
 def deploy_subdag(csp: CSP, user_dir: str, dag_definition_file: str,  serwo_root_dir: str, resource_dict: dict, egress_fn_details: dict):
     user_source_dir = f"{user_dir}/src"
+    credentials=None
+
     if csp == CSP.AWS:
         if egress_fn_details is None:
             # TODO - this should not be shell script anymore but a python function that returns a path to the output json
             os.system(f"python3 {serwo_root_dir}/aws_create_statemachine.py {user_dir} {dag_definition_file} SQS")
         else:
             try:
+
                 template_push_to_queue(user_source_dir=user_source_dir,
                                         egress_fn_name=egress_fn_details["NodeName"],
                                         egress_fn_entrypoint=egress_fn_details["EntryPoint"],
@@ -123,10 +132,12 @@ def deploy_subdag(csp: CSP, user_dir: str, dag_definition_file: str,  serwo_root
     if csp == CSP.AZURE:
         if egress_fn_details is not None:
             try:
+                with open(f"{user_dir}/aws_credentials.json", "r") as f:
+                    credentials = json.load(f)
                 template_push_to_queue(user_source_dir=user_source_dir,
                                         egress_fn_name=egress_fn_details["NodeName"],
                                         egress_fn_entrypoint=egress_fn_details["EntryPoint"],
-                                        resource_dict=resource_dict)
+                                        resource_dict=resource_dict, aws_credentials=credentials)
             except Exception as e:
                 raise(e)
 
@@ -159,7 +170,7 @@ def add_egress_node_in_userdir(partition_point: PartitionPoint, user_dir, serwo_
                                                                                     right_csp=right_csp,
                                                                                     serwo_root_dir=serwo_root_dir
                                                                                 )
-    
+
     # TODO - parameterise the user source directory
     user_source_dir = f"{user_dir}/src"
     # TODO - apply try catch here later
@@ -466,6 +477,7 @@ if __name__ == "__main__":
     partition_points = get_partition_points(partition_point)
 
     # get the details for the egress fn (new node) for a graph
+    # QUESTION[TK] - are we supporting only a single partition point ?
     for idx, partition_point in enumerate(partition_points):
         # set id of partition points
         partitionId = idx+1
@@ -561,15 +573,38 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
 
+        # generate JMX post deployment
+        try:
+            JMXGenerator.generate_jmx_files(
+                workflow_name=workflow_name,
+                workflow_deployment_id=wf_deployment_id,
+                user_dir=USER_DIR,
+                template_root_dir="python/src/jmx-templates",
+                csp=CSP.toString(partition_point.get_left_csp())
+            )
+        except Exception as e:
+            print(e)
+            
 
+        # resources dir
+        resources_dir=pathlib.Path.joinpath(pathlib.Path(USER_DIR), "build/workflow/resources")
+        provenance_artifacts = {
+            "workflow_id": wf_id,
+            "refactored_workflow_id": refactored_wf_id,
+            "deployment_id": wf_deployment_id
+        }
 
-        print(":"*80)
-        print(f"Pushing a workflow deployment to Dynamo DB")
-        # try:
-        #     # TODO [TK] - integration the generation of the deployment config post fusion and partition integration - need  [VK]
-        #     user_workflow_deployment_item = json.loads("decide a name for the deployment item")
-        #     dynPartiQLWrapper = PartiQLWrapper('workflow_deployment_table')
-        #     dynPartiQLWrapper.put(user_workflow_deployment_item)
-        # except ClientError as e:
-        #     print(e)
-        # print(":"*80)
+        print("::Provenance Artifacts::")
+        print(provenance_artifacts)
+
+        print("::Writing provenance artifacts output to JSON file::")
+        json_output = json.dumps(provenance_artifacts, indent=4)
+        with open(pathlib.Path.joinpath(resources_dir, "provenance-artifacts.json"), "w+") as out:
+            out.write(json_output)
+
+        
+        credentials_filepath = f"{USER_DIR}/aws_credentials.json"
+        if os.path.exists(credentials_filepath):
+            print("::Deleting AWS Credentials file::")
+            os.system(f"rm -r {credentials_filepath}")
+    

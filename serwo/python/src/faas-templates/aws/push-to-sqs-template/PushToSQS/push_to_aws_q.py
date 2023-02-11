@@ -1,7 +1,7 @@
 import boto3
 import json
 import time
-
+import botocore.session
 from python.src.utils.classes.commons.serwo_objects import SerWOObject
 import logging
 # Create SQS client
@@ -11,8 +11,12 @@ NOTE - Currently the access_key_id = , secret_access_key =  are HARDCODED. WE NE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '''
 
-# Do not expose Key
-# Check the file outside XFaaS on local system
+sqs = boto3.client('sqs',  
+                  region_name='ap-south-1',
+                  aws_access_key_id='{{access_key_id}}',
+                  aws_secret_access_key='{{secret_access_key}}'
+                  )
+
 
 queue_url = '{{queue_url}}'
 

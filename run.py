@@ -4,6 +4,8 @@ import subprocess
 import json
 import string
 import random
+import boto3
+import botocore.session
 
 def generate_random_string(N):
     res = ''.join(random.choices(string.ascii_lowercase +
@@ -19,6 +21,17 @@ def generate():
     except Exception as e:
         print(e)
         pass
+
+def create_aws_credentials_file():
+    print(f":: Creating credentials file for AWS ::")
+    session = botocore.session.get_session()
+    access_key_id = session.get_credentials().access_key
+    secret_access_key = session.get_credentials().secret_key
+    credentials = {"access_key_id": access_key_id, "secret_access_key": secret_access_key}
+
+    with open(f"serwo/{user_dir}/aws_credentials.json", "w+") as out:
+        out.write(json.dumps(credentials, indent=4))
+
 
 def set_up():
     stream = os.popen("az group exists --name xfaasQueues")
@@ -75,6 +88,9 @@ resource = "xfaasQueues"
 storage_account_name = 'xfaasstorage'
 
 queue_details = set_up()
+
+# create credentials file for aws
+create_aws_credentials_file()
 
 
 if option == '--partition':
