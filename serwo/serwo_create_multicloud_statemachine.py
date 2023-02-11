@@ -608,5 +608,5 @@ if __name__ == "__main__":
             "entry_csp": CSP.toString(partition_point.get_left_csp()).lower()
         }    
         deployment_struct_json = json.dumps(deployment_structure, indent=4)
-        with open(pathlib.Path.joinpath(resources_dir), "deployment-structure.json", "w+") as out:
+        with open(pathlib.Path.joinpath(resources_dir, "deployment-structure.json"), "w+") as out:
             out.write(deployment_struct_json)
