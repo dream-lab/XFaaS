@@ -9,6 +9,7 @@ model_filename="resnet50v2.onnx"
 for folder in ${folders}
 do
     echo "[SETUP]::Adding ${model_filename} to ${folder}"
+    mkdir -p serwo/examples/${folder}/src/resnet_25KB/dependencies/model/
     cp ${model_filename} serwo/examples/${folder}/src/resnet_25KB/dependencies/model/
 done
 rm -r ${model_filename}
