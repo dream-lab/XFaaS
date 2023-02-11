@@ -128,3 +128,8 @@ elif option == '--fusion':
 
 else:
     print('INVALID INPUT')
+
+credentials_filepath = f"{user_dir}/aws_credentials.json"
+if os.path.exists(credentials_filepath):
+    print("::Deleting AWS Credentials file::")
+    os.system(f"rm -r {credentials_filepath}")

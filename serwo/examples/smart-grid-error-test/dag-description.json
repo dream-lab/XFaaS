@@ -1,10 +1,10 @@
 {
-  "WorkflowName": "TestRunSingleAzure",
+  "WorkflowName": "ErrorTestSingleAWS",
   "Nodes": [
     {
       "NodeId": "1",
       "NodeName": "TaskA",
-      "Path": "examples/smart-grid-singlecloud-azure/src/xmlparse_23KB_25KB",
+      "Path": "examples/smart-grid-error-test/src/xmlparse_23KB_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 128
@@ -12,7 +12,7 @@
     {
       "NodeId": "2",
       "NodeName": "TaskB",
-      "Path": "examples/smart-grid-singlecloud-azure/src/memstress_128MB_25KB",
+      "Path": "examples/smart-grid-error-test/src/memstress_128MB_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 256
@@ -20,7 +20,7 @@
     {
       "NodeId": "3",
       "NodeName": "TaskC",
-      "Path": "examples/smart-grid-singlecloud-azure/src/resnet_25KB",
+      "Path": "examples/smart-grid-error-test/src/resnet_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 512
@@ -28,7 +28,7 @@
     {
       "NodeId": "4",
       "NodeName": "TaskD",
-      "Path": "examples/smart-grid-singlecloud-azure/src/iostress_512wr_25KB",
+      "Path": "examples/smart-grid-error-test/src/iostress_512wr_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 128
@@ -36,7 +36,7 @@
     {
       "NodeId": "5",
       "NodeName": "TaskE",
-      "Path": "examples/smart-grid-singlecloud-azure/src/memstress_128MB_25KB",
+      "Path": "examples/smart-grid-error-test/src/memstress_128MB_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 256
@@ -44,7 +44,7 @@
     {
       "NodeId": "6",
       "NodeName": "TaskF",
-      "Path": "examples/smart-grid-singlecloud-azure/src/xmlparse_23KB_25KB",
+      "Path": "examples/smart-grid-error-test/src/xmlparse_23KB_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 128
@@ -52,7 +52,7 @@
     {
       "NodeId": "7",
       "NodeName": "TaskG",
-      "Path": "examples/smart-grid-singlecloud-azure/src/iostress_512wr_25KB",
+      "Path": "examples/smart-grid-error-test/src/iostress_512wr_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 128
@@ -60,7 +60,7 @@
     {
       "NodeId": "8",
       "NodeName": "TaskH",
-      "Path": "examples/smart-grid-singlecloud-azure/src/resnet_25KB",
+      "Path": "examples/smart-grid-error-test/src/resnet_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 512
@@ -68,7 +68,7 @@
     {
       "NodeId": "9",
       "NodeName": "TaskI",
-      "Path": "examples/smart-grid-singlecloud-azure/src/memstress_128MB_25KB",
+      "Path": "examples/smart-grid-error-test/src/memstress_128MB_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 256
@@ -76,7 +76,7 @@
     {
       "NodeId": "10",
       "NodeName": "TaskJ",
-      "Path": "examples/smart-grid-singlecloud-azure/src/iostress_512wr_25KB",
+      "Path": "examples/smart-grid-error-test/src/iostress_512wr_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 128
@@ -84,7 +84,7 @@
     {
       "NodeId": "11",
       "NodeName": "TaskK",
-      "Path": "examples/smart-grid-singlecloud-azure/src/memstress_128MB_25KB",
+      "Path": "examples/smart-grid-error-test/src/memstress_128MB_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 256
@@ -92,7 +92,7 @@
     {
       "NodeId": "12",
       "NodeName": "TaskL",
-      "Path": "examples/smart-grid-singlecloud-azure/src/resnet_25KB",
+      "Path": "examples/smart-grid-error-test/src/resnet_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 512
@@ -100,7 +100,7 @@
     {
       "NodeId": "13",
       "NodeName": "TaskM",
-      "Path": "examples/smart-grid-singlecloud-azure/src/xmlparse_23KB_25KB",
+      "Path": "examples/smart-grid-error-test/src/xmlparse_23KB_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 128
@@ -108,7 +108,7 @@
     {
       "NodeId": "14",
       "NodeName": "TaskN",
-      "Path": "examples/smart-grid-singlecloud-azure/src/iostress_512wr_25KB",
+      "Path": "examples/smart-grid-error-test/src/iostress_512wr_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 128
@@ -116,7 +116,7 @@
     {
       "NodeId": "15",
       "NodeName": "TaskO",
-      "Path": "examples/smart-grid-singlecloud-azure/src/memstress_128MB_25KB",
+      "Path": "examples/smart-grid-error-test/src/memstress_128MB_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 256
@@ -124,7 +124,7 @@
     {
       "NodeId": "16",
       "NodeName": "TaskP",
-      "Path": "examples/smart-grid-singlecloud-azure/src/resnet_25KB",
+      "Path": "examples/smart-grid-error-test/src/resnet_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 512
@@ -132,7 +132,7 @@
     {
       "NodeId": "17",
       "NodeName": "TaskQ",
-      "Path": "examples/smart-grid-singlecloud-azure/src/xmlparse_23KB_25KB",
+      "Path": "examples/smart-grid-error-test/src/xmlparse_23KB_25KB",
       "EntryPoint": "func.py",
       "CSP": "Azure",
       "MemoryInMB": 128

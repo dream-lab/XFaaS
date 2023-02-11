@@ -23,7 +23,8 @@ def generate_jmx_files(workflow_name, workflow_deployment_id, user_dir, template
         env = Environment(loader=file_loader)
         template = env.get_template(template_file)
         print("JMXGen::Created Jinja Environment")
-    except:
+    except Exception as e:
+        print("[ERROR]::jmx_generator.py::",e)
         raise JMXGenerationExeception("JMXGen::Error in loading jinja environment")
 
     with open(pathlib.Path.joinpath(resources_dir, resources_filename), "r") as f:
@@ -50,7 +51,7 @@ def generate_jmx_files(workflow_name, workflow_deployment_id, user_dir, template
                     statemachinearn=arn
                 )
             except Exception as e:
-                print(e)
+                print("[ERROR]::jmx_generator.py::",e)
                 raise JMXGenerationExeception("JMXGen::Error in rendering Jinja Template AWS Branch")
 
         if csp == "azure":
@@ -63,7 +64,7 @@ def generate_jmx_files(workflow_name, workflow_deployment_id, user_dir, template
                     execurl=url
                 )
             except Exception as e:
-                print(e)
+                print("[ERROR]::jmx_generator.py::",e)
                 raise JMXGenerationExeception("JMXGen::Error in rendering Jinja Template Azure Branch")
                 
         # flush output to resources

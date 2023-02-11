@@ -182,18 +182,18 @@ if __name__ == "__main__":
     wf_deployment_id = generate_deployment_logs(DAG_DEFINITION_FILE,USER_DIR,refactored_wf_id,wf_id)
     deploy()
 
-    # generate JMX post deployment
-    try:
-        JMXGenerator.generate_jmx_files(
-            workflow_name=wf_name,
-            workflow_deployment_id=wf_deployment_id,
-            user_dir=USER_DIR,
-            template_root_dir="python/src/jmx-templates",
-            csp=csp
-        )
-    except Exception as e:
-        print(e)
-        
+    # # generate JMX post deployment
+    # try:
+    #     JMXGenerator.generate_jmx_files(
+    #         workflow_name=wf_name,
+    #         workflow_deployment_id=wf_deployment_id,
+    #         user_dir=USER_DIR,
+    #         template_root_dir="python/src/jmx-templates",
+    #         csp=csp
+    #     )
+    # except Exception as e:
+    #     print(e)
+
 
     # resources dir
     resources_dir=pathlib.Path.joinpath(pathlib.Path(USER_DIR), "build/workflow/resources")
@@ -210,3 +210,12 @@ if __name__ == "__main__":
     json_output = json.dumps(provenance_artifacts, indent=4)
     with open(pathlib.Path.joinpath(resources_dir, "provenance-artifacts.json"), "w+") as out:
         out.write(json_output)
+
+
+    print("::Adding deployment structure JSON::")
+    deployment_structure = {
+        "entry_csp": csp
+    }    
+    deployment_struct_json = json.dumps(deployment_structure, indent=4)
+    with open(pathlib.Path.joinpath(resources_dir), "deployment-structure.json", "w+") as out:
+        out.write(deployment_struct_json)

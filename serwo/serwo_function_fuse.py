@@ -1073,16 +1073,16 @@ if __name__ == "__main__":
     
     # Genreate Jmx post deployment
     # generate JMX post deployment
-    try:
-        JMXGenerator.generate_jmx_files(
-            workflow_name=wf_name,
-            workflow_deployment_id=wf_deployment_id,
-            user_dir=USER_DIR,
-            template_root_dir="python/src/jmx-templates",
-            csp=ccsp.lower()
-        )
-    except Exception as e:
-        print(e)
+    # try:
+    #     JMXGenerator.generate_jmx_files(
+    #         workflow_name=wf_name,
+    #         workflow_deployment_id=wf_deployment_id,
+    #         user_dir=USER_DIR,
+    #         template_root_dir="python/src/jmx-templates",
+    #         csp=ccsp.lower()
+    #     )
+    # except Exception as e:
+    #     print(e)
     
     
     # resources dir
@@ -1102,3 +1102,10 @@ if __name__ == "__main__":
         out.write(json_output)
 
 
+    print("::Adding deployment structure JSON::")
+    deployment_structure = {
+        "entry_csp": ccsp.lower()
+    }    
+    deployment_struct_json = json.dumps(deployment_structure, indent=4)
+    with open(pathlib.Path.joinpath(resources_dir), "deployment-structure.json", "w+") as out:
+        out.write(deployment_struct_json)    

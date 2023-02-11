@@ -573,17 +573,17 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
 
-        # generate JMX post deployment
-        try:
-            JMXGenerator.generate_jmx_files(
-                workflow_name=workflow_name,
-                workflow_deployment_id=wf_deployment_id,
-                user_dir=USER_DIR,
-                template_root_dir="python/src/jmx-templates",
-                csp=CSP.toString(partition_point.get_left_csp())
-            )
-        except Exception as e:
-            print(e)
+        # # generate JMX post deployment
+        # try:
+        #     JMXGenerator.generate_jmx_files(
+        #         workflow_name=workflow_name,
+        #         workflow_deployment_id=wf_deployment_id,
+        #         user_dir=USER_DIR,
+        #         template_root_dir="python/src/jmx-templates",
+        #         csp=CSP.toString(partition_point.get_left_csp())
+        #     )
+        # except Exception as e:
+        #     print(e)
             
 
         # resources dir
@@ -602,9 +602,11 @@ if __name__ == "__main__":
         with open(pathlib.Path.joinpath(resources_dir, "provenance-artifacts.json"), "w+") as out:
             out.write(json_output)
 
-        
-        credentials_filepath = f"{USER_DIR}/aws_credentials.json"
-        if os.path.exists(credentials_filepath):
-            print("::Deleting AWS Credentials file::")
-            os.system(f"rm -r {credentials_filepath}")
-    
+
+        print("::Adding deployment structure JSON::")
+        deployment_structure = {
+            "entry_csp": CSP.toString(partition_point.get_left_csp()).lower()
+        }    
+        deployment_struct_json = json.dumps(deployment_structure, indent=4)
+        with open(pathlib.Path.joinpath(resources_dir), "deployment-structure.json", "w+") as out:
+            out.write(deployment_struct_json)
