@@ -3,6 +3,7 @@ from python.src.utils.classes.commons.partition_point import PartitionPoint
 from python.src.utils.classes.commons.csp import CSP
 import python.src.utils.classes.commons.serwo_user_dag as serwo_user_dag
 import sys
+from copy import deepcopy
 import networkx as nx
 AWS_DATA_TRANSFER_THRESHOLD_IN_KB = 256
 AZURE_QUEUE_DATA_TRANSFER_THRESHOLD_IN_KB = 64
@@ -343,7 +344,190 @@ def handle_one_part(u_graph,bench_mark_values,user_pinned_csp):
 
         return best_csp
 
-def get_best_partition_point(u_graph, partition_points, dag_path,num_parts,user_pinned_csp):
+ans = []
+tmp = []
+def recurse(n, left, k):
+    if (k == 0):
+        ans.append(deepcopy(tmp))
+        return
+
+    for i in range(left, n + 1):
+        tmp.append(i)
+        recurse(n, i + 1, k - 1)
+        tmp.pop()
+
+def enumurate_all_combinations(length,start_index,num_parts):
+    global ans
+    ans=[]
+    recurse(length,start_index,num_parts-1)
+    lol =[]
+    for x in ans:
+        xd = [0]
+        for aa in x:
+            xd.append(aa)
+        xd.append(length+1)
+        lol.append(xd)
+    return lol
+
+
+def bfs(src,dest,ind,G):
+
+    n_vis = []
+    if ind==0:
+        n_vis.append(src)
+
+    edgess = nx.bfs_edges(G,src)
+    vis = dict()
+    for e in edgess:
+        if e[0] != dest:
+            if e[0]!=src and not (e[0] in vis.keys()):
+                n_vis.append(e[0])
+                vis[e[0]] = True
+            if e[1]!=src and  not (e[1] in vis.keys()):
+                n_vis.append(e[1])
+                vis[e[1]] = True
+        else:
+            break
+
+
+
+    return n_vis
+
+def handle_generic_num_parts(u_graph, partition_points,  bench_mark_values,user_pinned_csp,num_parts,user_pinned_nodes):
+
+    partition_store = enumurate_all_combinations(len(partition_points)-2,0,num_parts)
+    minn_cost = sys.maxsize
+    fin_partition_config = []
+    min_first =''
+    for partition_config in partition_store:
+        l = len(partition_config)
+        first = 'AWS'
+        second = 'Azure'
+        cst1 = handle_multi_multi_cloud_csp(bench_mark_values, l, partition_config, partition_points, u_graph,first,second,
+                                     user_pinned_nodes,user_pinned_csp)
+
+
+        first = 'Azure'
+        second = 'AWS'
+        cst2 = handle_multi_multi_cloud_csp(bench_mark_values, l, partition_config, partition_points, u_graph,first,second,
+                                     user_pinned_nodes,user_pinned_csp)
+
+        local_config, local_first, local_min = evaluate_local_min(cst1, cst2, partition_config)
+
+        fin_partition_config, min_first, minn_cost = evaluate_global_min(fin_partition_config, local_config,
+                                                                         local_first, local_min, min_first, minn_cost)
+
+
+    print('Final Best Partition: Cost: ',minn_cost,'First CSP: ',min_first,'Partition Confg',fin_partition_config)
+    xdd = len(fin_partition_config)
+    parts = []
+    for i in range(1,xdd-1):
+
+        parts.append(deepcopy(partition_points[fin_partition_config[i]]))
+
+    for i in range(0,len(parts)):
+        left_csp, right_csp = evaluate_left_right_csp(i, min_first)
+        parts[i]['left_csp'] = CSP.toCSP(left_csp)
+        parts[i]['right_csp'] = CSP.toCSP(right_csp)
+
+    return parts
+
+
+def evaluate_left_right_csp(i, min_first):
+    if min_first == 'AWS':
+        if i % 2 == 0:
+            left_csp = 'AWS'
+            right_csp = 'Azure'
+        else:
+            left_csp = 'Azure'
+            right_csp = 'AWS'
+    else:
+        if i % 2 == 0:
+            left_csp = 'Azure'
+            right_csp = 'AWS'
+        else:
+            left_csp = 'AWS'
+            right_csp = 'Azure'
+    return left_csp, right_csp
+
+
+def evaluate_local_min(cst1, cst2, partition_config):
+    if cst1 == sys.maxsize and cst2 == sys.maxsize:
+        local_min = cst2
+        local_config = partition_config
+        local_first = 'Azure'
+
+    elif cst1 == sys.maxsize:
+        local_min = cst2
+        local_config = partition_config
+        local_first = 'Azure'
+    elif cst2 == sys.maxsize:
+        local_min = cst1
+        local_config = partition_config
+        local_first = 'AWS'
+    else:
+        if cst1 < cst2:
+            local_min = cst1
+            local_config = partition_config
+            local_first = 'AWS'
+        else:
+            local_min = cst2
+            local_config = partition_config
+            local_first = 'Azure'
+    return local_config, local_first, local_min
+
+
+def evaluate_global_min(fin_partition_config, local_config, local_first, local_min, min_first, minn_cost):
+    if local_min < minn_cost:
+        minn_cost = local_min
+        fin_partition_config = local_config
+        min_first = local_first
+    return fin_partition_config, min_first, minn_cost
+
+
+def handle_multi_multi_cloud_csp(bench_mark_values, l, partition_config, partition_points, u_graph,
+                                 first,second,user_pinned_nodes,pinned_csp):
+
+    is_pinned = dict()
+    fin_cost = 0
+    for n in user_pinned_nodes:
+        is_pinned[n] = True
+    for i in range(0, l - 1):
+        lef = partition_points[partition_config[i]]['node_id']
+        rig = partition_points[partition_config[i + 1]]['node_id']
+        nds = bfs(lef, rig, i, u_graph)
+        sbg = u_graph.subgraph(nds)
+
+
+        if i % 2 == 0:
+            temp_csp = first
+            downstream_csp = second
+        else:
+            temp_csp = second
+            downstream_csp = first
+
+
+        if i<l-2:
+            top_sort = list(nx.topological_sort(sbg))
+            last_node_out_edge = u_graph.out_edges(top_sort[-1])
+            inter_cloud_cost = evaluate_inter_cloud_node(top_sort[-1],last_node_out_edge,bench_mark_values,downstream_csp)
+            if inter_cloud_cost == -1:
+                return sys.maxsize
+            fin_cost += inter_cloud_cost
+        for nd in nds:
+            if nd in is_pinned:
+                if temp_csp!=pinned_csp:
+                    return sys.maxsize
+        cst = evaluate_sub_dag(sbg, bench_mark_values, temp_csp)
+        if cst == -1:
+            return sys.maxsize
+        fin_cost += cst[0]
+
+
+    return fin_cost
+
+
+def get_best_partition_point(u_graph, partition_points, dag_path,num_parts,user_pinned_csp,user_pinned_nodes):
 
     bench_mark_values = get_user_dag_benchmark_values(dag_path=dag_path)
     if num_parts == 1:
@@ -352,4 +536,11 @@ def get_best_partition_point(u_graph, partition_points, dag_path,num_parts,user_
         return handle_two_parts(u_graph, partition_points = partition_points,
                                 bench_mark_values= bench_mark_values,
                                 user_pinned_csp=user_pinned_csp)
+
+    else:
+        return handle_generic_num_parts(u_graph, partition_points = partition_points,
+                                        bench_mark_values= bench_mark_values,
+                                        user_pinned_csp=user_pinned_csp,
+                                        num_parts=num_parts,
+                                        user_pinned_nodes=user_pinned_nodes)
 

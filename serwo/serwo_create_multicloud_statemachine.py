@@ -414,6 +414,17 @@ def generate_deployment_logs(left,right,user_dir,wf_id,refactored_wf_id):
     return workflow_deployment_id
 
 
+def evaluate_generic_partitioner():
+    global partition_point
+    fin_partition_points = []
+    partition_points_ = serwo_user_dag.get_best_partition(partition_points=all_valid_partition_points,
+                                                          num_parts=NUM_PARTS,
+                                                          dag_path=DAG_BENCHMARK_PATH,
+                                                          user_pinned_csp=user_pinned_csp,
+                                                          user_pinned_nodes=user_pinned_nodes)
+    for pp in partition_points_:
+        fin_partition_points.append(get_partition_points(pp))
+    partition_point = partition_points_
 
 
 if __name__ == "__main__":
@@ -422,29 +433,21 @@ if __name__ == "__main__":
 
     USER_DIR = sys.argv[1]
     DAG_DEFINITION_FILE = sys.argv[2]
-
+    NUM_PARTS = int(sys.argv[3])
     DAG_BENCHMARK_FILE = 'dag-benchmark.json'
-    # taskname = sys.argv[3]
-    # leftcsp = sys.argv[4]
-    # rightcsp = sys.argv[5]
+
     PARENT_DIRECTORY = pathlib.Path(__file__).parent
     DAG_DEFINITION_PATH = f"{USER_DIR}/{DAG_DEFINITION_FILE}"
 
-    push_user_dag_to_provenance(wf_id)
+    # push_user_dag_to_provenance(wf_id)
 
 
     DAG_BENCHMARK_PATH = f"{USER_DIR}/{DAG_BENCHMARK_FILE}"
     SERWO_BUILD_DIR = f"{USER_DIR}/build/workflow"
     RESOURCES_DIR = f"{SERWO_BUILD_DIR}/resources"
-    print(PARENT_DIRECTORY)
+
     serwo_user_dag = SerWOUserDag(DAG_DEFINITION_PATH)
 
-    # Temporary
-    # partition_name = sys.argv[3]
-    # left_csp = sys.argv[4]
-    # right_csp = sys.argv[5]
-
-    # serwo_user_dag = SerWOUserDag(DAG_DEFINITION_PATH)
     all_valid_partition_points = serwo_user_dag.get_partition_points()
     user_pinned_nodes = get_user_pinned_nodes(DAG_DEFINITION_PATH)
 
@@ -455,165 +458,172 @@ if __name__ == "__main__":
     ####
     ##Two Partition Logic
     ####
-    valid_partition_points_after_user_pinning = \
-        serwo_user_dag.get_partition_points_after_user_pinning(partition_points=all_valid_partition_points,
-                                                               user_pinned_nodes=user_pinned_nodes,
-                                                               num_parts = 2,
-                                                               user_pinned_csp=user_pinned_csp)
+    ### HAD handled two partitions separately in hurry of impl. separating out generic logic, merge 1 and 2 parts
+    ### with generic logic
 
-    partition_point = serwo_user_dag.get_best_partition(partition_points=valid_partition_points_after_user_pinning,
-                                                        num_parts=2,
-                                                        dag_path=DAG_BENCHMARK_PATH,
-                                                        user_pinned_csp=user_pinned_csp)
+    if NUM_PARTS < 3:
+        valid_partition_points_after_user_pinning = \
+            serwo_user_dag.get_partition_points_after_user_pinning(partition_points=all_valid_partition_points,
+                                                                   user_pinned_nodes=user_pinned_nodes,
+                                                                   num_parts = NUM_PARTS,
+                                                                   user_pinned_csp=user_pinned_csp)
 
+
+        partition_point = serwo_user_dag.get_best_partition(partition_points=valid_partition_points_after_user_pinning,
+                                                            num_parts=NUM_PARTS,
+                                                            dag_path=DAG_BENCHMARK_PATH,
+                                                            user_pinned_csp=user_pinned_csp,
+                                                            user_pinned_nodes=user_pinned_nodes)
+
+    else:
+        evaluate_generic_partitioner()
 
     # print(f'best partition_point = {partition_point}')
     '''
     NOTE - the member function in the serwo_user_dag contains the logic for generating 
     all the partition points in the main spine line of the graph
     '''
-    # partition_points = serwo_user_dag.get_partition_points()
 
-    partition_points = get_partition_points(partition_point)
+    # partition_points = get_partition_points(partition_point)
 
     # get the details for the egress fn (new node) for a graph
     # QUESTION[TK] - are we supporting only a single partition point ?
-    for idx, partition_point in enumerate(partition_points):
-        # set id of partition points
-        partitionId = idx+1
-
-        # create a user directory for each partition point
-
-        # egress function details
-        egress_fn_details  = add_egress_node_in_userdir(
-                                partition_point=partition_point,
-                                user_dir=USER_DIR,
-                                serwo_root_dir=PARENT_DIRECTORY
-                            )
-
-        forward_fn_details = add_forward_node_in_userdir(
-                                partition_point=partition_point,
-                                user_dir=USER_DIR,
-                                serwo_root_dir=PARENT_DIRECTORY
-                            )
-
-        # generate the subgraphs
-        left_subgraph, right_subgraph = serwo_user_dag.get_partitioned_graph(partition_point=partition_point,
-                                                                            new_node_params=egress_fn_details,
-                                                                            forward_function_params=forward_fn_details)
-
-        # generate JSONs
-        ff = json.loads((open(DAG_DEFINITION_PATH,'r').read()))
-        print(ff)
-        workflow_name = serwo_user_dag.get_workflow_name()
-        # wf_owner = ff["WorkflowOwner"]
-        # wf_version = ff["WorkflowVersion"]
-        # wf_description = ff['WorkflowDescription']
-        #test
-        wf_owner = "XfaasUSer"
-        wf_version = "1.0"
-        wf_description = "multicloud"
-        print(f"Workflow Name - {workflow_name}")
-        print(f"Generating json description for the left subgraph - CSP::{CSP.toString(partition_point.get_left_csp())}")
-        dag_description_filename_left =  create_dag_description(workflow_owner=wf_owner,
-                                                                workflow_id=wf_id,
-                                                                workflow_version=wf_version,
-                                                                package_url='',
-                                                                workflow_name=workflow_name,
-                                                                graph=left_subgraph,
-                                                                csp=partition_point.get_left_csp(),
-                                                                output_dir=USER_DIR,
-                                                                wf_description=wf_description)
-
-        print(f"Generating json description for the right subgraph - CSP::{CSP.toString(partition_point.get_right_csp())}")
-        dag_description_filename_right =  create_dag_description(workflow_owner=wf_owner,
-                                                                 workflow_id=wf_id,
-                                                                 workflow_version=wf_version,
-                                                                 package_url='',
-                                                                 workflow_name=workflow_name,
-                                                                graph=right_subgraph,
-                                                                csp=partition_point.get_right_csp(),
-                                                                output_dir=USER_DIR,
-                                                                 wf_description=wf_description)
-
-        add_collect_logs_function(dag_description_filename_right,serwo_user_dag.get_dag())
-        refactored_wf_id  = str(uuid.uuid4())
-        generate_refactored_workflow(left=dag_description_filename_left,
-                                     right=dag_description_filename_right,user_dir=USER_DIR,
-                                     refactored_wf_id=refactored_wf_id,
-                                     wf_id=wf_id)
-
-        wf_deployment_id = generate_deployment_logs(    
-                                                        left=dag_description_filename_left,
-                                                        right=dag_description_filename_right,
-                                                        user_dir=USER_DIR,
-                                                        wf_id = wf_id,
-                                                        refactored_wf_id=refactored_wf_id
-                                                    )
-        """Give a partition point the deployment will first be for the right subdag and then for the left subdag"""
-        print(f"Deploying for the right subgraph - CSP::{CSP.toString(partition_point.get_right_csp())}")
-        try:
-            deploy_subdag(csp=partition_point.get_right_csp(),
-                        user_dir=USER_DIR,
-                        dag_definition_file=dag_description_filename_right,
-                        serwo_root_dir=PARENT_DIRECTORY,
-                        resource_dict=None,
-                        egress_fn_details=None)
-        except Exception as e:
-            print(e)
-
-        print(f"Deploying for the left subgraph - CSP::{CSP.toString(partition_point.get_left_csp())}")
-        try:
-            deploy_subdag(csp=partition_point.get_left_csp(),
-                        user_dir=USER_DIR,
-                        dag_definition_file=dag_description_filename_left,
-                        serwo_root_dir=PARENT_DIRECTORY,
-                        resource_dict=get_resources_dict(partition_point.get_right_csp(), resources_dir=RESOURCES_DIR),
-                        egress_fn_details=egress_fn_details)
-        except Exception as e:
-            print(e)
-
-        # # generate JMX post deployment
-        # try:
-        #     JMXGenerator.generate_jmx_files(
-        #         workflow_name=workflow_name,
-        #         workflow_deployment_id=wf_deployment_id,
-        #         user_dir=USER_DIR,
-        #         template_root_dir="python/src/jmx-templates",
-        #         csp=CSP.toString(partition_point.get_left_csp())
-        #     )
-        # except Exception as e:
-        #     print(e)
-            
-
-        # resources dir
-        # resources dir
-        cwd = os.getcwd()
-        user_dir = USER_DIR
-        if 'serwo' not in cwd:
-            user_dir = f"serwo/{USER_DIR}"
-    
-        resources_dir=pathlib.Path.joinpath(pathlib.Path(user_dir), "build/workflow/resources")
-        # resources_dir=pathlib.Path.joinpath(pathlib.Path(USER_DIR), "build/workflow/resources")
-        provenance_artifacts = {
-            "workflow_id": wf_id,
-            "refactored_workflow_id": refactored_wf_id,
-            "deployment_id": wf_deployment_id
-        }
-
-        print("::Provenance Artifacts::")
-        print(provenance_artifacts)
-
-        print("::Writing provenance artifacts output to JSON file::")
-        json_output = json.dumps(provenance_artifacts, indent=4)
-        with open(pathlib.Path.joinpath(resources_dir, "provenance-artifacts.json"), "w+") as out:
-            out.write(json_output)
-
-
-        print("::Adding deployment structure JSON::")
-        deployment_structure = {
-            "entry_csp": CSP.toString(partition_point.get_left_csp()).lower()
-        }    
-        deployment_struct_json = json.dumps(deployment_structure, indent=4)
-        with open(pathlib.Path.joinpath(resources_dir, "deployment-structure.json"), "w+") as out:
-            out.write(deployment_struct_json)
+    # for idx, partition_point in enumerate(partition_points):
+    #     # set id of partition points
+    #     partitionId = idx+1
+    #
+    #     # create a user directory for each partition point
+    #
+    #     # egress function details
+    #     egress_fn_details  = add_egress_node_in_userdir(
+    #                             partition_point=partition_point,
+    #                             user_dir=USER_DIR,
+    #                             serwo_root_dir=PARENT_DIRECTORY
+    #                         )
+    #
+    #     forward_fn_details = add_forward_node_in_userdir(
+    #                             partition_point=partition_point,
+    #                             user_dir=USER_DIR,
+    #                             serwo_root_dir=PARENT_DIRECTORY
+    #                         )
+    #
+    #     # generate the subgraphs
+    #     left_subgraph, right_subgraph = serwo_user_dag.get_partitioned_graph(partition_point=partition_point,
+    #                                                                         new_node_params=egress_fn_details,
+    #                                                                         forward_function_params=forward_fn_details)
+    #
+    #     # generate JSONs
+    #     ff = json.loads((open(DAG_DEFINITION_PATH,'r').read()))
+    #     print(ff)
+    #     workflow_name = serwo_user_dag.get_workflow_name()
+    #     # wf_owner = ff["WorkflowOwner"]
+    #     # wf_version = ff["WorkflowVersion"]
+    #     # wf_description = ff['WorkflowDescription']
+    #     #test
+    #     wf_owner = "XfaasUSer"
+    #     wf_version = "1.0"
+    #     wf_description = "multicloud"
+    #     print(f"Workflow Name - {workflow_name}")
+    #     print(f"Generating json description for the left subgraph - CSP::{CSP.toString(partition_point.get_left_csp())}")
+    #     dag_description_filename_left =  create_dag_description(workflow_owner=wf_owner,
+    #                                                             workflow_id=wf_id,
+    #                                                             workflow_version=wf_version,
+    #                                                             package_url='',
+    #                                                             workflow_name=workflow_name,
+    #                                                             graph=left_subgraph,
+    #                                                             csp=partition_point.get_left_csp(),
+    #                                                             output_dir=USER_DIR,
+    #                                                             wf_description=wf_description)
+    #
+    #     print(f"Generating json description for the right subgraph - CSP::{CSP.toString(partition_point.get_right_csp())}")
+    #     dag_description_filename_right =  create_dag_description(workflow_owner=wf_owner,
+    #                                                              workflow_id=wf_id,
+    #                                                              workflow_version=wf_version,
+    #                                                              package_url='',
+    #                                                              workflow_name=workflow_name,
+    #                                                             graph=right_subgraph,
+    #                                                             csp=partition_point.get_right_csp(),
+    #                                                             output_dir=USER_DIR,
+    #                                                              wf_description=wf_description)
+    #
+    #     add_collect_logs_function(dag_description_filename_right,serwo_user_dag.get_dag())
+    #     refactored_wf_id  = str(uuid.uuid4())
+    #     generate_refactored_workflow(left=dag_description_filename_left,
+    #                                  right=dag_description_filename_right,user_dir=USER_DIR,
+    #                                  refactored_wf_id=refactored_wf_id,
+    #                                  wf_id=wf_id)
+    #
+    #     wf_deployment_id = generate_deployment_logs(
+    #                                                     left=dag_description_filename_left,
+    #                                                     right=dag_description_filename_right,
+    #                                                     user_dir=USER_DIR,
+    #                                                     wf_id = wf_id,
+    #                                                     refactored_wf_id=refactored_wf_id
+    #                                                 )
+    #     """Give a partition point the deployment will first be for the right subdag and then for the left subdag"""
+    #     print(f"Deploying for the right subgraph - CSP::{CSP.toString(partition_point.get_right_csp())}")
+    #     try:
+    #         deploy_subdag(csp=partition_point.get_right_csp(),
+    #                     user_dir=USER_DIR,
+    #                     dag_definition_file=dag_description_filename_right,
+    #                     serwo_root_dir=PARENT_DIRECTORY,
+    #                     resource_dict=None,
+    #                     egress_fn_details=None)
+    #     except Exception as e:
+    #         print(e)
+    #
+    #     print(f"Deploying for the left subgraph - CSP::{CSP.toString(partition_point.get_left_csp())}")
+    #     try:
+    #         deploy_subdag(csp=partition_point.get_left_csp(),
+    #                     user_dir=USER_DIR,
+    #                     dag_definition_file=dag_description_filename_left,
+    #                     serwo_root_dir=PARENT_DIRECTORY,
+    #                     resource_dict=get_resources_dict(partition_point.get_right_csp(), resources_dir=RESOURCES_DIR),
+    #                     egress_fn_details=egress_fn_details)
+    #     except Exception as e:
+    #         print(e)
+    #
+    #     # # generate JMX post deployment
+    #     # try:
+    #     #     JMXGenerator.generate_jmx_files(
+    #     #         workflow_name=workflow_name,
+    #     #         workflow_deployment_id=wf_deployment_id,
+    #     #         user_dir=USER_DIR,
+    #     #         template_root_dir="python/src/jmx-templates",
+    #     #         csp=CSP.toString(partition_point.get_left_csp())
+    #     #     )
+    #     # except Exception as e:
+    #     #     print(e)
+    #
+    #
+    #     # resources dir
+    #     # resources dir
+    #     cwd = os.getcwd()
+    #     user_dir = USER_DIR
+    #     if 'serwo' not in cwd:
+    #         user_dir = f"serwo/{USER_DIR}"
+    #
+    #     resources_dir=pathlib.Path.joinpath(pathlib.Path(user_dir), "build/workflow/resources")
+    #     # resources_dir=pathlib.Path.joinpath(pathlib.Path(USER_DIR), "build/workflow/resources")
+    #     provenance_artifacts = {
+    #         "workflow_id": wf_id,
+    #         "refactored_workflow_id": refactored_wf_id,
+    #         "deployment_id": wf_deployment_id
+    #     }
+    #
+    #     print("::Provenance Artifacts::")
+    #     print(provenance_artifacts)
+    #
+    #     print("::Writing provenance artifacts output to JSON file::")
+    #     json_output = json.dumps(provenance_artifacts, indent=4)
+    #     with open(pathlib.Path.joinpath(resources_dir, "provenance-artifacts.json"), "w+") as out:
+    #         out.write(json_output)
+    #
+    #
+    #     print("::Adding deployment structure JSON::")
+    #     deployment_structure = {
+    #         "entry_csp": CSP.toString(partition_point.get_left_csp()).lower()
+    #     }
+    #     deployment_struct_json = json.dumps(deployment_structure, indent=4)
+    #     with open(pathlib.Path.joinpath(resources_dir, "deployment-structure.json"), "w+") as out:
+    #         out.write(deployment_struct_json)

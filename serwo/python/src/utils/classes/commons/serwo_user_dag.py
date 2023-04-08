@@ -218,13 +218,14 @@ class SerWOUserDag:
 
 
 
-    def get_best_partition(self,partition_points,num_parts,dag_path,user_pinned_csp):
+    def get_best_partition(self,partition_points,num_parts,dag_path,user_pinned_csp,user_pinned_nodes):
 
         return serwo_benchmark_evaluator.get_best_partition_point(u_graph = self.__dag,
                                                             partition_points=partition_points,
                                                             num_parts=num_parts,
                                                             dag_path= dag_path,
-                                                            user_pinned_csp=user_pinned_csp)
+                                                            user_pinned_csp=user_pinned_csp,
+                                                            user_pinned_nodes=user_pinned_nodes)
 
 
 
