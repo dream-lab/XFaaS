@@ -134,21 +134,10 @@ def get_cost_for_critical_path(sub_dag,edge_benchmarks,node_benchmarks,csp):
     return latency
 
 def get_cost_for_sub_dag(node_benchmarks,edge_benchmarks,sub_dag,csp):
-    nodes = sub_dag.nodes()
-    edges = sub_dag.edges()
+
     total_latency = 0
-    total_cost = 0
-
     cost = get_user_dag_cost(sub_dag,csp,node_benchmarks)
-    # for node in nodes:
-    #     latency = node_benchmarks[node][csp]['Latency']
-    #     cost = node_benchmarks[node][csp]['Cost']
-    #     total_latency += latency
-    #     total_cost += cost
-
-
     total_latency += get_cost_for_critical_path(sub_dag,edge_benchmarks,node_benchmarks,csp)
-
 
     ## TODO - what to do with cost?
     return total_latency,cost
@@ -393,7 +382,9 @@ def bfs(src,dest,ind,G):
 
     return n_vis
 
-def handle_generic_num_parts(u_graph, partition_points,  bench_mark_values,user_pinned_csp,num_parts,user_pinned_nodes):
+def handle_generic_num_parts(u_graph, partition_points,
+                             bench_mark_values,user_pinned_csp,
+                             num_parts,user_pinned_nodes):
 
     partition_store = enumurate_all_combinations(len(partition_points)-2,0,num_parts)
     minn_cost = sys.maxsize
@@ -403,26 +394,28 @@ def handle_generic_num_parts(u_graph, partition_points,  bench_mark_values,user_
         l = len(partition_config)
         first = 'AWS'
         second = 'Azure'
-        cst1 = handle_multi_multi_cloud_csp(bench_mark_values, l, partition_config, partition_points, u_graph,first,second,
-                                     user_pinned_nodes,user_pinned_csp)
+        cst1 = handle_multi_multi_cloud_csp(bench_mark_values, l, partition_config,
+                                            partition_points, u_graph,first,second,
+                                            user_pinned_nodes,user_pinned_csp)
 
 
         first = 'Azure'
         second = 'AWS'
-        cst2 = handle_multi_multi_cloud_csp(bench_mark_values, l, partition_config, partition_points, u_graph,first,second,
-                                     user_pinned_nodes,user_pinned_csp)
+        cst2 = handle_multi_multi_cloud_csp(bench_mark_values, l, partition_config,
+                                            partition_points, u_graph,first,second,
+                                            user_pinned_nodes,user_pinned_csp)
 
         local_config, local_first, local_min = evaluate_local_min(cst1, cst2, partition_config)
 
         fin_partition_config, min_first, minn_cost = evaluate_global_min(fin_partition_config, local_config,
-                                                                         local_first, local_min, min_first, minn_cost)
+                                                                         local_first, local_min, min_first,
+                                                                         minn_cost)
 
 
     print('Final Best Partition: Cost: ',minn_cost,'First CSP: ',min_first,'Partition Confg',fin_partition_config)
     xdd = len(fin_partition_config)
     parts = []
     for i in range(1,xdd-1):
-
         parts.append(deepcopy(partition_points[fin_partition_config[i]]))
 
     for i in range(0,len(parts)):
