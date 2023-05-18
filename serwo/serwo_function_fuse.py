@@ -249,7 +249,9 @@ def copytree(src, dst, symlinks=False, ignore=None):
         else:
             shutil.copy2(s, d)
 
-def fuse_graph(G, source, sink, CSP, cost_factor):
+def fuse_graph(G, CSP, cost_factor):
+    source = [node for node in G.nodes if G.in_degree(node) == 0][0]
+    sink = [node for node in G.nodes if G.out_degree(node) == 0][0]
     G = update_graph_with_benchmark_data(G, CSP)
 
     # print(f'Full cost {CSP} = ',get_user_dag_cost(G,CSP))
@@ -793,15 +795,14 @@ def func_fuse_module(partition_point, left_sub_dag,right_sub_dag):
 
     G = deepcopy(left_sub_dag)
     user_og_graph = deepcopy(G)
-    source_node_id = [node for node in G.nodes if G.in_degree(node) == 0][0]
-    sink_node_id = [node for node in G.nodes if G.out_degree(node) == 0][0]
+
     G1 = deepcopy(G)
     csp = CSP.toString(partition_point.get_left_csp())
     if csp == 'aws':
         csp_to_send = "AWS"
     else:
         csp_to_send = "Azure"
-    fc = fuse_graph(G, source_node_id, sink_node_id, csp_to_send, cost_factor=1.2)
+    fc = fuse_graph(G, csp_to_send, cost_factor=1.2)
     l = partition_point.get_left_csp()
     csp_l = CSP.toString(l)
     suffix_str = f'left-{csp_l}'
@@ -810,26 +811,19 @@ def func_fuse_module(partition_point, left_sub_dag,right_sub_dag):
 
     G = deepcopy(right_sub_dag)
     user_og_graph = deepcopy(G)
-    source_node_id = [node for node in G.nodes if G.in_degree(node) == 0][0]
-    sink_node_id = [node for node in G.nodes if G.out_degree(node) == 0][0]
+
     G1 = deepcopy(G)
     csp = CSP.toString(partition_point.get_right_csp())
     if csp == 'aws':
         csp_to_send = "AWS"
     else:
         csp_to_send = "Azure"
-    fc = fuse_graph(G, source_node_id, sink_node_id, csp_to_send, cost_factor=1.2)
+    fc = fuse_graph(G, csp_to_send, cost_factor=1.2)
     r = partition_point.get_right_csp()
     csp_r = CSP.toString(r)
     suffix_str = f'right-{csp_r}'
     get_final_graph(G1,fc,user_og_graph,suffix_str)
 
-
-def run_with_partition():
-    global G
-    G = SerWOUserDag(DAG_DEFINITION_PATH).get_dag()
-    pp = PartitionPoint("func2", 3, CSP.toCSP("AWS"), CSP.toCSP("Azure"))
-    func_fuse_module(pp, G, G)
 
 
 import pickle
@@ -999,11 +993,10 @@ def run_without_partition():
     user_og_graph = deepcopy(G)
     print(user_og_graph)
     CSP = sys.argv[3]
-    source_nodeId = [node for node in G.nodes if G.in_degree(node) == 0][0]
-    sink_nodeId = [node for node in G.nodes if G.out_degree(node) == 0][0]
+
     G1 = deepcopy(G)
 
-    fc, latency, user_graph_latency, cost, user_dag_cost = fuse_graph(G, source_nodeId, sink_nodeId, CSP,
+    fc, latency, user_graph_latency, cost, user_dag_cost = fuse_graph(G, CSP,
                                                                       cost_factor=1.2)
     # print(
     #     f'latency before {user_graph_latency}, latency after: {latency}, cost before: {user_dag_cost}, cost after: {cost}')
@@ -1068,7 +1061,6 @@ def push_user_dag_to_provenance(wf_id):
     return workflow_name
 
 if __name__ == "__main__":
-    #run_with_partition()
     wf_name, wf_id, refactored_wf_id, wf_deployment_id = run_without_partition()
     
     # Genreate Jmx post deployment

@@ -35,6 +35,7 @@ def deploy(storage,group,app,user_dir):
     command = f'az functionapp create --consumption-plan-location {location} --runtime {runtime} --runtime-version {runtime_version} --functions-version {functions_version} --name {app} --os-type {os_type} --storage-account {storage} -g {group}'
     stream = os.popen(command)
     stream.close()
+    ##TODO: check if function app exists instead of sleep
     sleep(30)
     os.chdir(user_dir)
     print(f'User app created, deploying {app}')

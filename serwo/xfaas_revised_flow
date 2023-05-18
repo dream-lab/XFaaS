@@ -1,0 +1,11 @@
+1. get user dag
+2. Apply apt optimisations(add collect logs here)
+3. Generate resources
+4. Push user and refactored and resources' info to provenance
+5. build
+6. deploy
+7. Deployment status and user and refactored functions push to provenance
+
+
+
+partition plus fusion: brute force through all combinations of partition & fusion

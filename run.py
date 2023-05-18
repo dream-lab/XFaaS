@@ -7,17 +7,23 @@ import random
 import boto3
 import botocore.session
 
+#TODO use argparse
+
 def generate_random_string(N):
     res = ''.join(random.choices(string.ascii_lowercase +
                                 string.digits, k=N))
  
     return res
 
+
+##TODO - move creation of queues to one single place
+##TODO - add aws/open faas queue generation for provenance
 def generate():
     try:
         stream = os.popen(f'az storage queue create -n {queue_name} --account-name {storage_account_name}')
         stream.close()
 
+    #TODO -  push queue names to provenance
     except Exception as e:
         print(e)
         pass
@@ -109,6 +115,10 @@ elif option == '--single-cloud':
     os.chdir('serwo')
     with open(f"{user_dir}/queue_details.json", "w+") as f:
         f.write(json.dumps(queue_details, indent=4))
+    ##TODO Function call
+    ##TODO (handling of imports)
+    ##TODO serwo -> xfaas
+
     subprocess.call(['python3','serwo_single_cloud.py',user_dir,user_json,csp])
     # save to file
 
