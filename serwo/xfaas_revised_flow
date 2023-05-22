@@ -8,6 +8,7 @@
     - regions (compulsory from input)
     - have a specific location for these initial config files
     - this will be during the build process
+    - user pinned csps
     - config for XFaaS
         - deployment config
             - (start the xfaas service)
