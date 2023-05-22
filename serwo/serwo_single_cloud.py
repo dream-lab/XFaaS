@@ -174,6 +174,7 @@ def add_collect_logs_function():
 
 
 if __name__ == "__main__":
+    #TODO: generate queue name here
     wf_id = str(uuid.uuid4())
     wf_name = push_user_dag_to_provenance(wf_id)
     add_collect_logs_function()

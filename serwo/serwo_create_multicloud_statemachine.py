@@ -452,6 +452,7 @@ if __name__ == "__main__":
     user_pinned_nodes = get_user_pinned_nodes(DAG_DEFINITION_PATH)
 
     ## We allow only at max 2 partitions
+    ##TODO: read from dag
     user_pinned_nodes = []
     user_pinned_csp = ''
 

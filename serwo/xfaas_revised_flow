@@ -1,0 +1,69 @@
+0. Read config files -
+    - user credentials
+        - different for different regions?
+        - CSP
+            - regions
+                - credentials
+            - credentials
+    - regions (compulsory from input)
+    - have a specific location for these initial config files
+    - this will be during the build process
+    - user pinned csps
+    - config for XFaaS
+        - deployment config
+            - (start the xfaas service)
+        - provenance config
+            -
+1. get user dag
+    - user dag in the original form
+    - class which represents user dag (check utils)
+    - for multi region deployments we need to have the separate impl for each CSP in which
+      the regions would be captured.
+2. Apply apt optimisations(add collect logs here)
+    - run partitioner-placement + fusion (needs discussion)
+    - Generic partitioner algorithm
+
+3. Generate resources
+    - logging queues
+    - storage groups etc.
+4. Push user and refactored and resources' info to provenance
+5. build
+6. deploy
+7. Deployment status and user and refactored functions push to provenance
+
+
+
+partition plus fusion: brute force through all combinations of partition & fusion
+
+
+meeet notes:
+
+xFaaS deployment service (AWS Step Function, 1,2,3+4,5-7)
+    params to invoke:
+        csp config file, dag, function source zip, benchmark
+xfaas provenance service - AWS lambda
+    deploy the service while deploying xfaas service
+    params:
+        csp config file
+
+
+
+Generic Partitioner
+    - cplex baseline
+    - dp based soln.
+
+
+Region specific: Inter cloud Network plus pricing
+CSP Specific: Function exec times
+
+(verfication for performance across regions)
+TODO - run the existing functions on different regions to see performance difference.
+
+
+
+Incremental claims:
+
+partition plus fusion
+multi-multi cloud
+edge (openfaas)
+real world applications
