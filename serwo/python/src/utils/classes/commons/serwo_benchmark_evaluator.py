@@ -78,7 +78,7 @@ def set_edge_latency(G1: nx.classes.digraph.DiGraph,edge_benchmark, node_benchma
             edge_cost = get_edge_cost(edge_benchmark,csp,node,succ,len(G1.nodes()))
 
             val = node_benchmark[node][csp]['Latency'] + edge_cost
-            # print(csp,edge_cost,val,val-edge_cost)
+
             G1.edges[(node, succ)]['edge_latency'] = -1*val
     return G1
 

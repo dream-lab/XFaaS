@@ -261,6 +261,7 @@ def get_user_pinned_nodes(dag_path):
 
 def add_collect_logs_function(dag_path,G):
     out_path = 'python/src/utils/CollectLogDirectories'
+
     node_name = 'CollectLogs'
     collect_dir =  out_path + '/'+node_name
     fnc_src = f'{USER_DIR}/src'

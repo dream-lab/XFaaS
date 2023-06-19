@@ -36,7 +36,7 @@ DAG_BENCHMARK_FILENAME = 'dag-benchmark.json'
 PARENT_DIRECTORY = pathlib.Path(__file__).parent
 USER_DIR = sys.argv[1]
 MULTIPLIER = 100
-ccsp = sys.argv[3]
+# ccsp = sys.argv[3]
 DAG_DEFINITION_FILE = sys.argv[2]
 DAG_DEFINITION_PATH = f"{USER_DIR}/{DAG_DEFINITION_FILE}"
 DAG_BENCHMARK_PATH = f'{USER_DIR}/{DAG_BENCHMARK_FILENAME}'
@@ -935,13 +935,9 @@ def add_collect_logs_function(dag_path,G):
     node_name = 'CollectLogs'
     collect_dir =  out_path + '/'+node_name
 
-
-
-
     xd = list(nx.topological_sort(G))
     ind = len(xd)-1
     max_id = int(xd[ind])
-    print(max_id)
     fnc_src = f'{USER_DIR}/src'
 
     dest = fnc_src+'/'+node_name
@@ -998,34 +994,6 @@ def run_without_partition():
 
     fc, latency, user_graph_latency, cost, user_dag_cost = fuse_graph(G, CSP,
                                                                       cost_factor=1.2)
-    # print(
-    #     f'latency before {user_graph_latency}, latency after: {latency}, cost before: {user_dag_cost}, cost after: {cost}')
-
-
-
-    # with open(f'{CSP}_2.pkl', 'wb') as f:
-    #     pickle.dump(god_list, f)
-
-    # with open(f'{CSP}_2.pkl', 'rb') as f:
-    #     god_list = pickle.load(f)
-
-    # print(len(god_list))
-    # print(f'Evolution of costs in fusion per stage: {CSP}')
-    # print(god_cost)
-    #
-    # idx = int(sys.argv[3])
-    # fc = god_list[idx]
-    # print('final')
-    # for fusion_candidate in fc:
-    #     print(fusion_candidate.get_id(), fusion_candidate.get_nodes())
-
-
-    # fcc = god_list_2[-1]
-    # print('final 2')
-    # print(len(god_list_2))
-    # for fusion_candidate in fcc:
-    #     print(fusion_candidate.get_id(), fusion_candidate.get_nodes())
-
 
     suffix_str = f'{CSP}'
     fused_pth,dag_p,G = get_final_graph(G1,fc,user_og_graph,suffix_str)
@@ -1033,7 +1001,7 @@ def run_without_partition():
     refactored_wf_id  = str(uuid.uuid4())
     generate_refactored_workflow(refactored_wf_id,fused_pth,dag_p)
     workflow_deployment_id = generate_deployment_logs(dag_p,USER_DIR,wf_id,refactored_wf_id)
-    deploy(dag_p)
+    # deploy(dag_p)
 
     return wf_name, wf_id, refactored_wf_id, workflow_deployment_id 
 
@@ -1095,16 +1063,16 @@ if __name__ == "__main__":
     print("::Provenance Artifacts::")
     print(provenance_artifacts)
 
-    print("::Writing provenance artifacts output to JSON file::")
-    json_output = json.dumps(provenance_artifacts, indent=4)
-    with open(pathlib.Path.joinpath(resources_dir, "provenance-artifacts.json"), "w+") as out:
-        out.write(json_output)
-
-
-    print("::Adding deployment structure JSON::")
-    deployment_structure = {
-        "entry_csp": ccsp.lower()
-    }    
-    deployment_struct_json = json.dumps(deployment_structure, indent=4)
-    with open(pathlib.Path.joinpath(resources_dir, "deployment-structure.json"), "w+") as out:
-        out.write(deployment_struct_json)    
+    # print("::Writing provenance artifacts output to JSON file::")
+    # json_output = json.dumps(provenance_artifacts, indent=4)
+    # with open(pathlib.Path.joinpath(resources_dir, "provenance-artifacts.json"), "w+") as out:
+    #     out.write(json_output)
+    #
+    #
+    # print("::Adding deployment structure JSON::")
+    # deployment_structure = {
+    #     "entry_csp": ccsp.lower()
+    # }
+    # deployment_struct_json = json.dumps(deployment_structure, indent=4)
+    # with open(pathlib.Path.joinpath(resources_dir, "deployment-structure.json"), "w+") as out:
+    #     out.write(deployment_struct_json)
