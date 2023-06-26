@@ -4,7 +4,7 @@ import dp_xfaas_partitioner
 import ilp_xfaas_partitioner
 import sys
 import json
-
+import time
 
 def get_supported_cloud_ids():
     clouds = json.loads(open('config/cloud_dictionary.json', 'r').read())
@@ -32,7 +32,9 @@ def partition_dag(user_dag,user_dir,user_dag_input,user_pinned_nodes,benchmark_p
                                                                                                      cloud_ids)
 
     print('Benchmark Populator values \n',latencies_benchmark,data_transfers_benchmark,inter_cloud_data_tranfers,is_fan_in)
-    opt = 'DP'
+
+    opt = sys.argv[4]
+    st = time.time()
     if opt == 'DP':
         clouds,min_latency = dp_xfaas_partitioner.get_optimal_partitions(latencies_benchmark,
                                                              data_transfers_benchmark,
@@ -59,7 +61,9 @@ def partition_dag(user_dag,user_dir,user_dag_input,user_pinned_nodes,benchmark_p
         final_cloud_config = translate(clouds,cloud_dictionary)
         print('Final ILP Cloud Config: ',final_cloud_config)
 
+    en = time.time()
 
+    print('TIME TAKEN = ',(en-st), ' seconds')
     return user_dir
 
 
