@@ -4,6 +4,8 @@ import sys
 
 def get_optimal_partitions(latencies_benchmark, data_transfers_benchmark,data_transfers,is_fan_in):
 
+    print(latencies_benchmark)
+    print(data_transfers_benchmark)
     n = len(latencies_benchmark[0])
     k = len(data_transfers_benchmark)
 

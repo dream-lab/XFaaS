@@ -1,6 +1,7 @@
 import xfaas_fusion_wrapper as fusion_wrapper
 import xfaas_benchmark
 import dp_xfaas_partitioner
+import ilp_xfaas_partitioner
 import sys
 import json
 
@@ -31,17 +32,34 @@ def partition_dag(user_dag,user_dir,user_dag_input,user_pinned_nodes,benchmark_p
                                                                                                      cloud_ids)
 
     print('Benchmark Populator values \n',latencies_benchmark,data_transfers_benchmark,inter_cloud_data_tranfers,is_fan_in)
-    clouds,min_latency = dp_xfaas_partitioner.get_optimal_partitions(latencies_benchmark,
-                                                         data_transfers_benchmark,
-                                                         inter_cloud_data_tranfers,
-                                                                     is_fan_in)
+    opt = 'DP'
+    if opt == 'DP':
+        clouds,min_latency = dp_xfaas_partitioner.get_optimal_partitions(latencies_benchmark,
+                                                             data_transfers_benchmark,
+                                                             inter_cloud_data_tranfers,
+                                                                         is_fan_in)
 
-    if min_latency == sys.maxsize:
-        print('DAG CANNOT BE PARTITIONED FOR GIVEN INPUT VALUES AND USER CONSTRAINTS')
-    print('Result from partitioner: \n clouds -> ',clouds,'\n Latency -> ',min_latency)
+        if min_latency == sys.maxsize:
+            print('DAG CANNOT BE PARTITIONED FOR GIVEN INPUT VALUES AND USER CONSTRAINTS')
+        print('Result from DP partitioner: \n clouds -> ',clouds,'\n Latency -> ',min_latency)
 
-    final_cloud_config = translate(clouds,cloud_dictionary)
-    print('Final Cloud Config: ',final_cloud_config)
+        final_cloud_config = translate(clouds,cloud_dictionary)
+        print('Final DP Cloud Config: ',final_cloud_config)
+
+    else:
+        clouds,min_latency = ilp_xfaas_partitioner.get_optimal_partitions(latencies_benchmark,
+                                                                         data_transfers_benchmark,
+                                                                         inter_cloud_data_tranfers,
+                                                                         is_fan_in)
+
+        if min_latency == sys.maxsize:
+            print('DAG CANNOT BE PARTITIONED FOR GIVEN INPUT VALUES AND USER CONSTRAINTS')
+        print('Result from ILP partitioner: \n clouds -> ',clouds,'\n Latency -> ',min_latency)
+
+        final_cloud_config = translate(clouds,cloud_dictionary)
+        print('Final ILP Cloud Config: ',final_cloud_config)
+
+
     return user_dir
 
 
