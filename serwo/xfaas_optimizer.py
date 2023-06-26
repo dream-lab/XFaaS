@@ -2,16 +2,33 @@ import xfaas_fusion_wrapper as fusion_wrapper
 import xfaas_benchmark
 import dp_xfaas_partitioner
 import sys
+import json
+
+
+def get_supported_cloud_ids():
+    clouds = json.loads(open('config/cloud_dictionary.json', 'r').read())
+    cloud_ids = []
+    for cd in clouds:
+        cloud_ids.append(cd)
+    return cloud_ids,clouds
+
+
+def translate(clouds,cloud_dictionary):
+    final_output = []
+    for cd in clouds:
+        final_output.append(cloud_dictionary[str(cd)])
+    return final_output
 
 
 def partition_dag(user_dag,user_dir,user_dag_input,user_pinned_nodes,benchmark_path):
-
     valid_partition_points = user_dag.get_partition_points()
+    cloud_ids,cloud_dictionary = get_supported_cloud_ids()
     latencies_benchmark, data_transfers_benchmark, inter_cloud_data_tranfers, is_fan_in = xfaas_benchmark.populate_benchmarks_for_user_dag(user_dag,
                                                                                                      user_dir,
                                                                                                      user_pinned_nodes,
                                                                                                      benchmark_path,
-                                                                                                     valid_partition_points)
+                                                                                                     valid_partition_points,
+                                                                                                     cloud_ids)
 
     print('Benchmark Populator values \n',latencies_benchmark,data_transfers_benchmark,inter_cloud_data_tranfers,is_fan_in)
     clouds,min_latency = dp_xfaas_partitioner.get_optimal_partitions(latencies_benchmark,
@@ -21,7 +38,10 @@ def partition_dag(user_dag,user_dir,user_dag_input,user_pinned_nodes,benchmark_p
 
     if min_latency == sys.maxsize:
         print('DAG CANNOT BE PARTITIONED FOR GIVEN INPUT VALUES AND USER CONSTRAINTS')
-    print('Result from partitioner -> ',clouds,min_latency)
+    print('Result from partitioner: \n clouds -> ',clouds,'\n Latency -> ',min_latency)
+
+    final_cloud_config = translate(clouds,cloud_dictionary)
+    print('Final Cloud Config: ',final_cloud_config)
     return user_dir
 
 

@@ -4,15 +4,7 @@ import networkx as nx
 import sys
 
 
-def get_supported_cloud_ids():
-    clouds = json.loads(open('config/cloud_dictionary.json', 'r').read())
-    cloud_ids = []
-    for cd in clouds:
-        cloud_ids.append(cd)
-    return cloud_ids
-
-
-def evaluate_subdag(csp_id,sub_dag,user_pinned_nodes):
+def evaluate_sub_dag(csp_id, sub_dag, user_pinned_nodes):
     nodes = list(sub_dag.nodes)
 
     constraints_violated = evaluate_node_and_edge_constraints(csp_id, sub_dag, user_pinned_nodes)
@@ -73,20 +65,19 @@ def evaluate_node_and_edge_constraints(csp_id, sub_dag, user_pinned_nodes):
     return flag
 
 
-def populate_benchmarks_for_user_dag(user_dag,user_dir,user_pinned_nodes,benchmark_path,valid_partition_points):
-    bm_data, cloud_ids, edges, latency_map, user_dag_copy = init_benchmark_populator(benchmark_path, user_dag)
+def populate_benchmarks_for_user_dag(user_dag,user_dir,user_pinned_nodes,benchmark_path,valid_partition_points,cloud_ids):
+    bm_data, edges, latency_map, user_dag_copy = init_benchmark_populator(benchmark_path, user_dag,cloud_ids)
 
     latency_benchmark = populate_latanecy_benchmarks(bm_data, cloud_ids, edges, latency_map, user_dag_copy,
                                                      user_pinned_nodes, valid_partition_points)
-    data_transfer_benchmark = populate_dat_transfer_benchmarks(cloud_ids, edges, user_dag_copy)
+    data_transfer_benchmark = populate_data_transfer_benchmarks(cloud_ids, edges, user_dag_copy)
     inter_cloud_data_transfer = populate_inter_cloud_data_transfers(user_dag_copy, valid_partition_points)
     is_fan_in = populate_is_fan_in(user_dag_copy, valid_partition_points)
 
     return latency_benchmark, data_transfer_benchmark, inter_cloud_data_transfer, is_fan_in
 
 
-def init_benchmark_populator(benchmark_path, user_dag):
-    cloud_ids = get_supported_cloud_ids()
+def init_benchmark_populator(benchmark_path, user_dag,cloud_ids):
     user_dag_copy = deepcopy(user_dag.get_dag())
     latency_map = dict()
     for cd in cloud_ids:
@@ -96,7 +87,7 @@ def init_benchmark_populator(benchmark_path, user_dag):
     edges = user_dag_copy.edges
     for nd in nodes:
         user_dag_copy.nodes[nd]['NodeBenchmark'] = bm_data['NodeBenchmarks'][nd]
-    return bm_data, cloud_ids, edges, latency_map, user_dag_copy
+    return bm_data, edges, latency_map, user_dag_copy
 
 
 def populate_is_fan_in(user_dag_copy, valid_partition_points):
@@ -150,7 +141,7 @@ def populate_latanecy_benchmarks(bm_data, cloud_ids, edges, latency_map, user_da
                     flag = 1
             subgr = user_dag_copy.subgraph(sub_nodes)
         for csp_id in range(0, len(cloud_ids)):
-            latency = evaluate_subdag(cloud_ids[csp_id], subgr, user_pinned_nodes)
+            latency = evaluate_sub_dag(cloud_ids[csp_id], subgr, user_pinned_nodes)
             latency_map[cloud_ids[csp_id]].append(latency)
     latency_benchmark = []
     for cd in latency_map:
@@ -158,7 +149,7 @@ def populate_latanecy_benchmarks(bm_data, cloud_ids, edges, latency_map, user_da
     return latency_benchmark
 
 
-def populate_dat_transfer_benchmarks(cloud_ids, edges, user_dag_copy):
+def populate_data_transfer_benchmarks(cloud_ids, edges, user_dag_copy):
     data_transfer_benchmark = []
     for ed in edges:
         edge_bm = user_dag_copy.edges[ed]['EdgeBenchmark']['Latencies']
