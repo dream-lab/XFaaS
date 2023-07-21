@@ -36,7 +36,7 @@ DAG_BENCHMARK_FILENAME = 'dag-benchmark.json'
 PARENT_DIRECTORY = pathlib.Path(__file__).parent
 USER_DIR = sys.argv[1]
 MULTIPLIER = 100
-# ccsp = sys.argv[3]
+ccsp = sys.argv[3]
 DAG_DEFINITION_FILE = sys.argv[2]
 DAG_DEFINITION_PATH = f"{USER_DIR}/{DAG_DEFINITION_FILE}"
 DAG_BENCHMARK_PATH = f'{USER_DIR}/{DAG_BENCHMARK_FILENAME}'
@@ -439,9 +439,9 @@ def mutate(old_graph,new_node_id,new_node_val,start,end,id_to_fc_map):
     start = calc_start(start,id_to_fc_map)
     end = calc_end(end,id_to_fc_map)
     old_graph.add_node(new_node_id,Nodes=global_set,Start=start,End=end)
-    print('=======')
-    print(se)
-    print(global_set)
+    # print('=======')
+    # print(se)
+    # print(global_set)
     for xd in new_node_val:
         old_graph.remove_node(xd)
 
@@ -484,8 +484,8 @@ def get_final_graph(G, fc,user_og_graph,suffix_str):
                 _id = fusion_candidate.get_id()
 
                 global_set = nodes_to_fuse
-                print('glo')
-                print(global_set)
+
+                # print(global_set)
                 # for xd in nodes_to_fuse:
                 #     key = 'Nodes'
                 #     if key in G.nodes[xd]:
@@ -609,7 +609,7 @@ def generate_fused_code(G, end_key, k, start_key, user_og_graph,suffix_str,final
             copytree(user_src_path,fused_src_path+'/'+user_og_path)
 
 
-        print('================================================')
+        # print('================================================')
 
 
         fin_graph.add_node(new_node_id,NodeId = new_node_id,NodeName= new_node_name, Path= new_path, EntryPoint= new_entry_point, CSP="Azure", MemoryInMB=max_mem)
@@ -617,15 +617,15 @@ def generate_fused_code(G, end_key, k, start_key, user_og_graph,suffix_str,final
 
     for u,v in final_edges:
         fin_graph.add_edge(u,v)
-    print(fin_graph)
-    for node in fin_graph.nodes():
-        print('id: ',node,fin_graph.nodes[node])
+    # print(fin_graph)
+    # for node in fin_graph.nodes():
+    #     print('id: ',node,fin_graph.nodes[node])
 
     deep_fin = deepcopy(fin_graph)
     top_sort = list(nx.topological_sort(deep_fin))
     id = top_sort[-1]
-    print('last node: ',id)
-    print('ending ',deep_fin)
+    # print('last node: ',id)
+    # print('ending ',deep_fin)
     pp = create_dag_description(get_app_name(), deep_fin,CSP.toCSP("AWS"),USER_DIR,suffix_str)
     return fused_src_path,pp,fin_graph
 
@@ -638,9 +638,9 @@ def create_dag_description(workflow_name: str, graph: nx.DiGraph, csp:CSP, outpu
     # populate the node list
     for node in graph.nodes:
         # node items
-        print("Inside create DAG description")
-        print(graph.nodes[node]["NodeId"])
-        print("NodeName", graph.nodes[node]["NodeName"])
+        # print("Inside create DAG description")
+        # print(graph.nodes[node]["NodeId"])
+        # print("NodeName", graph.nodes[node]["NodeName"])
         csp_string = CSP.toString(csp)
         node_item = dict(
             NodeId=graph.nodes[node]['NodeId'],
@@ -678,7 +678,7 @@ def create_dag_description(workflow_name: str, graph: nx.DiGraph, csp:CSP, outpu
     output_dag_description_filename = f"serwo-{csp_string}-dag-description.json"
     output_dag_description_filepath = f"{output_dir}/{output_dag_description_filename}"
     with open(output_dag_description_filepath, "w") as outfile:
-        print(f"Writing json to directory {output_dag_description_filepath}")
+        # print(f"Writing json to directory {output_dag_description_filepath}")
         json.dump(output_dict, outfile, indent=4)
 
     return output_dag_description_filename
@@ -735,7 +735,7 @@ def template(import_line,code):
         file_loader = FileSystemLoader(fusion_template_path)
         env = Environment(loader=file_loader)
         template = env.get_template("fused_runner.py")
-        print(f"Created Azure jinja2 environment for Runner")
+        # print(f"Created Azure jinja2 environment for Runner")
     except Exception as exception:
         raise Exception("Error in loading jinja template environment")
 
@@ -749,7 +749,7 @@ def template(import_line,code):
         # flush out the generator yaml
         with open(f"{output_dir}", "w+") as runner:
             runner.write(output)
-            print(f"Writing python file to directory")
+            # print(f"Writing python file to directory")
     except:
         raise Exception("Error in writing to template file")
 
@@ -828,7 +828,7 @@ def func_fuse_module(partition_point, left_sub_dag,right_sub_dag):
 
 import pickle
 def generate_refactored_workflow(refactored_wf_id,fused_dir,fused_dag):
-    print(refactored_wf_id,fused_dir,fused_dag)
+    # print(refactored_wf_id,fused_dir,fused_dag)
     user_dag_path = f'{USER_DIR}/{DAG_DEFINITION_FILE}'
     dag_json = json.loads(open(user_dag_path,'r').read())
     fused_config = []
@@ -858,7 +858,7 @@ def generate_refactored_workflow(refactored_wf_id,fused_dir,fused_dag):
 
 
     print(fused_config)
-    print('======')
+    # print('======')
     dag_json['refactoring_strategy'] = 'Function fusion'
     dag_json['wf_refactored_id'] = refactored_wf_id
     dag_json['wf_partitions'] = []
@@ -889,7 +889,7 @@ def generate_deployment_logs(left,user_dir,wf_id,refactored_wf_id):
 
     dc = ccsp.lower()
     lpath = f"{user_dir}/{left}"
-    print(lpath)
+    # print(lpath)
     js_left = json.loads(open(lpath,'r').read())
 
     lp = []
@@ -987,7 +987,7 @@ def run_without_partition():
     G = deepcopy(fin_g)
 
     user_og_graph = deepcopy(G)
-    print(user_og_graph)
+    # print(user_og_graph)
     CSP = sys.argv[3]
 
     G1 = deepcopy(G)
@@ -995,6 +995,8 @@ def run_without_partition():
     fc, latency, user_graph_latency, cost, user_dag_cost = fuse_graph(G, CSP,
                                                                       cost_factor=1.2)
 
+    for f in fc:
+        print(f.get_id(),f.get_nodes())
     suffix_str = f'{CSP}'
     fused_pth,dag_p,G = get_final_graph(G1,fc,user_og_graph,suffix_str)
     add_collect_logs_function(dag_p,G)
@@ -1008,8 +1010,8 @@ def run_without_partition():
 def push_user_dag_to_provenance(wf_id):
     global dynPartiQLWrapper, e
     # convert this to an api call
-    print(":" * 80)
-    print(f"Pushing workflow configuration to Dynamo DB")
+    # print(":" * 80)
+    # print(f"Pushing workflow configuration to Dynamo DB")
     
     workflow_name = ""
     try:
@@ -1025,7 +1027,7 @@ def push_user_dag_to_provenance(wf_id):
         dynPartiQLWrapper.put(user_workflow_item)
     except ClientError as e:
         print(e)
-    print(":" * 80)
+    # print(":" * 80)
     return workflow_name
 
 if __name__ == "__main__":
@@ -1060,8 +1062,8 @@ if __name__ == "__main__":
         "deployment_id": wf_deployment_id
     }
 
-    print("::Provenance Artifacts::")
-    print(provenance_artifacts)
+    # print("::Provenance Artifacts::")
+    # print(provenance_artifacts)
 
     # print("::Writing provenance artifacts output to JSON file::")
     # json_output = json.dumps(provenance_artifacts, indent=4)

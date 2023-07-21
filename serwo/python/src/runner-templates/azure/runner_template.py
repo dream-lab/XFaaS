@@ -91,8 +91,6 @@ def main(serwoObject, context: az_func.Context) -> str:
             func_json = {func_id : {'start_delta' : start_delta,'end_delta' : end_delta}}
             new_meta.append(func_json)
             metadata['functions'] = new_meta
-            # metadata[str(func_id)+'_fan_in'] = extracted
-            # trace_containers(metadata)
             body = serwoObjectResponse.get_body()
             return SerWOObject(body=body , metadata=metadata).to_json()
         else:
