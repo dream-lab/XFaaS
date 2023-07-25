@@ -61,8 +61,9 @@ def get_data_transfer_value(data_transfers_benchmark, i, j, v, data_tranfers,is_
         return float(sys.maxsize)
 
     else:
-        if is_fan_in[i]:
+        if is_fan_in[i] and j != v:
             return data_transfers_benchmark[j][v] + data_transfers_benchmark[v][v]
+
         return data_transfers_benchmark[j][v]
 
 

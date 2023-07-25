@@ -8,7 +8,7 @@ import os, uuid
 
 
 connect_str = "DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net;AccountName=xfaasstorage;AccountKey=w8ZR6KJriMLNRpbH7ABwmjUsMWB1uSMOqwVK/tVev7waK83ARpOrdrVlo7kzrMwx3ePtPsSeT47X+AStnPmIWw==;BlobEndpoint=https://xfaasstorage.blob.core.windows.net/;FileEndpoint=https://xfaasstorage.file.core.windows.net/;QueueEndpoint=https://xfaasstorage.queue.core.windows.net/;TableEndpoint=https://xfaasstorage.table.core.windows.net/"
-queue_name = 'xfaas-logging-queue-0crqo4m'
+queue_name = 'xfaas-logging-queue-c77b9oo'
 
 
 queue_service = QueueService(connection_string=connect_str)

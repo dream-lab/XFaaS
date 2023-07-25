@@ -1,0 +1,48 @@
+{
+  "WorkflowName": "partitioner",
+  "Nodes": [
+    {
+      "NodeId": "1",
+      "NodeName": "TaskA",
+      "Path": "examples/partitioner-debug/src/xmlparse_23KB_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 128
+    },
+    {
+      "NodeId": "2",
+      "NodeName": "TaskB",
+      "Path": "examples/partitioner-debug/src/memstress_128MB_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 256
+    },
+    {
+      "NodeId": "3",
+      "NodeName": "TaskC",
+      "Path": "examples/partitioner-debug/src/resnet_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 512
+    },
+    {
+      "NodeId": "4",
+      "NodeName": "TaskD",
+      "Path": "examples/partitioner-debug/src/iostress_512wr_25KB",
+      "EntryPoint": "func.py",
+      "CSP": "Azure",
+      "MemoryInMB": 128
+    }
+  ],
+  "Edges": [
+    {
+      "TaskA": ["TaskB","TaskC"]
+    },
+    {
+      "TaskB": ["TaskD"]
+    },
+    {
+      "TaskC": ["TaskD"]
+    }
+  ]
+}

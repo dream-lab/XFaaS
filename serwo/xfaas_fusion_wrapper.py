@@ -21,7 +21,7 @@ PARENT_DIRECTORY = pathlib.Path(__file__).parent
 USER_DIR = sys.argv[1]
 DAG_DEFINITION_PATH = f"{USER_DIR}/{DAG_DEFINITION_FILE}"
 DAG_BENCHMARK_PATH = f'{USER_DIR}/{DAG_BENCHMARK_FILENAME}'
-
+CSP = sys.argv[3]
 
 def push_user_dag_to_provenance(wf_id):
     global dynPartiQLWrapper, e
@@ -230,6 +230,6 @@ def run(user_dag_input,user_dir,dag_definition_path,csp):
 
 
 
-# if __name__ == "__main__":
-#     user_dag_input = SerWOUserDag(DAG_DEFINITION_PATH).get_dag()
-#     wf_name, wf_id, refactored_wf_id, wf_deployment_id,dag_path = run(user_dag_input,USER_DIR,DAG_DEFINITION_PATH,CSP)
+if __name__ == "__main__":
+    user_dag_input = SerWOUserDag(DAG_DEFINITION_PATH).get_dag()
+    wf_name, wf_id, refactored_wf_id, wf_deployment_id,dag_path = run(user_dag_input,USER_DIR,DAG_DEFINITION_PATH,CSP)

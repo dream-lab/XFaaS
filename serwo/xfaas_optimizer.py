@@ -1,7 +1,7 @@
 import xfaas_fusion_wrapper as fusion_wrapper
 import xfaas_benchmark
 import dp_xfaas_partitioner
-import ilp_xfaas_partitioner
+# import ilp_xfaas_partitioner
 import sys
 import json
 import time
