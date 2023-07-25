@@ -55,4 +55,4 @@ NOTE
 This code is released under Apache License, Version 2.0
 https://www.apache.org/licenses/LICENSE-2.0.txt
 
-Copyright (c) 2023 DREAM:Lab, Indiana Institute of Science. All rights reserved.
+Copyright (c) 2023 DREAM:Lab, Indian Institute of Science. All rights reserved.
