@@ -6,6 +6,7 @@ import string
 import random
 import boto3
 import botocore.session
+from azure.storage.queue import QueueServiceClient
 
 #TODO use argparse
 
@@ -20,13 +21,16 @@ def generate_random_string(N):
 ##TODO - add aws/open faas queue generation for provenance
 def generate():
     try:
-        stream = os.popen(f'az storage queue create -n {queue_name} --account-name {storage_account_name}')
-        stream.close()
+        connection_string = f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};"
+        queue_service_client = QueueServiceClient.from_connection_string(connection_string)
+        queue_service_client.create_queue(queue_name)
 
     #TODO -  push queue names to provenance
     except Exception as e:
         print(e)
         pass
+
+from azure.storage.queue import QueueServiceClient
 
 def create_aws_credentials_file():
     print(f":: Creating credentials file for AWS ::")
