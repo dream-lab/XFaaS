@@ -51,4 +51,4 @@ is_fan_in = [False, False, False, True, False, False]
 # data_transfers = [64,64,64]
 # is_fan_in = [False,False,False,False]
 
-print(get_optimal_partitions(latencies_benchmark,data_transfer_benchmark,data_transfers,is_fan_in))
+# print(get_optimal_partitions(latencies_benchmark,data_transfer_benchmark,data_transfers,is_fan_in))
