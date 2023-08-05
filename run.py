@@ -30,8 +30,6 @@ def generate():
         print(e)
         pass
 
-from azure.storage.queue import QueueServiceClient
-
 def create_aws_credentials_file():
     print(f":: Creating credentials file for AWS ::")
     session = botocore.session.get_session()
@@ -44,31 +42,36 @@ def create_aws_credentials_file():
 
 
 def set_up():
-    stream = os.popen("az group exists --name xfaasQueues")
-    xd = bool(stream.read())
-    stream.close()
-    if xd == True:
+    resource_group_name = "xfaasQueues"
+    #TODO Add param for storage acc name
+    storage_account_name = ""
+
+    # Authenticate using default credentials
+    credentials = DefaultAzureCredential()
+    # Check if the resource group exists
+    resource_client = ResourceManagementClient(credentials)
+    exists = resource_client.resource_groups.check_existence(resource_group_name)
+    if exists:
         generate()
     else:
        print("Storage Queue Not Found, Run python3 xfaas_env_setup.py")
        exit()
 
-    stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource}')
-    json_str = json.loads(stream.read())
-    stream.close()
-
-
+    # Get the connection string for the storage account
+    storage_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credentials)
+    #TODO Add queue name
+    queue_name = ""
+    connection_str = storage_client.credential.connection_string
     
     out_path = 'serwo/python/src/utils/CollectLogDirectories'
     template_path = 'serwo/python/src/utils/CollectLogDirectories/CollectLogsTemplate/func.py'
-    print("Queue connection string here",json_str)
+    print("Queue connection string here",connection_str)
     output_logs_dir = out_path+'/CollectLogs'
     if not os.path.exists(output_logs_dir):
         os.mkdir(output_logs_dir)
-    connection_str = json_str['connectionString']
     
     print(queue_name)
-    write_output_files(output_logs_dir, connection_str, template_path,queue_name)
+    write_output_files(output_logs_dir, connection_str, template_path, queue_name)
     return {
         "queue": queue_name,
         "connectionString": connection_str
