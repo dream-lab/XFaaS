@@ -41,15 +41,7 @@ def create_aws_credentials_file():
         out.write(json.dumps(credentials, indent=4))
 
 
-def set_up():
-    resource_group_name = "xfaasQueues"
-    #TODO Add param for storage acc name
-    storage_account_name = ""
-
-    # Authenticate using default credentials
-    credentials = DefaultAzureCredential()
-    # Check if the resource group exists
-    resource_client = ResourceManagementClient(credentials)
+def set_up(resource_client, resource_group_name, storage_account_name):
     exists = resource_client.resource_groups.check_existence(resource_group_name)
     if exists:
         generate()
@@ -100,7 +92,12 @@ location = "centralindia"
 resource = "xfaasQueues"
 storage_account_name = 'xfaasstorage'
 
-queue_details = set_up()
+#TODO Authenticate using default credentials
+creds = DefaultAzureCredential()
+sub_id = os.environ["AZURE_SUBSCRIPTION_ID"]
+resource_client = ResourceManagementClient(creds, sub_id)
+
+queue_details = set_up(resource_client, resource, storage_account_name)
 
 # create credentials file for aws
 create_aws_credentials_file()
