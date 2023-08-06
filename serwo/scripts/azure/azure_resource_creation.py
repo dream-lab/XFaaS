@@ -6,6 +6,10 @@ from signal import signal, SIGPIPE, SIG_DFL
 signal(SIGPIPE,SIG_DFL)
 from random import randint
 import sys
+from azure.identity import AzureCliCredential
+from azure.mgmt.resource import ResourceManagementClient
+from azure.mgmt.storage import StorageManagementClient
+
 
 user_input_1 = sys.argv[1]
 user_input_2 = sys.argv[2]
@@ -28,16 +32,35 @@ def get_user_workflow_name():
     return user_app_name
 
 def create_resources():
+    #TODO Take az resource client as input param
+    # Currently using CliCredentials
+    credential = AzureCliCredential()
+    subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
+    resource_client = ResourceManagementClient(credential, subscription_id)
     print('Creating resources for ingress azure ')
     try:
-        stream = os.popen(f'az group create --name {resource_group_name} --location {location}')
-        stream.close()
+        # stream = os.popen(f'az group create --name {resource_group_name} --location {location}')
+        # stream.close()
+        rg_result = resource_client.resource_groups.create_or_update(
+            "{resource_group_name}", {"location": "{location}"}
+        )
     except BrokenPipeError as e:
         pass
 
     try:
-        stream = os.popen(f'az storage account create --resource-group {resource_group_name} --name {storage_account_name} --location {location}')
-        stream.close()
+        # stream = os.popen(f'az storage account create --resource-group {resource_group_name} --name {storage_account_name} --location {location}')
+        # stream.close()
+        storage_client = StorageManagementClient(credential, subscription_id)
+
+        poller = storage_client.storage_accounts.begin_create(resource_group_name, storage_account_name,
+            {
+                "location" : location,
+                "kind": "StorageV2",
+                "sku": {"name": "Standard_LRS"}
+            }
+        )
+        account_result = poller.result()
+        print(f"Provisioned storage account {account_result.name}")
     except BrokenPipeError as e:
         pass
 
