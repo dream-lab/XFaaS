@@ -7,6 +7,9 @@ import random
 import boto3
 import botocore.session
 from azure.storage.queue import QueueServiceClient
+from azure.identity import DefaultAzureCredential
+from azure.mgmt.resource import ResourceManagementClient
+
 
 #TODO use argparse
 
