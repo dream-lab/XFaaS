@@ -1,0 +1,51 @@
+# docker build -t xfaas-deployment-base:latest -f Dockerfile.base .
+FROM ubuntu:20.04
+
+RUN apt-get update -y; apt upgrade -y
+RUN apt install -y software-properties-common
+
+# Python install
+RUN add-apt-repository -y ppa:deadsnakes/ppa
+RUN apt-get update
+RUN apt-get install python3.8 -y
+RUN apt-get install python3-pip -y
+RUN apt-get install -y git curl
+RUN apt-get install -y build-essential libopenblas-dev
+
+####### Installations for AWS ########
+# Install AWS CLI
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN unzip -U awscliv2.zip
+RUN /aws/install -i /usr/local/aws-cli -b /usr/local/bin
+RUN aws --version
+
+# Install SAM CLI
+RUN wget https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip
+RUN unzip aws-sam-cli-linux-x86_64.zip -d sam-installation
+RUN ./sam-installation/install 
+RUN sam --version
+
+####### Installations for Azure #######
+
+# Install Az CLI
+RUN apt-get install ca-certificates curl apt-transport-https lsb-release gnupg
+RUN curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/keyrings/microsoft.gpg > /dev/null
+RUN chmod go+r /etc/apt/keyrings/microsoft.gpg
+RUN AZ_REPO=$(lsb_release -cs)
+RUN echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | tee /etc/apt/sources.list.d/azure-cli.list
+RUN apt-get update
+RUN apt-get install azure-cli
+
+# Base directory for each container
+WORKDIR /xfaas-deployment
+
+# Directory to store the user code
+RUN mkdir payload
+
+# Install the python dependencies for xfaas
+COPY ../../requirements.txt ./
+RUN pip install -r requirements.txt
+
+
+# ENtry point for the handler.
+CMD []

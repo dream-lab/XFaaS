@@ -1,0 +1,7 @@
+pillow
+
+numpy
+
+onnxruntime
+
+psutil

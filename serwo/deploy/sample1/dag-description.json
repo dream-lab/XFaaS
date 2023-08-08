@@ -1,0 +1,26 @@
+{
+  "WorkflowName": "SmartGridMultiCloud",
+  "Nodes": [
+    {
+      "NodeId": "1",
+      "NodeName": "TaskA",
+      "Path": "src/func1",
+      "EntryPoint": "func.py",
+      "CSP": "AWS",
+      "MemoryInMB": 128
+    },
+    {
+      "NodeId": "2",
+      "NodeName": "TaskB",
+      "Path": "src/func2",
+      "EntryPoint": "func.py",
+      "CSP": "AWS",
+      "MemoryInMB": 256
+    }
+  ],
+  "Edges": [
+    {
+      "TaskA": ["TaskB"]
+    }
+  ]
+}
