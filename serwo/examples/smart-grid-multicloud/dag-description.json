@@ -1,5 +1,5 @@
 {
-  "WorkflowName": "SmartGridMultiCloud",
+  "WorkflowName": "RefactoringTest",
   "Nodes": [
     {
       "NodeId": "1",
