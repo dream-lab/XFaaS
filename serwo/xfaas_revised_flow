@@ -3,10 +3,9 @@
         - different for different regions?
         - CSP
             - regions
-                - credentials
             - credentials
     - regions (compulsory from input)
-    - have a specific location for these initial config files
+    - have a specific location for these initial config files /conf folder
     - this will be during the build process
     - user pinned csps
     - config for XFaaS
@@ -19,6 +18,9 @@
     - class which represents user dag (check utils)
     - for multi region deployments we need to have the separate impl for each CSP in which
       the regions would be captured.
+
+
+### Talk with varad and integrate ###
 2. Apply apt optimisations(add collect logs here)
     - run partitioner-placement + fusion (needs discussion)
     - Generic partitioner algorithm
@@ -67,3 +69,7 @@ partition plus fusion
 multi-multi cloud
 edge (openfaas)
 real world applications
+
+
+-- mix and match for the fusion and the partition modules to be used independently and together.
+-- 

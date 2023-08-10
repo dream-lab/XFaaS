@@ -36,3 +36,5 @@ def get_user_dag_benchmark_values(dag_path):
                         else:
                             bench_mark['edge_benchmarks'][pair][latency_key] = key[latency_key]
     return bench_mark
+
+    
