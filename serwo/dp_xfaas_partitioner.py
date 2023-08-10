@@ -16,7 +16,7 @@ def get_optimal_partitions(latencies_benchmark, data_transfers_benchmark,data_tr
         for j in range(0,k):
             min_col = float(sys.maxsize)
             for x in range(0,k):
-                if(dp[i-1][x][j] != float(sys.maxsize)):
+                if dp[i-1][x][j] != float(sys.maxsize):
                     min_col = min(min_col,dp[i-1][x][j])
             for v in range(0,k):
                 data_tranfer_latency =float( get_data_transfer_value(data_transfers_benchmark, i, j, v, data_transfers,is_fan_in))
