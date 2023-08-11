@@ -16,7 +16,7 @@ class PartitionPoint:
 
     def get_left_csp(self):
         return self.__left_csp
-    
+
     def get_right_csp(self):
         return self.__right_csp
 

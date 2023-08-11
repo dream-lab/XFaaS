@@ -1,4 +1,3 @@
-
 from memstress_128MB_25KB import func as TaskB
 from resnet_25KB import func as TaskC
 from xmlparse_23KB_25KB import func as TaskA
@@ -7,7 +6,6 @@ from python.src.utils.classes.commons.serwo_objects import SerWOObject, SerWOObj
 
 
 def function(serwoObject) -> SerWOObject:
-
     clyf = TaskA.function(serwoObject)
     clyf.set_basepath(serwoObject.get_basepath())
     wsse = TaskB.function(clyf)

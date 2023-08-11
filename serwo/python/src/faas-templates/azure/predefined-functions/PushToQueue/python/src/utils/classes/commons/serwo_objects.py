@@ -1,4 +1,6 @@
 import json
+
+
 class SerWOObject:
     def __init__(self, body=None, error=None, metadata=None) -> None:
         self._body = body
@@ -25,9 +27,7 @@ class SerWOObject:
 
     @staticmethod
     def from_json(json_dct):
-        return SerWOObject(json_dct['_body'],
-                           json_dct['_err'],
-                           json_dct['_metadata'])
+        return SerWOObject(json_dct["_body"], json_dct["_err"], json_dct["_metadata"])
 
 
 class SerWOObjectsList:
@@ -50,4 +50,4 @@ def build_serwo_list_object(event):
 
 
 def build_serwo_object(event):
-    return SerWOObject(body=event["body"],metadata=event['metadata'])
+    return SerWOObject(body=event["body"], metadata=event["metadata"])

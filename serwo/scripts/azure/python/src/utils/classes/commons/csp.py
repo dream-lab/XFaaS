@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class CSP(Enum):
     AWS = 1
     AZURE = 2
@@ -10,7 +11,7 @@ class CSP(Enum):
             return CSP.AWS
         elif csp.lower() == "azure":
             return CSP.AZURE
-    
+
     @staticmethod
     def toString(csp):
         if csp == CSP.AWS:

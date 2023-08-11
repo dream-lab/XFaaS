@@ -1,11 +1,11 @@
 from enum import Enum
 
+
 class CSP(Enum):
-    
     AWS = 1
     AZURE = 2
 
-    #TODO - add a CSP id which is a combination of the CSP name and the region
+    # TODO - add a CSP id which is a combination of the CSP name and the region
     # for unique identification of the region.
 
     @staticmethod
@@ -26,7 +26,7 @@ class CSP(Enum):
             return CSP.AWS
         elif csp.lower() == "azure":
             return CSP.AZURE
-    
+
     @staticmethod
     def toString(csp):
         if csp == CSP.AWS:

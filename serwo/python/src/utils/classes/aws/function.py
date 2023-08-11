@@ -8,7 +8,7 @@ class Function:
         self._runner_filename = "standalone_" + end_point.split(".")[0] + "_runner"
         self._handler = self._runner_filename + ".lambda_handler"
         self._uri = "functions/" + name
-        self._module_name = end_point.split(".")[0] 
+        self._module_name = end_point.split(".")[0]
         self._memory = memory
         # TODO - add function id
 
@@ -34,7 +34,12 @@ class Function:
         return self._module_name
 
     def get_as_dict(self):
-        return {"name": self._name, "uri": self._uri, "handler": self._handler, "memory": self._memory}
+        return {
+            "name": self._name,
+            "uri": self._uri,
+            "handler": self._handler,
+            "memory": self._memory,
+        }
 
     def get_runner_filename(self):
         return self._runner_filename

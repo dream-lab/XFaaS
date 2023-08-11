@@ -1,4 +1,3 @@
-
 from resnet_25KB import func as TaskP
 from xmlparse_23KB_25KB import func as TaskQ
 from resnet_25KB import func as TaskL
@@ -7,7 +6,6 @@ from python.src.utils.classes.commons.serwo_objects import SerWOObject, SerWOObj
 
 
 def function(serwoObject) -> SerWOObject:
-
     jiaf = TaskL.function(serwoObject)
     jiaf.set_basepath(serwoObject.get_basepath())
     pvex = TaskP.function(jiaf)

@@ -12,15 +12,17 @@ from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
+
 class PartiQLWrapper:
     """
     Encapsulates a DynamoDB resource to run PartiQL statements.
     """
+
     def __init__(self, table_name):
         """
         :param dyn_resource: A Boto3 DynamoDB resource.
         """
-        self.dyn_resource = boto3.resource('dynamodb')
+        self.dyn_resource = boto3.resource("dynamodb")
         self.table_name = table_name
 
     def run_partiql(self, statement, params):
@@ -37,24 +39,31 @@ class PartiQLWrapper:
         """
         try:
             output = self.dyn_resource.meta.client.execute_statement(
-                Statement=statement, Parameters=params)
+                Statement=statement, Parameters=params
+            )
         except ClientError as err:
-            if err.response['Error']['Code'] == 'ResourceNotFoundException':
+            if err.response["Error"]["Code"] == "ResourceNotFoundException":
                 logger.error(
                     "Couldn't execute PartiQL '%s' because the table does not exist.",
-                    statement)
+                    statement,
+                )
             else:
                 logger.error(
-                    "Couldn't execute PartiQL '%s'. Here's why: %s: %s", statement,
-                    err.response['Error']['Code'], err.response['Error']['Message'])
+                    "Couldn't execute PartiQL '%s'. Here's why: %s: %s",
+                    statement,
+                    err.response["Error"]["Code"],
+                    err.response["Error"]["Message"],
+                )
             raise
         else:
             return output
-        
+
     def put(self, log_item):
         # the wrapper expects atleast one parameter, the list cannot be empty hence passing a dummy string
         try:
             self.run_partiql(
-                f"INSERT INTO \"{self.table_name}\" VALUE {log_item}", ["dummy-string-for-param"]) 
+                f'INSERT INTO "{self.table_name}" VALUE {log_item}',
+                ["dummy-string-for-param"],
+            )
         except ClientError as err:
             raise
