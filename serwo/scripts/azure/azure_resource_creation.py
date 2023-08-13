@@ -12,7 +12,6 @@ from azure.mgmt.storage import StorageManagementClient
 from azure.storage.queue import QueueServiceClient
 from azure.storage.blob import BlobServiceClient
 
-
 user_input_1 = sys.argv[1]
 user_input_2 = sys.argv[2]
 json_file_name=user_input_2
