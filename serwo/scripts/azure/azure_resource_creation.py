@@ -76,12 +76,12 @@ def create_resources():
         pass
 
     try:
-        # stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource_group_name}')
-        # json_str = stream.read()
-        # stream.close()
-        blob_service_client = BlobServiceClient(account_url=f"https://{storage_account_name}.blob.core.windows.net", credential=credentials)
-        connection_string = blob_service_client.credential.connection_string
-        print("Connection string:", connection_string)
+        stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource_group_name}')
+        json_str = stream.read()
+        stream.close()
+        # blob_service_client = BlobServiceClient(account_url=f"https://{storage_account_name}.blob.core.windows.net", credential=credentials)
+        # connection_string = blob_service_client.credential.connection_string
+        # print("Connection string:", connection_string)
     except BrokenPipeError as e:
         pass
 
