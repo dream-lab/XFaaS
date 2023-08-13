@@ -54,15 +54,17 @@ def set_up(resource_client, resource_group_name, storage_account_name, queue_nam
     # Get the connection string for the storage account
     storage_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credentials)
     #TODO Add queue name
-    queue_name = ""
-    connection_str = storage_client.credential.connection_string
+    stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource}')
+    json_str = json.loads(stream.read())
+    stream.close()
     
     out_path = 'serwo/python/src/utils/CollectLogDirectories'
     template_path = 'serwo/python/src/utils/CollectLogDirectories/CollectLogsTemplate/func.py'
-    print("Queue connection string here",connection_str)
+    print("Queue connection string here",json_str)
     output_logs_dir = out_path+'/CollectLogs'
     if not os.path.exists(output_logs_dir):
         os.mkdir(output_logs_dir)
+    connection_str = json_str['connectionString']
     
     print(queue_name)
     write_output_files(output_logs_dir, connection_str, template_path, queue_name)
