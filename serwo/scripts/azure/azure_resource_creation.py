@@ -60,8 +60,7 @@ def create_resources():
         pass
 
     try:
-        credentials = DefaultAzureCredential()
-        queue_service_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credentials)
+        queue_service_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credential)
         queue_service_client.create_queue(queue_name)
     except BrokenPipeError as e:
         pass

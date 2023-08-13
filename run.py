@@ -22,10 +22,9 @@ def generate_random_string(N):
 
 ##TODO - move creation of queues to one single place
 ##TODO - add aws/open faas queue generation for provenance
-def generate():
+def generate(storage_account_name):
     try:
-        connection_string = f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};"
-        queue_service_client = QueueServiceClient.from_connection_string(connection_string)
+        queue_service_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=creds)
         queue_service_client.create_queue(queue_name)
 
     #TODO -  push queue names to provenance
@@ -44,10 +43,10 @@ def create_aws_credentials_file():
         out.write(json.dumps(credentials, indent=4))
 
 
-def set_up(resource_client, resource_group_name, storage_account_name):
+def set_up(resource_client, resource_group_name, storage_account_name, queue_name):
     exists = resource_client.resource_groups.check_existence(resource_group_name)
     if exists:
-        generate()
+        generate(storage_account_name, queue_name)
     else:
        print("Storage Queue Not Found, Run python3 xfaas_env_setup.py")
        exit()
@@ -95,12 +94,12 @@ location = "centralindia"
 resource = "xfaasQueues"
 storage_account_name = 'xfaasstorage'
 
-#TODO Authenticate using default credentials
+global creds
 creds = DefaultAzureCredential()
 sub_id = os.environ["AZURE_SUBSCRIPTION_ID"]
 resource_client = ResourceManagementClient(creds, sub_id)
 
-queue_details = set_up(resource_client, resource, storage_account_name)
+queue_details = set_up(resource_client, resource, storage_account_name, queue_name)
 
 # create credentials file for aws
 create_aws_credentials_file()
