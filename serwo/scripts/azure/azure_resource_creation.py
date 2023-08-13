@@ -9,6 +9,8 @@ import sys
 from azure.identity import AzureCliCredential
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.storage import StorageManagementClient
+from azure.storage.queue import QueueServiceClient
+from azure.storage.blob import BlobServiceClient
 
 
 user_input_1 = sys.argv[1]
@@ -65,15 +67,21 @@ def create_resources():
         pass
 
     try:
-        stream = os.popen(f'az storage queue create -n {queue_name} --account-name {storage_account_name}')
-        stream.close()
+        # stream = os.popen(f'az storage queue create -n {queue_name} --account-name {storage_account_name}')
+        # stream.close()
+        credentials = DefaultAzureCredential()
+        queue_service_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credentials)
+        queue_service_client.create_queue(queue_name)
     except BrokenPipeError as e:
         pass
 
     try:
-        stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource_group_name}')
-        json_str = stream.read()
-        stream.close()
+        # stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource_group_name}')
+        # json_str = stream.read()
+        # stream.close()
+        blob_service_client = BlobServiceClient(account_url=f"https://{storage_account_name}.blob.core.windows.net", credential=credentials)
+        connection_string = blob_service_client.credential.connection_string
+        print("Connection string:", connection_string)
     except BrokenPipeError as e:
         pass
 
