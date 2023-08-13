@@ -6,7 +6,7 @@ from signal import signal, SIGPIPE, SIG_DFL
 signal(SIGPIPE,SIG_DFL)
 from random import randint
 import sys
-from azure.identity import AzureCliCredential
+from azure.identity import DefaultAzureCredential
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.storage import StorageManagementClient
 from azure.storage.queue import QueueServiceClient
@@ -34,15 +34,11 @@ def get_user_workflow_name():
     return user_app_name
 
 def create_resources():
-    #TODO Take az resource client as input param
-    # Currently using CliCredentials
-    credential = AzureCliCredential()
+    credential = DefaultAzureCredential()
     subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
     resource_client = ResourceManagementClient(credential, subscription_id)
     print('Creating resources for ingress azure ')
     try:
-        # stream = os.popen(f'az group create --name {resource_group_name} --location {location}')
-        # stream.close()
         rg_result = resource_client.resource_groups.create_or_update(
             "{resource_group_name}", {"location": "{location}"}
         )
@@ -50,10 +46,7 @@ def create_resources():
         pass
 
     try:
-        # stream = os.popen(f'az storage account create --resource-group {resource_group_name} --name {storage_account_name} --location {location}')
-        # stream.close()
         storage_client = StorageManagementClient(credential, subscription_id)
-
         poller = storage_client.storage_accounts.begin_create(resource_group_name, storage_account_name,
             {
                 "location" : location,
@@ -67,8 +60,6 @@ def create_resources():
         pass
 
     try:
-        # stream = os.popen(f'az storage queue create -n {queue_name} --account-name {storage_account_name}')
-        # stream.close()
         credentials = DefaultAzureCredential()
         queue_service_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credentials)
         queue_service_client.create_queue(queue_name)
@@ -76,12 +67,10 @@ def create_resources():
         pass
 
     try:
+        #TODO Need a native call to get connection string
         stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource_group_name}')
         json_str = stream.read()
         stream.close()
-        # blob_service_client = BlobServiceClient(account_url=f"https://{storage_account_name}.blob.core.windows.net", credential=credentials)
-        # connection_string = blob_service_client.credential.connection_string
-        # print("Connection string:", connection_string)
     except BrokenPipeError as e:
         pass
 
