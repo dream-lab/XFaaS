@@ -9,3 +9,5 @@ azure-storage-queue==2.1.0
 seaborn
 scikit-learn
 psutil
+azure-mgmt-resource>=18.0.0
+azure-identity>=1.5.0

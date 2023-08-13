@@ -6,6 +6,11 @@ from signal import signal, SIGPIPE, SIG_DFL
 signal(SIGPIPE,SIG_DFL)
 from random import randint
 import sys
+from azure.identity import DefaultAzureCredential
+from azure.mgmt.resource import ResourceManagementClient
+from azure.mgmt.storage import StorageManagementClient
+from azure.storage.queue import QueueServiceClient
+from azure.storage.blob import BlobServiceClient
 
 user_input_1 = sys.argv[1]
 user_input_2 = sys.argv[2]
@@ -28,26 +33,39 @@ def get_user_workflow_name():
     return user_app_name
 
 def create_resources():
+    credential = DefaultAzureCredential()
+    subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
+    resource_client = ResourceManagementClient(credential, subscription_id)
     print('Creating resources for ingress azure ')
     try:
-        stream = os.popen(f'az group create --name {resource_group_name} --location {location}')
-        stream.close()
+        rg_result = resource_client.resource_groups.create_or_update(
+            "{resource_group_name}", {"location": "{location}"}
+        )
     except BrokenPipeError as e:
         pass
 
     try:
-        stream = os.popen(f'az storage account create --resource-group {resource_group_name} --name {storage_account_name} --location {location}')
-        stream.close()
+        storage_client = StorageManagementClient(credential, subscription_id)
+        poller = storage_client.storage_accounts.begin_create(resource_group_name, storage_account_name,
+            {
+                "location" : location,
+                "kind": "StorageV2",
+                "sku": {"name": "Standard_LRS"}
+            }
+        )
+        account_result = poller.result()
+        print(f"Provisioned storage account {account_result.name}")
     except BrokenPipeError as e:
         pass
 
     try:
-        stream = os.popen(f'az storage queue create -n {queue_name} --account-name {storage_account_name}')
-        stream.close()
+        queue_service_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credential)
+        queue_service_client.create_queue(queue_name)
     except BrokenPipeError as e:
         pass
 
     try:
+        #TODO Need a native call to get connection string
         stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource_group_name}')
         json_str = stream.read()
         stream.close()

@@ -6,6 +6,10 @@ import string
 import random
 import boto3
 import botocore.session
+from azure.storage.queue import QueueServiceClient
+from azure.identity import DefaultAzureCredential
+from azure.mgmt.resource import ResourceManagementClient
+
 
 #TODO use argparse
 
@@ -18,10 +22,10 @@ def generate_random_string(N):
 
 ##TODO - move creation of queues to one single place
 ##TODO - add aws/open faas queue generation for provenance
-def generate():
+def generate(storage_account_name):
     try:
-        stream = os.popen(f'az storage queue create -n {queue_name} --account-name {storage_account_name}')
-        stream.close()
+        queue_service_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=creds)
+        queue_service_client.create_queue(queue_name)
 
     #TODO -  push queue names to provenance
     except Exception as e:
@@ -39,21 +43,20 @@ def create_aws_credentials_file():
         out.write(json.dumps(credentials, indent=4))
 
 
-def set_up():
-    stream = os.popen("az group exists --name xfaasQueues")
-    xd = bool(stream.read())
-    stream.close()
-    if xd == True:
-        generate()
+def set_up(resource_client, resource_group_name, storage_account_name, queue_name):
+    exists = resource_client.resource_groups.check_existence(resource_group_name)
+    if exists:
+        generate(storage_account_name, queue_name)
     else:
        print("Storage Queue Not Found, Run python3 xfaas_env_setup.py")
        exit()
 
+    # Get the connection string for the storage account
+    storage_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credentials)
+    #TODO Add queue name
     stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource}')
     json_str = json.loads(stream.read())
     stream.close()
-
-
     
     out_path = 'serwo/python/src/utils/CollectLogDirectories'
     template_path = 'serwo/python/src/utils/CollectLogDirectories/CollectLogsTemplate/func.py'
@@ -64,7 +67,7 @@ def set_up():
     connection_str = json_str['connectionString']
     
     print(queue_name)
-    write_output_files(output_logs_dir, connection_str, template_path,queue_name)
+    write_output_files(output_logs_dir, connection_str, template_path, queue_name)
     return {
         "queue": queue_name,
         "connectionString": connection_str
@@ -93,7 +96,12 @@ location = "centralindia"
 resource = "xfaasQueues"
 storage_account_name = 'xfaasstorage'
 
-queue_details = set_up()
+global creds
+creds = DefaultAzureCredential()
+sub_id = os.environ["AZURE_SUBSCRIPTION_ID"]
+resource_client = ResourceManagementClient(creds, sub_id)
+
+queue_details = set_up(resource_client, resource, storage_account_name, queue_name)
 
 # create credentials file for aws
 create_aws_credentials_file()
