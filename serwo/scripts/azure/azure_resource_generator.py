@@ -15,7 +15,6 @@ from azure.storage.blob import BlobServiceClient
 user_input_1 = sys.argv[1]
 user_input_2 = sys.argv[2]
 json_file_name=user_input_2
-# parent_directory = pathlib.Path(__file__).parent.parent.parent.absolute().resolve()
 parent_directory = pathlib.Path(__file__).parent.absolute().parent.absolute().parent
 print("Parent directory", parent_directory)
 user_json_dir = f"{parent_directory}/{user_input_1}"
