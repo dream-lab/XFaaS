@@ -50,35 +50,35 @@ def get_egress_function_details(left_csp: CSP, right_csp: CSP, serwo_root_dir):
     # example - always wire using SQS if the right CSP is AWS
 
     # Placeholder comments - working code
-    # if left_csp == CSP.AWS and right_csp == CSP.AZURE:
-    #     function_id = "251"
-    #     function_name = "PushToStorageQueue"
-    #     entry_point = "push_to_azure_q.py"
-    #     path = f"{serwo_root_dir}/python/src/faas-templates/azure/push-to-storage-queue-template/{function_name}"
-    #     return function_id, function_name, entry_point, path
-    # if left_csp == CSP.AZURE and right_csp == CSP.AWS:
-    #     function_id = "252"
-    #     function_name = "PushToSQS"
-    #     entry_point = "push_to_aws_q.py"
-    #     path = f"{serwo_root_dir}/python/src/faas-templates/aws/push-to-sqs-template/{function_name}"
-    #     return function_id, function_name, entry_point, path
-
-    # Modification (this can be done using a configuration file and applying a class based pattern as well)
-    # makes the integration of a separate cloud easier as well.
-    if right_csp == CSP.OPENFAAS:
-        pass
-    if right_csp == CSP.AZURE:
+    if left_csp == CSP.AWS and right_csp == CSP.AZURE:
         function_id = "251"
         function_name = "PushToStorageQueue"
         entry_point = "push_to_azure_q.py"
         path = f"{serwo_root_dir}/python/src/faas-templates/azure/push-to-storage-queue-template/{function_name}"
         return function_id, function_name, entry_point, path
-    if right_csp == CSP.AWS:
+    if left_csp == CSP.AZURE and right_csp == CSP.AWS:
         function_id = "252"
         function_name = "PushToSQS"
         entry_point = "push_to_aws_q.py"
         path = f"{serwo_root_dir}/python/src/faas-templates/aws/push-to-sqs-template/{function_name}"
         return function_id, function_name, entry_point, path
+
+    # Modification (this can be done using a configuration file and applying a class based pattern as well)
+    # makes the integration of a separate cloud easier as well.
+    # if right_csp == CSP.OPENFAAS:
+    #     pass
+    # if right_csp == CSP.AZURE:
+    #     function_id = "251"
+    #     function_name = "PushToStorageQueue"
+    #     entry_point = "push_to_azure_q.py"
+    #     path = f"{serwo_root_dir}/python/src/faas-templates/azure/push-to-storage-queue-template/{function_name}"
+    #     return function_id, function_name, entry_point, path
+    # if right_csp == CSP.AWS:
+    #     function_id = "252"
+    #     function_name = "PushToSQS"
+    #     entry_point = "push_to_aws_q.py"
+    #     path = f"{serwo_root_dir}/python/src/faas-templates/aws/push-to-sqs-template/{function_name}"
+    #     return function_id, function_name, entry_point, path
 
 
 def template_push_to_queue(
