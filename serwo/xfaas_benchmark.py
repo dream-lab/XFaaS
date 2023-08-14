@@ -65,7 +65,7 @@ def evaluate_node_and_edge_constraints(csp_id, sub_dag, user_pinned_nodes):
     return flag
 
 
-def populate_benchmarks_for_user_dag(user_dag,user_dir,user_pinned_nodes,benchmark_path,valid_partition_points,cloud_ids):
+def populate_benchmarks_for_user_dag(user_dag,user_pinned_nodes,benchmark_path,valid_partition_points,cloud_ids):
     bm_data, edges, latency_map, user_dag_copy = init_benchmark_populator(benchmark_path, user_dag,cloud_ids)
 
     latency_benchmark = populate_latanecy_benchmarks(bm_data, cloud_ids, edges, latency_map, user_dag_copy,

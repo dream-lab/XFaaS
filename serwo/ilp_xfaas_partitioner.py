@@ -41,14 +41,14 @@ def get_optimal_partitions(latencies_benchmark, data_transfers_benchmark,data_tr
 
 
 
-latencies_benchmark = [[33, 4139, 3095, 14963.68, 3095, 33], [10, 514, 1473, 13816, 1473, 10]]
-data_transfer_benchmark = [[115.67, 1558], [692.85, 2458]]
-data_transfers = [25, 25, 25, 25, 25]
-is_fan_in = [False, False, False, True, False, False]
+# latencies_benchmark = [[33, 4139, 3095, 14963.68, 3095, 33], [10, 514, 1473, 13816, 1473, 10]]
+# data_transfer_benchmark = [[115.67, 1558], [692.85, 2458]]
+# data_transfers = [25, 25, 25, 25, 25]
+# is_fan_in = [False, False, False, True, False, False]
 
-# latencies_benchmark = [[5,8,14,2],[3,11,10,7]]
-# data_transfer_benchmark = [[0,12],[1,0]]
-# data_transfers = [64,64,64]
-# is_fan_in = [False,False,False,False]
+latencies_benchmark = [[5,8,14,2],[3,11,10,7]]
+data_transfer_benchmark = [[0,12],[1,0]]
+data_transfers = [64,64,64]
+is_fan_in = [False,False,False,False]
 
-# print(get_optimal_partitions(latencies_benchmark,data_transfer_benchmark,data_transfers,is_fan_in))
+print(get_optimal_partitions(latencies_benchmark,data_transfer_benchmark,data_transfers,is_fan_in))

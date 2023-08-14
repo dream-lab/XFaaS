@@ -181,14 +181,15 @@ class SerWOUserDag:
             in_deg = uGraph.in_degree(u)
             if u not in is_exists:
                 is_exists[u] = 1
-                fin_list.append(dict(node_id=u,out_degree=out_degree,in_degree=in_deg,left_csp=CSP.toCSP("AWS"),right_csp=CSP.toCSP("Azure")))
+                fin_list.append(dict(node_id=u,out_degree=out_degree,in_degree=in_deg))
 
         sink = top_sort[len(top_sort)-1]
-        if  sink not in is_exists:
+        if sink not in is_exists:
             in_deg = uGraph.in_degree(sink)
-            fin_list.append(dict(node_id=sink,out_degree=0,in_degree=in_deg,left_csp=CSP.toCSP("AWS"),right_csp=CSP.toCSP("Azure")))
+            fin_list.append(dict(node_id=sink,out_degree=0,in_degree=in_deg))
 
-        return  fin_list
+        print(fin_list)
+        return fin_list
         return [PartitionPoint("func2", CSP.toCSP("AWS"), CSP.toCSP("Azure"))]
 
     def handle_intermediate_nodes(self, dp, i, in_edges, top_sort, uGraph):
