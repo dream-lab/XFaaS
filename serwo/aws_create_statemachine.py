@@ -68,7 +68,7 @@ class AWS:
 
         # DAG related parameters
         self.__user_dag = AWSUserDag(self.__dag_definition_path)
-        self.__sam_stackname = "XFaaSApp-" + aws_user_dag.get_user_dag_name()  # TODO - add nonce here
+        self.__sam_stackname = "XFaaSApp-" + self.__user_dag.get_user_dag_name()  # TODO - add nonce here
 
     """
     NOTE - This is a replacement for the create_env.sh file
@@ -178,7 +178,7 @@ class AWS:
         statemachinename = self.__user_dag.get_user_dag_name()
         params = {
             "name": statemachinename,
-            "uri": JSON_FILE,
+            "uri": self.__json_file,
             "arn": statemachinename + "Arn",
             "role": statemachinename + "Role",
             "role_arn": statemachinename + "RoleArn",
@@ -240,7 +240,7 @@ class AWS:
 
             # template the function runner template in the runner template directory
             runner_template_filename = self.__template_function_id(
-                runner_template_dir=RUNNER_TEMPLATE_DIR,
+                runner_template_dir=self.__runner_template_dir,
                 function_id=function_id,
                 function_name=function_name,
             )
