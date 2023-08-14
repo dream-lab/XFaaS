@@ -1,6 +1,8 @@
 import sys, os
 import pathlib
 import json
+import yaml
+from generate_openfaas_orchestrator import gen_go_handler
 
 user_input_1 = sys.argv[1]
 json_file_name = sys.argv[2]
@@ -24,21 +26,34 @@ def get_user_workflow_details():
     fns_data = data['Nodes']
     return fns_data, data['WorkflowName']
 
-def build_user_fn_dirs(user_fns_data):
+def build_user_fn_dirs(user_fns_data, user_app_name):
     for fn in user_fns_data:
         name = fn['NodeName']
         dir_path = fsfl_functions_path+'/'+name
         if not os.path.exists(dir_path):
             os.mkdir(dir_path)
+    outpath = build_dir+'/'+user_app_name
+    gen_go_handler(user_json_dir+'/'+json_file_name, outpath)
 
-def build_meta_files(user_fns_data):
+def build_meta_files(user_fns_data,user_app_name):
     #TODO - Create workflow.yml, flow.yml
-    
+
+    prov = {'provider': [{'name':'openfaas','gateway':'http://127.0.0.1:8080'}]}
+    fns = {'functions': [{'{user_app_name}'}]}
+    with open(r'./store_file.yaml', 'w') as file:
+        documents = yaml.dump(prov, file)
+    # for fn in user_fns_data:
+    #     print(fn['NodeName'])
+    return
+
+# dict_file = [{'sports' : ['soccer', 'football', 'basketball', 'cricket', 'hockey', 'table tennis']},
+# {'countries' : ['Pakistan', 'USA', 'India', 'China', 'Germany', 'France', 'Spain']}]
 
 def runner():
-    print(parent_directory)
+    print(user_json_dir)
     build_working_dir()
     user_fns_data, user_app_name = get_user_workflow_details()
-    build_user_fn_dirs(user_fns_data)
-    print(user_fns_data)
+    build_user_fn_dirs(user_fns_data, user_app_name)
+    # print(user_fns_data)
+    build_meta_files(user_fns_data)
 runner()
