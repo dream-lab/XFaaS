@@ -127,7 +127,8 @@ elif option == '--single-cloud':
     ##TODO (handling of imports)
     ##TODO serwo -> xfaas
 
-    subprocess.call(['python3','serwo_single_cloud.py',user_dir,user_json,csp])
+    subprocess.call(['python3',''
+                               'ud.py',user_dir,user_json,csp])
     # save to file
 
     # stream = os.popen(f"python3 serwo_single_cloud.py {user_dir} {user_json} {csp}")

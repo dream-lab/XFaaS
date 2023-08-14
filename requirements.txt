@@ -4,11 +4,11 @@ aws-sfn-builder
 networkx
 boto3
 autopep8
-pycocotools
-azure-storage-queue==2.1.0
+azure-storage-queue
 seaborn
 scikit-learn
 psutil
 azure-mgmt-resource>=18.0.0
 azure-identity>=1.5.0
 azure-storage-blob
+azure-mgmt-storage
