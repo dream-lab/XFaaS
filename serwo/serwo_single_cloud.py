@@ -12,6 +12,7 @@ from python.src.utils.classes.commons.partition_point import PartitionPoint
 from python.src.utils.provenance.partiql_dynamo_wrapper import PartiQLWrapper
 from jinja2 import Environment, FileSystemLoader
 from botocore.exceptions import ClientError
+from aws_create_statemachine import AWS
 
 import python.src.utils.generators.commons.jmx_generator as JMXGenerator
 import datetime
@@ -118,15 +119,20 @@ def generate_deployment_logs(left, user_dir, wf_id, refactored_wf_id):
 
 def deploy():
     if csp == "aws":
-        subprocess.call(
-            [
-                "python3",
-                "aws_create_statemachine.py",
-                USER_DIR,
-                f"transformed-{DAG_DEFINITION_FILE}",
-                "REST",
-            ]
-        )
+
+        aws_deployer = AWS(user_dir, dag_definition_file, "SQS")
+        aws_deployer.build_resources()
+        aws_deployer.build_workflow()
+        aws_deployer.deploy_workflow()
+        # subprocess.call(
+        #     [
+        #         "python3",
+        #         "aws_create_statemachine.py",
+        #         USER_DIR,
+        #         f"transformed-{DAG_DEFINITION_FILE}",
+        #         "REST",
+        #     ]
+        # )
     elif csp == "azure":
         os.chdir("..")
         subprocess.call(

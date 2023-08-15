@@ -11,6 +11,7 @@ from python.src.utils.classes.commons.serwo_user_dag import SerWOUserDag
 from python.src.utils.classes.commons.csp import CSP
 from python.src.utils.classes.commons.partition_point import PartitionPoint
 from python.src.utils.provenance.partiql_dynamo_wrapper import PartiQLWrapper
+from aws_create_statemachine import AWS
 from jinja2 import Environment, FileSystemLoader
 from botocore.exceptions import ClientError
 import datetime
@@ -164,9 +165,13 @@ def deploy_subdag(
     if csp == CSP.AWS:
         if egress_fn_details is None:
             # TODO - this should not be shell script anymore but a python function that returns a path to the output json
-            os.system(
-                f"python3 {serwo_root_dir}/aws_create_statemachine.py {user_dir} {dag_definition_file} SQS"
-            )
+            aws_deployer = AWS(user_dir, dag_definition_file, "SQS")
+            aws_deployer.build_resources()
+            aws_deployer.build_workflow()
+            aws_deployer.deploy_workflow()
+            # os.system(
+            #     f"python3 {serwo_root_dir}/aws_create_statemachine.py {user_dir} {dag_definition_file} SQS"
+            # )
         else:
             try:
                 template_push_to_queue(
@@ -175,9 +180,13 @@ def deploy_subdag(
                     egress_fn_entrypoint=egress_fn_details["EntryPoint"],
                     resource_dict=resource_dict,
                 )
-                os.system(
-                    f"python3 {serwo_root_dir}/aws_create_statemachine.py {user_dir} {dag_definition_file} REST"
-                )
+                # os.system(
+                #     f"python3 {serwo_root_dir}/aws_create_statemachine.py {user_dir} {dag_definition_file} REST"
+                # )
+                aws_deployer = AWS(user_dir, dag_definition_file, "REST")
+                aws_deployer.build_resources()
+                aws_deployer.build_workflow()
+                aws_deployer.deploy_workflow()
             except Exception as e:
                 raise (e)
 

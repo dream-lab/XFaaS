@@ -62,13 +62,14 @@ class AWS:
 
         # TODO - convert this aws-clouformation-outputs -> self.__getname() + self.__region + self.__part_id
         self.__outputs_filepath = (
-            self.__serwo_resources_dir
-            / f"aws-cloudformation-outputs.json"
+            self.__serwo_resources_dir / f"aws-cloudformation-outputs.json"
         )
 
         # DAG related parameters
         self.__user_dag = AWSUserDag(self.__dag_definition_path)
-        self.__sam_stackname = "XFaaSApp-" + self.__user_dag.get_user_dag_name()  # TODO - add nonce here
+        self.__sam_stackname = (
+            "XFaaSApp-" + self.__user_dag.get_user_dag_name()
+        )  # TODO - add nonce here
 
     """
     NOTE - This is a replacement for the create_env.sh file
@@ -93,7 +94,6 @@ class AWS:
 
         return function_path
 
-
     """
     NOTE - This is a replacement for the create_lambda_fn.sh file
     Places / Creates appropriate files in the user directories to initate
@@ -103,6 +103,7 @@ class AWS:
     TODO - dont' fixate on the name, requirements.txt
 
     """
+
     def __create_lambda_fns(
         self,
         user_fn_path,
@@ -111,57 +112,51 @@ class AWS:
         fn_module_name,
         runner_template_filename,
         runner_template_dir,
-        runner_filename
+        runner_filename,
     ):
         # TODO - should this be taken in from the dag-description?
         fn_requirements_filename = "requirements.txt"
-        fn_dir= serwo_fn_build_dir / f"{fn_name}"
-        
+        fn_dir = serwo_fn_build_dir / f"{fn_name}"
+
         logger.info(f"Creating function directory for {fn_name}")
         if not os.path.exists(fn_dir):
             os.makedirs(fn_dir)
         pathlib.Path(fn_dir / "__init__.py").touch()
 
-        '''
+        """
         place the requirements.txt for the 
         user function in serwo function directory
-        '''
+        """
         logger.info(f"Moving requirements file for {fn_name} to {user_fn_path}")
-        shutil.copyfile(
-            src=user_fn_path / fn_requirements_filename, 
-            dst=fn_dir
-        )
+        shutil.copyfile(src=user_fn_path / fn_requirements_filename, dst=fn_dir)
 
-        '''
+        """
         place all xfaas code in user fn dir
-        '''
+        """
         logger.info(f"Moving xfaas boilerplate for {fn_name}")
-        shutil.copytree(
-            src=self.__serwo_utils_dir,
-            dst=fn_dir
-        )
+        shutil.copytree(src=self.__serwo_utils_dir, dst=fn_dir)
 
-        '''
+        """
         generate runners
-        '''
+        """
         logger.info(f"Generating Runners for function {fn_name}")
-        
+
         fnr_string = f"USER_FUNCTION_PLACEHOLDER"
         temp_runner_path = user_fn_path / f"{fn_name}_temp_runner.py"
-        runner_template_path  = runner_template_dir / runner_template_filename
+        runner_template_path = runner_template_dir / runner_template_filename
 
         with open(runner_template_path, "r") as file:
             contents = file.read()
             contents = contents.replace(fnr_string, fn_module_name)
-        
+
         with open(temp_runner_path, "w") as file:
             file.write(contents)
 
         # TODO - Fix the stickytape issue for AWS
         # GitHub Issue link - https://github.com/dream-lab/XFaaS/issues/4
-        '''
+        """
         Sticytape the runner
-        '''
+        """
         logger.info(f"Stickytape the runner template for dependency resolution")
         runner_file_path = fn_dir / f"{runner_filename}.py"
         os.system(f"stickytape {temp_runner_path} > {runner_file_path}")
@@ -171,9 +166,10 @@ class AWS:
 
         logger.info(f"Successfully created build directory for function {fn_name}")
 
-    '''
+    """
     NOTE - statemachine parameters
-    '''
+    """
+
     def __get_statemachine_params(self):
         statemachinename = self.__user_dag.get_user_dag_name()
         params = {
@@ -220,13 +216,14 @@ class AWS:
 
         return runner_template_filename
 
-    '''
+    """
     Create standalone runner templates
-    '''
+    """
+
     def __create_standalone_runners(self):
         function_metadata_list = self.__user_dag.get_node_param_list()
         function_object_map = self.__user_dag.get_node_object_map()
-        
+
         for function_metadata in function_metadata_list:
             function_name = function_metadata["name"]
             function_runner_filename = function_object_map[
@@ -244,8 +241,10 @@ class AWS:
                 function_id=function_id,
                 function_name=function_name,
             )
-            
-            logger.info(f"Starting Standalone Runner Creation for function {function_name}")
+
+            logger.info(
+                f"Starting Standalone Runner Creation for function {function_name}"
+            )
 
             self.__create_lambda_fns(
                 self.__parent_directory_path / function_path,
@@ -255,11 +254,15 @@ class AWS:
                 function_runner_filename,
                 self.__runner_template_dir,
                 self.__serwo_utils_dir,
-                runner_template_filename
+                runner_template_filename,
             )
-            
-            runner_template_filepath = self.__runner_template_dir / runner_template_filename
-            logger.info(f"Deleting Temporary Runner Template at {runner_template_filepath}")
+
+            runner_template_filepath = (
+                self.__runner_template_dir / runner_template_filename
+            )
+            logger.info(
+                f"Deleting Temporary Runner Template at {runner_template_filepath}"
+            )
             os.remove(f"{runner_template_filepath}")
 
     def __generate_asl_template(self):
@@ -276,7 +279,7 @@ class AWS:
                 self.__yaml_template_dir,
                 self.__aws_build_dir,
                 self.__yaml_file,
-                self.__trigger_type
+                self.__trigger_type,
             )
         except Exception as e:
             logger.error(e)
@@ -285,29 +288,32 @@ class AWS:
 
         logger.info("Building Statemachines JSON..")
         AWSSfnAslBuilder.generate_statemachine_json(
-            statemachine_structure, 
-            self.__aws_build_dir, 
-            self.__json_file
+            statemachine_structure, self.__aws_build_dir, self.__json_file
         )
 
     """
     NOTE - build function
     """
+
     def build_resources(self):
         logger.info(f"Creating environment for {self.__user_dag.get_user_dag_name()}")
         self.__create_environment()
 
-        logger.info(f"Initating standalone runner creation for {self.__user_dag.get_user_dag_name()}")
+        logger.info(
+            f"Initating standalone runner creation for {self.__user_dag.get_user_dag_name()}"
+        )
         self.__create_standalone_runners()
 
-        logger.info(f"Generating ASL templates for {self.__user_dag.get_user_dag_name()}, \
-                     AWS Stack - {self.__sam_stackname}")
+        logger.info(
+            f"Generating ASL templates for {self.__user_dag.get_user_dag_name()}, \
+                     AWS Stack - {self.__sam_stackname}"
+        )
         self.__generate_asl_template()
 
         logger.info("Adding API specification to user directory")
         shutil.copytree(
             src=self.__yaml_template_dir / "execute-api-openapi.yaml",
-            dst=self.__aws_build_dir / self.__get_statemachine_params()['api_file']
+            dst=self.__aws_build_dir / self.__get_statemachine_params()["api_file"],
         )
 
         logger.info("Creating SAM build directory")
@@ -329,6 +335,7 @@ class AWS:
     """
     NOTE - build workflow
     """
+
     def build_workflow(self):
         logger.info(f"Starting SAM Build for {self.__user_dag.get_user_dag_name()}")
         os.system(
@@ -338,6 +345,7 @@ class AWS:
     """
     NOTE - deploy workflow
     """
+
     def deploy_workflow(self):
         logger.info(f"Starting SAM Deploy for {self.__user_dag.get_user_dag_name()}")
         os.system(
