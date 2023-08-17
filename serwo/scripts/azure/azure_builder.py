@@ -12,45 +12,40 @@ from random import randint
 import sys
 import find_and_replace as fr
 
-user_input_1 = sys.argv[1]
-user_input_2 = sys.argv[2]
 USER_DIR = sys.argv[1]
 DAG_DEFINITION_FILE = sys.argv[2]
-## 'functions' in prod code
-function_suffix = "LinearNoOp"
 
 ## User and Azure Build Paths
 
-json_file_name=user_input_2
-# parent_directory = pathlib.Path(__file__).parent.parent.parent.absolute().resolve()
-parent_directory = pathlib.Path(__file__).parent.absolute().parent.absolute().parent
-user_json_dir=f"{parent_directory}/{user_input_1}"
-resource_dir=f"{user_json_dir}/build/workflow/resources"
-build_dir=f"{user_json_dir}/build/workflow/azure"
-resources_json = f"{user_json_dir}/build/workflow/resources/azure_resources.json"
+user_dag_file_name=DAG_DEFINITION_FILE
+xfaas_working_directory = pathlib.Path(__file__).parent.absolute().parent.absolute().parent
+user_workflow_directory= f"{xfaas_working_directory}/{USER_DIR}"
+resource_dir=f"{user_workflow_directory}/build/workflow/resources"
+build_dir=f"{user_workflow_directory}/build/workflow/azure"
+resources_json = f"{user_workflow_directory}/build/workflow/resources/azure_resources.json"
 az_functions_path = ''
 
 TEMP_TRIGGER = 'TEMP_TRIGGER'
-orchestrator_generator_path = f'{parent_directory}/azure_create_statemachine.py'
+orchestrator_generator_path = f'{xfaas_working_directory}/azure_create_statemachine.py'
 
 ## Meta files Paths
 obj_dir_str = 'python/src/utils/classes/commons'
-json_templates_base = f'{parent_directory}/python/src/faas-templates/azure/json-templates'
+json_templates_base = f'{xfaas_working_directory}/python/src/faas-templates/azure/json-templates'
 host_json_path = json_templates_base + '/'+'host.json'
 local_settings_path = json_templates_base + '/'+'local.settings.json'
 function_json = json_templates_base + '/'+'function.json'
-serwo_object = f'{parent_directory}/python/src/utils/classes/commons/serwo_objects.py'
-starter_path = f'{parent_directory}/python/src/faas-templates/azure/predefined-functions/Starter'
-orchestrator_path = f'{parent_directory}/python/src/faas-templates/azure/predefined-functions/Orchestrate'
-queue_trigger_path = f'{parent_directory}/python/src/faas-templates/azure/predefined-functions/QueueTrigger'
+serwo_object = f'{xfaas_working_directory}/python/src/utils/classes/commons/serwo_objects.py'
+starter_path = f'{xfaas_working_directory}/python/src/faas-templates/azure/predefined-functions/Starter'
+orchestrator_path = f'{xfaas_working_directory}/python/src/faas-templates/azure/predefined-functions/Orchestrate'
+queue_trigger_path = f'{xfaas_working_directory}/python/src/faas-templates/azure/predefined-functions/QueueTrigger'
 
 ## Runner template
-runner_template_file = f'{parent_directory}/python/src/runner-templates/azure/runner_template.py'
-runner_template_file_secondary = f'{parent_directory}/python/src/runner-templates/azure/runner_template_secondary.py'
-runner_template_temp_dir = f'{parent_directory}/python/src/runner-templates/azure'
+runner_template_file = f'{xfaas_working_directory}/python/src/runner-templates/azure/runner_template.py'
+runner_template_file_secondary = f'{xfaas_working_directory}/python/src/runner-templates/azure/runner_template_secondary.py'
+runner_template_temp_dir = f'{xfaas_working_directory}/python/src/runner-templates/azure'
 
 
-def build_working_dir():
+def build_working_dir(location, part_id):
     global az_functions_path
     a, user_workflow_name = get_user_workflow_details()
     az_functions_path=f"{build_dir}/{user_workflow_name}"
@@ -58,7 +53,7 @@ def build_working_dir():
         os.makedirs(az_functions_path)
 
 def get_user_workflow_details():
-    json_path = user_json_dir+'/'+json_file_name
+    json_path = user_workflow_directory + '/' + user_dag_file_name
     data = json.load(open(json_path))
     fns_data = data['Nodes']
     return fns_data,data['WorkflowName']
@@ -83,10 +78,10 @@ def copytree(src, dst, symlinks=False, ignore=None):
 
 def populate_orchestrator():
 
-    stream = os.popen(f"python3 {orchestrator_generator_path} {user_json_dir} {json_file_name} {TEMP_TRIGGER}")
+    stream = os.popen(f"python3 {orchestrator_generator_path} {user_workflow_directory} {user_dag_file_name} {TEMP_TRIGGER}")
 
     stream.close()
-    orchestrator_generated_path = f"{user_json_dir}/orchestrator.py"
+    orchestrator_generated_path = f"{user_workflow_directory}/orchestrator.py"
     orch_dest_path = f"{orchestrator_path}/__init__.py"
     shutil.copyfile(orchestrator_generated_path , orch_dest_path)
 
@@ -166,7 +161,7 @@ def gen_requirements(user_fns_data):
     req_file = open(az_functions_path+'/requirements.txt', "w")
     libs = set()
     for fn in user_fns_data:
-        req_path = f'{parent_directory}/'+fn['Path']+'/requirements.txt'
+        req_path = f'{xfaas_working_directory}/' + fn['Path'] + '/requirements.txt'
         if os.path.exists(req_path):
             content = open(req_path).readlines()
             for line in content:
@@ -182,7 +177,6 @@ def gen_requirements(user_fns_data):
     req_file.close()
 
 
-
 def generate_function_id(f_id):
     output_dir = runner_template_file_secondary
     try:
@@ -195,7 +189,7 @@ def generate_function_id(f_id):
     # render function
     try:
         output = template.render(func_id_placeholder=f_id)
-    except:
+    except Exception as exception:
         raise Exception("Error in jinja template render function")
 
     try:
@@ -203,12 +197,11 @@ def generate_function_id(f_id):
         with open(f"{output_dir}", "w+") as runner:
             runner.write(output)
 
-    except:
+    except Exception as exception:
         raise Exception("Error in writing to template file")
 
 
 def copy_all_dirs(fn_dir_path,fin_func_dir):
-
 
     dirs = os.listdir(fn_dir_path)
 
@@ -221,13 +214,7 @@ def copy_all_dirs(fn_dir_path,fin_func_dir):
                 str_replace = 'from .'
                 path = f'{fn_dir_path}/{dir}'
                 fr.f_and_r(path,f'{fin_func_dir}/func.py',str_find,str_replace)
-                # stream = os.popen(f"python3 find_and_replace.py {path} {path} {str_find} {str_replace}")
-                # # stream = os.popen(f"sed 's/{str_find}/{str_replace}/g' {path}")
-                # code = stream.read()
-                # stream.close()
-                # ff = open(f'{fin_func_dir}/func.py','w')
-                # ff.write(code)
-                # ff.close()
+
         if '.py' not in dir:
             if not os.path.exists(fin_func_dir+'/'+dir):
                 shutil.copytree(fn_dir_path+'/'+dir,fin_func_dir+'/'+dir,False,None)
@@ -244,13 +231,7 @@ def copy_all_dirs(fn_dir_path,fin_func_dir):
                     str_replace = 'from .python.src.utils.classes.commons.serwo_objects import'
                     path = fin_func_dir+'/'+dir+'/'+f
                     fr.f_and_r(path,fin_func_dir+'/'+dir+'/'+f,str_find,str_replace)
-                    # stream = os.popen(f"python3 find_and_replace.py {path} {path} {str_find} {str_replace}")
-                    # # stream = os.popen(f"sed 's/{str_find}/{str_replace}/g' {fin_func_dir+'/'+dir+'/'+f}")
-                    # code = stream.read()
-                    # stream.close()
-                    # ff = open(fin_func_dir+'/'+dir+'/'+f,'w')
-                    # ff.write(code)
-                    # ff.close()
+
 
         else:
             if 'fused' not in fn_dir_path:
@@ -259,13 +240,7 @@ def copy_all_dirs(fn_dir_path,fin_func_dir):
                 str_replace = 'from .python.src.utils.classes.commons.serwo_objects import'
                 path = fin_func_dir+'/'+dir
                 fr.f_and_r(path,fin_func_dir+'/'+dir,str_find,str_replace)
-                # stream = os.popen(f"python3 find_and_replace.py {path} {path} {str_find} {str_replace}")
-                # # stream = os.popen(f"sed 's/{str_find}/{str_replace}/g' {fin_func_dir+'/'+dir}")
-                # code = stream.read()
-                # stream.close()
-                # ff = open(fin_func_dir+'/'+dir,'w')
-                # ff.write(code)
-                # ff.close()
+
 
 def push_user_dag_to_provenance(wf_id):
     global dynPartiQLWrapper, e
@@ -274,7 +249,7 @@ def push_user_dag_to_provenance(wf_id):
     print(f"Pushing workflow configuration to Dynamo DB")
     try:
         # print(f"{USER_DIR}/{DAG_DEFINITION_FILE}")
-        f = user_json_dir+'/'+DAG_DEFINITION_FILE
+        f = user_workflow_directory + '/' + DAG_DEFINITION_FILE
         js = open(f,'r').read()
         user_workflow_item = json.loads(js)
 
@@ -291,7 +266,7 @@ def re_written_generator(user_fns_data):
     for fn in user_fns_data:
         fin_func_dir = az_functions_path+'/'+fn['NodeName']
 
-        fn_dir_pat = f'{parent_directory}/'+fn['Path']
+        fn_dir_pat = f'{xfaas_working_directory}/' + fn['Path']
         copy_all_dirs(fn_dir_pat,fin_func_dir)
 
         if os.path.exists(fn_dir_pat+'/dependencies'):
@@ -311,41 +286,20 @@ def re_written_generator(user_fns_data):
         NOTE - explicit typecast to integer
         '''
         generate_function_id(int(fn['NodeId']))
-
-
         str_find = 'USER_FUNCTION_PLACEHOLDER'
         str_replace = fn['EntryPoint'][0:-3]
-
-
         pathh = runner_template_file_secondary
 
-        # stream = os.popen(f"sed 's/{str_find}/{str_replace}/g' {runner_template_file_secondary}")
-
-        # stream = os.popen(f"python3 find_and_replace.py {pathh} {pathh} {str_find} {str_replace}")
-        #
-        # code = stream.read()
         tmp_runner_path = runner_template_temp_dir + '/'+fn['NodeName']+ '/runner.py'
         fr.f_and_r(pathh,tmp_runner_path,str_find,str_replace)
-        # stream.close()
-        # ff = open(tmp_runner_path,'w')
-        # ff.write(code)
-        # ff.close()
-
         shutil.copyfile(tmp_runner_path,f'{path}/__init__.py')
-        #
+
         str_find = 'from python.src.utils.classes.commons.serwo_objects import'
         str_replace = 'from .python.src.utils.classes.commons.serwo_objects import'
 
         pathh = f"{path}/__init__.py"
         fr.f_and_r(pathh,path+'/__init__.py',str_find,str_replace)
-        # stream = os.popen(f"python3 find_and_replace.py {pathh} {pathh} {str_find} {str_replace}")
-        # # stream = os.popen(f"sed 's/{str_find}/{str_replace}/g' {path}/__init__.py")
-        # code = stream.read()
-        # stream.close()
-        # ff = open(path+'/__init__.py' ,'w')
-        # ff.write(code)
-        # ff.close()
-        #
+
         fin_func_path = az_functions_path+'/'+fn['NodeName']+'/__init__.py'
         shutil.copyfile(path+'/__init__.py' , fin_func_path)
 
@@ -374,7 +328,7 @@ def add_collect_logs():
     return
 
 def push_refactored_user_dag_to_provenance(wf_id,refactored_wf_id):
-    path = user_json_dir+'/'+DAG_DEFINITION_FILE
+    path = user_workflow_directory + '/' + DAG_DEFINITION_FILE
     js = json.loads(open(path,'r').read())
     dc = 'azure'
     lp = []
@@ -388,29 +342,17 @@ def push_refactored_user_dag_to_provenance(wf_id,refactored_wf_id):
     js['wf_id'] = wf_id
     js['refactored_wf_id'] =refactored_wf_id
 
-    # try:
-    #     #TODO - create table for refactored wf
-    #     dynPartiQLWrapper = PartiQLWrapper('')
-    #     dynPartiQLWrapper.put(js_left)
-    # except ClientError as e:
-    #     print(e)
 
-
-def deploy():
-    global stream
-    # push_refactored_user_dag_to_provenance(wf_id, refactored_wf_id)
-    stream = os.popen(f"python3 azure_deploy.py {USER_DIR} {DAG_DEFINITION_FILE}")
-    stream.close()
+def run(location,part_id):
+    build_working_dir(location,part_id)
 
 
 if __name__ == '__main__':
-
-    build_working_dir()
-    user_fns_data,user_app_name = get_user_workflow_details()
-    ingress_queue_name,app_name = generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name)
-    build_user_fn_dirs(user_fns_data)
-    copy_meta_files(user_fns_data,ingress_queue_name,app_name)
-    gen_requirements(user_fns_data)
-    re_written_generator(user_fns_data)
-
-    # deploy()
+    print(xfaas_working_directory)
+    # build_working_dir()
+    # user_fns_data,user_app_name = get_user_workflow_details()
+    # ingress_queue_name,app_name = generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name)
+    # build_user_fn_dirs(user_fns_data)
+    # copy_meta_files(user_fns_data,ingress_queue_name,app_name)
+    # gen_requirements(user_fns_data)
+    # re_written_generator(user_fns_data)

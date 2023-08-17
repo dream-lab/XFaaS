@@ -12,13 +12,6 @@ from azure.mgmt.storage import StorageManagementClient
 from azure.storage.queue import QueueServiceClient
 from azure.storage.blob import BlobServiceClient
 
-# user_input_1 = sys.argv[1]
-# user_input_2 = sys.argv[2]
-# json_file_name=user_input_2
-# parent_directory = pathlib.Path(__file__).parent.absolute().parent.absolute().parent
-# print("Parent directory", parent_directory)
-# user_json_dir = f"{parent_directory}/{user_input_1}"
-
 queue_name = 'serwo-ingress'
 
 
@@ -78,11 +71,9 @@ def create_resources(resource_dir, out_file_path, region):
 
 def generate(user_dir, dag_definition_path,region,part_id):
     global resource_group_name, storage_account_name
-    print('hi',user_dir, dag_definition_path,region,part_id)
 
     resource_dir = f"{user_dir}/build/workflow/resources"
     out_file_path = f'{resource_dir}/azure-{region}-{part_id}.json'
-    print(out_file_path)
 
     if os.path.exists(out_file_path):
         return
