@@ -76,6 +76,20 @@ def copytree(src, dst, symlinks=False, ignore=None):
         else:
             shutil.copy2(s, d)
 
+def remove(path):
+    try:
+        if os.path.isfile(path):
+            os.remove(path)
+            print(f"File '{path}' has been removed.")
+        elif os.path.isdir(path):
+            shutil.rmtree(path)
+            print(f"Folder '{path}' and its contents have been removed.")
+        else:
+            print(f"'{path}' is not a valid file or folder.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
 def populate_orchestrator():
 
     stream = os.popen(f"python3 {orchestrator_generator_path} {user_workflow_directory} {user_dag_file_name} {TEMP_TRIGGER}")
