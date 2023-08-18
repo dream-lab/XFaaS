@@ -9,7 +9,8 @@ import json
 import time
 from python.src.utils.classes.commons.partition_point import PartitionPoint
 from python.src.utils.classes.commons.csp import CSP
-
+import pathlib
+project_dir = pathlib.Path(__file__).parent.resolve()
 
 PARTITION_ID_LENGTH = 5
 def generate_random_string(N):
@@ -19,7 +20,7 @@ def generate_random_string(N):
     return res
 
 def get_supported_cloud_ids():
-    clouds = json.loads(open('config/cloud_dictionary.json', 'r').read())
+    clouds = json.loads(open(f'{project_dir}/config/cloud_dictionary.json', 'r').read())
     cloud_ids = []
     for cd in clouds:
         cloud_ids.append(cd)

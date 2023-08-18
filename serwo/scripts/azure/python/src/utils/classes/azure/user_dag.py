@@ -49,7 +49,6 @@ class UserDag:
 
         
         start_node = [node for node in self.__dag.nodes if self.__dag.in_degree(node) == 0][0]
-        print("Start Node", start_node)
         self.__dag.nodes[start_node]['ret'] = ["yield ", "context.call_activity(\"" + self.__dag.nodes[start_node]["NodeName"]  + "\", serwoObject)"]
        
 
@@ -250,7 +249,6 @@ class UserDag:
         end_node = list(output_dag.nodes())[0]
         # added a check if the graph contains only a single node
         if len(output_dag.nodes[end_node]['pre']) == 0:
-            print("here")
             post_code = final_var + " = " + output_dag.nodes[end_node]['ret'][0] + " " + output_dag.nodes[end_node]['ret'][1]
             post_code = post_code.split("\n")
             pre_statements = [statement for statement in post_code if statement != '']
@@ -277,6 +275,5 @@ class UserDag:
             pre_statements.append(f"return {final_var}")
         
         # TODO - for every taskall add the converstion from [serwo_objects] -> serwo_list_object
-        print("Pre statements", pre_statements)
         orchestrator_code = "\n".join([pre_statements[0]] + ["\t" + statement for statement in pre_statements[1:]])
         return orchestrator_code

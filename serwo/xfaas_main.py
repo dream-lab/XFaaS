@@ -7,6 +7,7 @@ import xfaas_deploy as xfaas_deploy
 import sys
 import json
 import pathlib
+project_dir = pathlib.Path(__file__).parent.resolve()
 
 USER_DIR = sys.argv[1]
 DAG_DEFINITION_FILE = sys.argv[2]
@@ -16,7 +17,8 @@ BENCHMARK_FILE = sys.argv[3]
 benchmark_path = f'{USER_DIR}/{BENCHMARK_FILE}'
 
 def get_user_pinned_nodes():
-    config = json.loads(open('config/xfaas_user_config.json', 'r').read())
+
+    config = json.loads(open(f'{project_dir}/config/xfaas_user_config.json', 'r').read())
     if "user_pinned_nodes" in config:
         return config['user_pinned_nodes']
     else:

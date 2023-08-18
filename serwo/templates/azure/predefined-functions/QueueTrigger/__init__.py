@@ -10,14 +10,10 @@ def get_delta(start_time):
     return (curr_time-start_time)
 
 
-resources_path = '/home/site/wwwroot/QueueTrigger/azure_resources.json'
 func_id = 253
-def get_app_name():
-    f = open(resources_path,'r')
-    data = json.loads(f.read())
-    return data['app_name']
 
-app_name = 'serwoNewFusionJpdc0762210'
+app_name = 'xfaasSmartGridFusionAzure335550'
+
 
 async def main(msg: func.QueueMessage,starter: str) -> None:
     logging.info('Python queue trigger function processed a queue item: %s', msg.get_body().decode('utf-8'))
