@@ -11,49 +11,57 @@ import uuid
 
 
 def trace_containers(metadata):
-    container_path = '/tmp/serwo/container.txt'
+    container_path = "/tmp/serwo/container.txt"
     if not os.path.exists(container_path):
-        logging.info('File doesnt exist, generating....')
-        os.mkdir('/tmp/serwo')
-        f = open(container_path, 'w')
+        logging.info("File doesnt exist, generating....")
+        os.mkdir("/tmp/serwo")
+        f = open(container_path, "w")
         uuid_gen = str(uuid.uuid4())
         f.write(uuid_gen)
         f.close()
 
         if uuid_gen in metadata:
             metadata[uuid_gen].append(
-                {'workflow_instance_id': metadata['workflow_instance_id'], 'func_id': 0})
+                {"workflow_instance_id":
+                    metadata["workflow_instance_id"], "func_id": 0}
+            )
         else:
             metadata[uuid_gen] = []
             metadata[uuid_gen].append(
-                {'workflow_instance_id': metadata['workflow_instance_id'], 'func_id': 0})
+                {"workflow_instance_id":
+                    metadata["workflow_instance_id"], "func_id": 0}
+            )
 
     else:
-        f = open(container_path, 'r')
+        f = open(container_path, "r")
         saved_uuid = f.read()
         f.close()
         if saved_uuid in metadata:
             metadata[saved_uuid].append(
-                {'workflow_instance_id': metadata['workflow_instance_id'], 'func_id': 0})
+                {"workflow_instance_id":
+                    metadata["workflow_instance_id"], "func_id": 0}
+            )
         else:
             metadata[saved_uuid] = []
             metadata[saved_uuid].append(
-                {'workflow_instance_id': metadata['workflow_instance_id'], 'func_id': 0})
+                {"workflow_instance_id":
+                    metadata["workflow_instance_id"], "func_id": 0}
+            )
 
 
 def get_delta(start_time):
     curr_time = int(time.time() * 1000)
-    return (curr_time-start_time)
+    return curr_time - start_time
 
 
 def unmarshall(serwoObject):
     inp_dict = dict()
-    if '_body' in serwoObject:
-        inp_dict['body'] = serwoObject['_body']
-    if '_metadata' in serwoObject:
-        inp_dict['metadata'] = serwoObject['_metadata']
-    if '_err' in serwoObject:
-        inp_dict['error'] = serwoObject['_err']
+    if "_body" in serwoObject:
+        inp_dict["body"] = serwoObject["_body"]
+    if "_metadata" in serwoObject:
+        inp_dict["metadata"] = serwoObject["_metadata"]
+    if "_err" in serwoObject:
+        inp_dict["error"] = serwoObject["_err"]
     serwoObject = build_serwo_object(inp_dict)
     return serwoObject
 
@@ -62,8 +70,8 @@ def insert_end_stats_in_metadata(input):
     serwoObjectJson = json.loads(input)
     serwoObjectJson = unmarshall(serwoObjectJson)
     metadata = serwoObjectJson.get_metadata()
-    end_delta = get_delta(metadata['workflow_start_time'])
-    meta_list = metadata['functions']
+    end_delta = get_delta(metadata["workflow_start_time"])
+    meta_list = metadata["functions"]
     ne_list = []
     for meta in meta_list:
         start_delta_local = 0
@@ -71,18 +79,22 @@ def insert_end_stats_in_metadata(input):
         func_id_local = 0
         for fid in meta:
             func_id_local = fid
-            start_delta_local = meta[fid]['start_delta']
-            end_delta_local = meta[fid]['end_delta']
+            start_delta_local = meta[fid]["start_delta"]
+            end_delta_local = meta[fid]["end_delta"]
             if fid == "0":
                 end_delta_local = end_delta
-        func_json = {func_id_local: {
-            'start_delta': start_delta_local, 'end_delta': end_delta_local}}
+        func_json = {
+            func_id_local: {
+                "start_delta": start_delta_local,
+                "end_delta": end_delta_local,
+            }
+        }
         ne_list.append(func_json)
     body = serwoObjectJson.get_body()
     out_dict = dict()
-    out_dict['body'] = body
-    metadata['functions'] = ne_list
-    out_dict['metadata'] = metadata
+    out_dict["body"] = body
+    metadata["functions"] = ne_list
+    out_dict["metadata"] = metadata
     input = build_serwo_object(out_dict).to_json()
     return input
 
@@ -96,55 +108,55 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     metadata = context_input["metadata"]
     request_timestamp = int(metadata["request_timestamp"])
 
-    if 'workflow_start_time' not in metadata:
-        metadata['workflow_start_time'] = curr_time
-    if 'overheads' not in metadata:
-        metadata['overheads'] = curr_time - request_timestamp
-    if 'request_timestamp' not in metadata:
-        metadata['request_timestamp'] = request_timestamp
+    if "workflow_start_time" not in metadata:
+        metadata["workflow_start_time"] = curr_time
+    if "overheads" not in metadata:
+        metadata["overheads"] = curr_time - request_timestamp
+    if "request_timestamp" not in metadata:
+        metadata["request_timestamp"] = request_timestamp
     func_id = 255
 
     # trace_containers(metadata)
 
-    start_delta = get_delta(metadata['workflow_start_time'])
+    start_delta = get_delta(metadata["workflow_start_time"])
     process = psutil.Process(os.getpid())
     memory = process.memory_info().rss
-    metadata['init_orch_memory'] = memory
-    end_delta = get_delta(metadata['workflow_start_time'])
-    func_json = {func_id: {'start_delta': start_delta, 'end_delta': end_delta}}
-    metadata['functions'].append(func_json)
+    metadata["init_orch_memory"] = memory
+    end_delta = get_delta(metadata["workflow_start_time"])
+    func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta}}
+    metadata["functions"].append(func_json)
     inp_dict["metadata"] = metadata
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    fftt = yield context.call_activity("TaskA", serwoObject)
-    ujbc = yield context.call_activity("TaskB", fftt)
-    kefp = yield context.call_activity("TaskC", ujbc)
-    egeo = yield context.call_activity("TaskD", kefp)
-    gnbc = yield context.call_activity("TaskM", egeo)
-    jecn = yield context.call_activity("TaskN", gnbc)
-    wlee = yield context.call_activity("TaskE", kefp)
-    ykmh = yield context.call_activity("TaskF", wlee)
-    ndxa = yield context.call_activity("TaskI", ykmh)
-    gjur = []
-    hzuq = context.call_activity("TaskG", ykmh)
-    zemz = context.call_activity("TaskH", ykmh)
-    gunl = context.call_activity("TaskJ", ndxa)
-    gjur.append(hzuq)
-    gjur.append(zemz)
-    gjur.append(gunl)
-    vulp = yield context.task_all(gjur)
-    mhhk = []
-    qmpe = context.call_activity("TaskO", jecn)
-    mzvm = context.call_activity("TaskK", vulp)
-    mhhk.append(qmpe)
-    mhhk.append(mzvm)
-    uuzb = yield context.task_all(mhhk)
-    fxuj = yield context.call_activity("TaskL", uuzb)
-    bbzg = yield context.call_activity("TaskP", fxuj)
-    bbzg = insert_end_stats_in_metadata(bbzg)
-    ppvk = yield context.call_activity("TaskQ", bbzg)
-    return ppvk
+    auzr = yield context.call_activity("TaskA", serwoObject)
+    xrse = yield context.call_activity("TaskB", auzr)
+    egyh = yield context.call_activity("TaskC", xrse)
+    ikqo = yield context.call_activity("TaskD", egyh)
+    omvo = yield context.call_activity("TaskM", ikqo)
+    jydp = yield context.call_activity("TaskN", omvo)
+    mctp = yield context.call_activity("TaskE", egyh)
+    tsng = yield context.call_activity("TaskF", mctp)
+    azkb = yield context.call_activity("TaskI", tsng)
+    nxsh = []
+    jxcv = context.call_activity("TaskG", tsng)
+    nvko = context.call_activity("TaskH", tsng)
+    ndeh = context.call_activity("TaskJ", azkb)
+    nxsh.append(jxcv)
+    nxsh.append(nvko)
+    nxsh.append(ndeh)
+    bbho = yield context.task_all(nxsh)
+    mmhy = []
+    povv = context.call_activity("TaskO", jydp)
+    ukfe = context.call_activity("TaskK", bbho)
+    mmhy.append(povv)
+    mmhy.append(ukfe)
+    pggo = yield context.task_all(mmhy)
+    gmef = yield context.call_activity("TaskL", pggo)
+    mljm = yield context.call_activity("TaskP", gmef)
+    mljm = insert_end_stats_in_metadata(mljm)
+    wgvh = yield context.call_activity("TaskQ", mljm)
+    return wgvh
 
 
 main = df.Orchestrator.create(orchestrator_function)

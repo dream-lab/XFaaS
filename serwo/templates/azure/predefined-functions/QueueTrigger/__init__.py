@@ -12,7 +12,7 @@ def get_delta(start_time):
 
 func_id = 253
 
-app_name = 'xfaasSmartGridFusionAzure335550'
+app_name = 'xfaasSmartGridFusionAzure130254'
 
 
 async def main(msg: func.QueueMessage,starter: str) -> None:
