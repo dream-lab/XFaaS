@@ -86,7 +86,9 @@ class AWS:
         function_path = self.__aws_build_dir / f"functions"
         if not os.path.exists(self.__aws_build_dir):
             os.makedirs(self.__aws_build_dir)
-        os.makedirs(function_path)
+
+        if not os.path.exists(function_path):
+            os.makedirs(function_path)
 
         # add the init.py file for each of the created directories
         pathlib.Path(function_path / "__init__.py").touch()
@@ -127,16 +129,17 @@ class AWS:
         place the requirements.txt for the 
         user function in serwo function directory
         """
-        logger.info(f"Moving requirements file for {fn_name} to {user_fn_path}")
-        shutil.copyfile(src=user_fn_path / fn_requirements_filename, dst=fn_dir)
+        logger.info(f"Moving requirements file for {fn_name} for user at to {fn_dir}")
+        shutil.copyfile(src=f"{user_fn_path / fn_requirements_filename}", dst=f"{fn_dir / fn_requirements_filename}")
 
         """
         place all xfaas code in user fn dir
         """
         logger.info(f"Moving xfaas boilerplate for {fn_name}")
-        shutil.copytree(src=self.__serwo_utils_dir, dst=fn_dir)
 
-        """
+        shutil.copytree(src=self.__serwo_utils_dir, dst=f'{fn_dir / "python"}', dirs_exist_ok=True)
+
+        """g
         generate runners
         """
         logger.info(f"Generating Runners for function {fn_name}")
@@ -144,7 +147,8 @@ class AWS:
         fnr_string = f"USER_FUNCTION_PLACEHOLDER"
         temp_runner_path = user_fn_path / f"{fn_name}_temp_runner.py"
         runner_template_path = runner_template_dir / runner_template_filename
-
+        
+        print("Here", runner_template_path)
         with open(runner_template_path, "r") as file:
             contents = file.read()
             contents = contents.replace(fnr_string, fn_module_name)
@@ -186,8 +190,9 @@ class AWS:
         params["role_arn_attribute"] = role_arn_attribute
         return params
 
-    def __template_function_id(self, runner_template_dir, function_id, function_name):
-        runner_template_filename = f"runner_template_{function_id}.py"
+    def __template_function_id(self, runner_template_dir, function_id, function_name, function_runner_filename):
+        # runner_template_filename = f"runner_template_{function_name}.py"
+        runner_template_filename = function_runner_filename
         try:
             file_loader = FileSystemLoader(runner_template_dir)
             env = Environment(loader=file_loader)
@@ -220,7 +225,7 @@ class AWS:
     Create standalone runner templates
     """
 
-    def __create_standalone_runners(self):
+    def __create_standalone_runners(self, xfaas_fn_build_dir):
         function_metadata_list = self.__user_dag.get_node_param_list()
         function_object_map = self.__user_dag.get_node_object_map()
 
@@ -240,6 +245,7 @@ class AWS:
                 runner_template_dir=self.__runner_template_dir,
                 function_id=function_id,
                 function_name=function_name,
+                function_runner_filename=function_runner_filename
             )
 
             logger.info(
@@ -248,13 +254,14 @@ class AWS:
 
             self.__create_lambda_fns(
                 self.__parent_directory_path / function_path,
-                self.__aws_build_dir,
+                # self.__aws_build_dir,
+                xfaas_fn_build_dir,
                 function_name,
                 function_module_name,
                 function_runner_filename,
                 self.__runner_template_dir,
-                self.__serwo_utils_dir,
-                runner_template_filename,
+                # self.__serwo_utils_dir,
+                runner_template_filename
             )
 
             runner_template_filepath = (
@@ -297,12 +304,12 @@ class AWS:
 
     def build_resources(self):
         logger.info(f"Creating environment for {self.__user_dag.get_user_dag_name()}")
-        self.__create_environment()
+        xfaas_fn_build_dir = self.__create_environment()
 
         logger.info(
             f"Initating standalone runner creation for {self.__user_dag.get_user_dag_name()}"
         )
-        self.__create_standalone_runners()
+        self.__create_standalone_runners(xfaas_fn_build_dir)
 
         logger.info(
             f"Generating ASL templates for {self.__user_dag.get_user_dag_name()}, \
@@ -311,26 +318,28 @@ class AWS:
         self.__generate_asl_template()
 
         logger.info("Adding API specification to user directory")
-        shutil.copytree(
+        shutil.copyfile(
             src=self.__yaml_template_dir / "execute-api-openapi.yaml",
             dst=self.__aws_build_dir / self.__get_statemachine_params()["api_file"],
         )
 
         logger.info("Creating SAM build directory")
-        try:
-            os.makedirs(self.__sam_build_dir)
-        except Exception as e:
-            logger.error(e)
-            traceback.print_exc()
-            exit()
+        if not os.path.exists(self.__sam_build_dir):
+            try:
+                os.makedirs(self.__sam_build_dir)
+            except Exception as e:
+                logger.error(e)
+                traceback.print_exc()
+                exit()
 
         logger.info("Creating resource directory for AWS stack output")
-        try:
-            os.makedirs(self.__serwo_resources_dir)
-        except Exception as e:
-            logger.error(e)
-            traceback.print_exc()
-            exit()
+        if not os.path.exists(self.__serwo_resources_dir):
+            try:
+                os.makedirs(self.__serwo_resources_dir)
+            except Exception as e:
+                logger.error(e)
+                traceback.print_exc()
+                exit()
 
     """
     NOTE - build workflow
@@ -339,7 +348,7 @@ class AWS:
     def build_workflow(self):
         logger.info(f"Starting SAM Build for {self.__user_dag.get_user_dag_name()}")
         os.system(
-            f"sam build --build-dir {self.__sam_build_dir} --template-file {self.__yaml_file}"
+            f"sam build --build-dir {self.__sam_build_dir} --template-file {self.__aws_build_dir / self.__yaml_file}"
         )
 
     """
