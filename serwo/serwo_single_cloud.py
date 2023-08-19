@@ -120,7 +120,7 @@ def generate_deployment_logs(left, user_dir, wf_id, refactored_wf_id):
 def deploy():
     if csp == "aws":
 
-        aws_deployer = AWS(user_dir, dag_definition_file, "SQS")
+        aws_deployer = AWS(USER_DIR, f"transformed-{DAG_DEFINITION_FILE}", "REST", 1)
         aws_deployer.build_resources()
         aws_deployer.build_workflow()
         aws_deployer.deploy_workflow()
