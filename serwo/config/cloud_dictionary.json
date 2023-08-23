@@ -1,4 +1,10 @@
 {
-  "0": "AWS",
-  "1": "Azure"
+  "0": {
+    "csp": "aws",
+    "region": "ap-south-1"
+  },
+  "1": {
+    "csp": "azure",
+    "region": "centralindia"
+  }
 }

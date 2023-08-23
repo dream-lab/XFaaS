@@ -1,7 +1,0 @@
-pillow
-
-numpy
-
-onnxruntime
-
-psutil

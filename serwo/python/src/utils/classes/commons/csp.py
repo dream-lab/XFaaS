@@ -1,35 +1,20 @@
-from enum import Enum
+import scripts.azure.azure_resource_generator as azure_resource_generator
+
+class CSP:
+    __name = None
+
+    def __init__(self, name):
+        self.__name = name
+
+    def get_name(self):
+        return self.__name
 
 
-class CSP(Enum):
-    AWS = 1
-    AZURE = 2
+    #TODO: Factory pattern for csp
+    def build_resources(self,user_dir, dag_definition_path, region, part_id):
+        if self.__name == 'azure':
+            azure_resource_generator.generate(user_dir, dag_definition_path,region,part_id)
+        else:
+            pass
 
-    # TODO - add a CSP id which is a combination of the CSP name and the region
-    # for unique identification of the region.
 
-    @staticmethod
-    def build_resources():
-        pass
-
-    @staticmethod
-    def build_workflow():
-        pass
-
-    @staticmethod
-    def deploy_workflow():
-        pass
-
-    @staticmethod
-    def toCSP(csp: str):
-        if csp.lower() == "aws":
-            return CSP.AWS
-        elif csp.lower() == "azure":
-            return CSP.AZURE
-
-    @staticmethod
-    def toString(csp):
-        if csp == CSP.AWS:
-            return "aws"
-        if csp == CSP.AZURE:
-            return "azure"
