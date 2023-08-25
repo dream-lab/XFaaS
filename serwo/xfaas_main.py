@@ -4,6 +4,9 @@ import xfaas_provenance as xfaas_provenance
 import xfaas_resource_generator as xfaas_resource_generator
 import xfaas_build as xfaas_build
 import xfaas_deploy as xfaas_deploy
+from python.src.utils.classes.commons.partition_point import PartitionPoint
+from python.src.utils.classes.commons.csp import CSP
+
 import sys
 import json
 import pathlib
@@ -27,11 +30,15 @@ def get_user_pinned_nodes():
 if __name__ == '__main__':
     user_pinned_nodes = get_user_pinned_nodes()
     xfaas_user_dag = xfaas_init.init(DAG_DEFINITION_PATH)
-    partition_config = xfaas_optimizer.optimize(xfaas_user_dag,
-                                                user_pinned_nodes, benchmark_path)
+    # partition_config = xfaas_optimizer.optimize(xfaas_user_dag,
+    #                                             user_pinned_nodes, benchmark_path)
 
+    partition_config = [PartitionPoint("function_name", 2, CSP("azure"), None, "test", "centralindia")]
+
+    for partition in partition_config:
+        print('hi')
     xfaas_resource_generator.generate(USER_DIR, DAG_DEFINITION_PATH, partition_config)
-    wf_id = xfaas_provenance.push_user_dag(DAG_DEFINITION_PATH)
+    # wf_id = xfaas_provenance.push_user_dag(DAG_DEFINITION_PATH)
 
 
 

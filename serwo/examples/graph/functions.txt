@@ -1,0 +1,5 @@
+graph, functions/graph/graphGen
+graph, functions/graph/graphBFS
+graph, functions/graph/pagerank
+graph, functions/graph/graphMST
+graph, functions/graph/aggregate

@@ -129,41 +129,18 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    tsvn = yield context.call_activity("Source", serwoObject)
-    uzaw = yield context.call_activity("GenerateList", tsvn)
-    uaht = yield context.call_activity("GenerateInteger", tsvn)
-    fged = []
-    hnoj = context.call_activity("Sine", uaht)
-    mqem = context.call_activity("Cosine", uaht)
-    hxkf = context.call_activity("Factors", uaht)
-    fged.append(hnoj)
-    fged.append(mqem)
-    fged.append(hxkf)
-    ajhi = yield context.task_all(fged)
-    lvue = []
-    qdcb = context.call_activity("GenerateMatrixA", tsvn)
-    ilvy = context.call_activity("GenerateMatrixB", tsvn)
-    lvue.append(qdcb)
-    lvue.append(ilvy)
-    rufl = yield context.task_all(lvue)
-    yfgs = yield context.call_activity("Aggregator2", rufl)
-    jcnu = []
-    qrhw = context.call_activity("MatrixMultiplication", yfgs)
-    qkrr = context.call_activity("LinPack", yfgs)
-    jcnu.append(qrhw)
-    jcnu.append(qkrr)
-    svct = yield context.task_all(jcnu)
-    vzqi = []
-    ooeo = context.call_activity("FastFourierTransform", uzaw)
-    zwgp = context.call_activity("Aggregator1", ajhi)
-    pspx = context.call_activity("Aggregator3", svct)
-    vzqi.append(ooeo)
-    vzqi.append(zwgp)
-    vzqi.append(pspx)
-    bgpa = yield context.task_all(vzqi)
-    bgpa = insert_end_stats_in_metadata(bgpa)
-    uimc = yield context.call_activity("Aggregator4", bgpa)
-    return uimc
+    qxwo = yield context.call_activity("TaskA", serwoObject)
+    zcfb = []
+    owta = context.call_activity("TaskB", qxwo)
+    snta = context.call_activity("TaskC", qxwo)
+    umwy = context.call_activity("TaskD", qxwo)
+    zcfb.append(owta)
+    zcfb.append(snta)
+    zcfb.append(umwy)
+    gwst = yield context.task_all(zcfb)
+    # gwst = insert_end_stats_in_metadata(gwst)
+    urka = yield context.call_activity("TaskE", gwst)
+    return urka
 
 
 main = df.Orchestrator.create(orchestrator_function)

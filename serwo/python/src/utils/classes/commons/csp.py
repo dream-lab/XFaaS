@@ -13,6 +13,7 @@ class CSP:
     #TODO: Factory pattern for csp
     def build_resources(self,user_dir, dag_definition_path, region, part_id):
         if self.__name == 'azure':
+            print('success')
             azure_resource_generator.generate(user_dir, dag_definition_path,region,part_id)
         else:
             pass

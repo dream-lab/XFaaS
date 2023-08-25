@@ -129,41 +129,24 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    tsvn = yield context.call_activity("Source", serwoObject)
-    uzaw = yield context.call_activity("GenerateList", tsvn)
-    uaht = yield context.call_activity("GenerateInteger", tsvn)
-    fged = []
-    hnoj = context.call_activity("Sine", uaht)
-    mqem = context.call_activity("Cosine", uaht)
-    hxkf = context.call_activity("Factors", uaht)
-    fged.append(hnoj)
-    fged.append(mqem)
-    fged.append(hxkf)
-    ajhi = yield context.task_all(fged)
-    lvue = []
-    qdcb = context.call_activity("GenerateMatrixA", tsvn)
-    ilvy = context.call_activity("GenerateMatrixB", tsvn)
-    lvue.append(qdcb)
-    lvue.append(ilvy)
-    rufl = yield context.task_all(lvue)
-    yfgs = yield context.call_activity("Aggregator2", rufl)
-    jcnu = []
-    qrhw = context.call_activity("MatrixMultiplication", yfgs)
-    qkrr = context.call_activity("LinPack", yfgs)
-    jcnu.append(qrhw)
-    jcnu.append(qkrr)
-    svct = yield context.task_all(jcnu)
-    vzqi = []
-    ooeo = context.call_activity("FastFourierTransform", uzaw)
-    zwgp = context.call_activity("Aggregator1", ajhi)
-    pspx = context.call_activity("Aggregator3", svct)
-    vzqi.append(ooeo)
-    vzqi.append(zwgp)
-    vzqi.append(pspx)
-    bgpa = yield context.task_all(vzqi)
-    bgpa = insert_end_stats_in_metadata(bgpa)
-    uimc = yield context.call_activity("Aggregator4", bgpa)
-    return uimc
+    yyco = yield context.call_activity("Trigger", serwoObject)
+    wuza = yield context.call_activity("TextFileData3", yyco)
+    xoyk = yield context.call_activity("TextFileData2", yyco)
+    faha = yield context.call_activity("TextFileData1", yyco)
+    pcsb = []
+    gpwk = context.call_activity("TextSort3", wuza)
+    ftyw = context.call_activity("TextSort2", xoyk)
+    pojq = context.call_activity("TextSort", faha)
+    pcsb.append(gpwk)
+    pcsb.append(ftyw)
+    pcsb.append(pojq)
+    pvbp = yield context.task_all(pcsb)
+    mykt = yield context.call_activity("AggregateLines", pvbp)
+    fhpj = yield context.call_activity("Aggregate", mykt)
+    tdsg = yield context.call_activity("SingleString", fhpj)
+    tdsg = insert_end_stats_in_metadata(tdsg)
+    gxus = yield context.call_activity("Encrypt", tdsg)
+    return gxus
 
 
 main = df.Orchestrator.create(orchestrator_function)

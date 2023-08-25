@@ -9,7 +9,7 @@ import os
 import uuid
 import psutil
 import azure.functions as az_func
-from .USER_FUNCTION_PLACEHOLDER import function as USER_FUNCTION_PLACEHOLDER_function
+from .USER_FUNCTION_PLACEHOLDER import user_function as USER_FUNCTION_PLACEHOLDER_function
 from azure.storage.queue import QueueService, QueueMessageFormat
 
 
