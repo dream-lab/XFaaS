@@ -129,41 +129,22 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    ejus = yield context.call_activity("Source", serwoObject)
-    mkuo = yield context.call_activity("GenerateList", ejus)
-    hzly = []
-    ibrb = context.call_activity("GenerateMatrixA", ejus)
-    mtjr = context.call_activity("GenerateMatrixB", ejus)
-    hzly.append(ibrb)
-    hzly.append(mtjr)
-    rmgj = yield context.task_all(hzly)
-    spnp = yield context.call_activity("Aggregator2", rmgj)
-    zvyv = []
-    ftwv = context.call_activity("MatrixMultiplication", spnp)
-    akkh = context.call_activity("LinPack", spnp)
-    zvyv.append(ftwv)
-    zvyv.append(akkh)
-    fwmm = yield context.task_all(zvyv)
-    pvlz = yield context.call_activity("GenerateInteger", ejus)
-    qvvw = []
-    gwfw = context.call_activity("Sine", pvlz)
-    ivqw = context.call_activity("Cosine", pvlz)
-    jkid = context.call_activity("Factors", pvlz)
-    qvvw.append(gwfw)
-    qvvw.append(ivqw)
-    qvvw.append(jkid)
-    wcmq = yield context.task_all(qvvw)
-    jxmg = []
-    wmyq = context.call_activity("FastFourierTransform", mkuo)
-    bnbi = context.call_activity("Aggregator3", fwmm)
-    uooe = context.call_activity("Aggregator1", wcmq)
-    jxmg.append(wmyq)
-    jxmg.append(bnbi)
-    jxmg.append(uooe)
-    joqn = yield context.task_all(jxmg)
-    joqn = insert_end_stats_in_metadata(joqn)
-    zjcm = yield context.call_activity("Aggregator4", joqn)
-    return zjcm
+    xgcq = yield context.call_activity("TaskA", serwoObject)
+    pnez = yield context.call_activity("TaskB", xgcq)
+    ryop = yield context.call_activity("TaskC", pnez)
+    jwpy = yield context.call_activity("TaskD", ryop)
+    hwku = yield context.call_activity("TaskE", jwpy)
+    kqan = []
+    ieef = context.call_activity("TaskF", hwku)
+    ivln = context.call_activity("TaskG", hwku)
+    tvcb = context.call_activity("TaskH", hwku)
+    kqan.append(ieef)
+    kqan.append(ivln)
+    kqan.append(tvcb)
+    ydvr = yield context.task_all(kqan)
+    ydvr = insert_end_stats_in_metadata(ydvr)
+    ecjl = yield context.call_activity("TaskI", ydvr)
+    return ecjl
 
 
 main = df.Orchestrator.create(orchestrator_function)
