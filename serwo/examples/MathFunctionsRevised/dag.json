@@ -4,7 +4,7 @@
       {
         "NodeId": "1",
         "NodeName": "Source",
-        "Path": "examples/MathFunctions/src/Source",
+        "Path": "examples/MathFunctionsRevised/src/Source",
         "EntryPoint": "source.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -12,7 +12,7 @@
       {
         "NodeId": "2",
         "NodeName": "GenerateInteger",
-        "Path": "examples/MathFunctions/src/GenerateInteger",
+        "Path": "examples/MathFunctionsRevised/src/GenerateInteger",
         "EntryPoint": "random_int_gen.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -20,7 +20,7 @@
       {
         "NodeId": "3",
         "NodeName": "GenerateList",
-        "Path": "examples/MathFunctions/src/GenerateList",
+        "Path": "examples/MathFunctionsRevised/src/GenerateList",
         "EntryPoint": "random_list_gen.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -28,7 +28,7 @@
       {
         "NodeId": "4",
         "NodeName": "GenerateMatrixA",
-        "Path": "examples/MathFunctions/src/GenerateMatrix",
+        "Path": "examples/MathFunctionsRevised/src/GenerateMatrixA",
         "EntryPoint": "random_matrix_gen.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -36,7 +36,7 @@
       {
         "NodeId": "5",
         "NodeName": "GenerateMatrixB",
-        "Path": "examples/MathFunctions/src/GenerateMatrix",
+        "Path": "examples/MathFunctionsRevised/src/GenerateMatrixB",
         "EntryPoint": "random_matrix_gen.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -44,7 +44,7 @@
       {
         "NodeId": "6",
         "NodeName": "Sine",
-        "Path": "examples/MathFunctions/src/Sine",
+        "Path": "examples/MathFunctionsRevised/src/Sine",
         "EntryPoint": "find_sine.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -52,7 +52,7 @@
       {
         "NodeId": "7",
         "NodeName": "Cosine",
-        "Path": "examples/MathFunctions/src/Cosine",
+        "Path": "examples/MathFunctionsRevised/src/Cosine",
         "EntryPoint": "find_cosine.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -60,7 +60,7 @@
       {
         "NodeId": "8",
         "NodeName": "Factors",
-        "Path": "examples/MathFunctions/src/Factors",
+        "Path": "examples/MathFunctionsRevised/src/Factors",
         "EntryPoint": "find_factors.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -68,7 +68,7 @@
       {
         "NodeId": "9",
         "NodeName": "FastFourierTransform",
-        "Path": "examples/MathFunctions/src/FastFourierTransform",
+        "Path": "examples/MathFunctionsRevised/src/FastFourierTransform",
         "EntryPoint": "fft.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -76,7 +76,7 @@
       {
         "NodeId": "10",
         "NodeName": "MatrixMultiplication",
-        "Path": "examples/MathFunctions/src/MatrixMultiplication",
+        "Path": "examples/MathFunctionsRevised/src/MatrixMultiplication",
         "EntryPoint": "multiply_matrices.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -84,7 +84,7 @@
       {
         "NodeId": "11",
         "NodeName": "LinPack",
-        "Path": "examples/MathFunctions/src/LinPack",
+        "Path": "examples/MathFunctionsRevised/src/LinPack",
         "EntryPoint": "linpack.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -92,7 +92,7 @@
       {
         "NodeId": "12",
         "NodeName": "Aggregator1",
-        "Path": "examples/MathFunctions/src/Aggregator",
+        "Path": "examples/MathFunctionsRevised/src/Aggregator",
         "EntryPoint": "aggr.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -100,7 +100,7 @@
       {
         "NodeId": "13",
         "NodeName": "Aggregator4",
-        "Path": "examples/MathFunctions/src/Aggregator",
+        "Path": "examples/MathFunctionsRevised/src/Aggregator",
         "EntryPoint": "aggr.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -108,7 +108,7 @@
       {
         "NodeId": "14",
         "NodeName": "Aggregator2",
-        "Path": "examples/MathFunctions/src/Aggregator",
+        "Path": "examples/MathFunctionsRevised/src/Aggregator",
         "EntryPoint": "aggr.py",
         "CSP": "NA",
         "MemoryInMB": 256
@@ -116,7 +116,7 @@
       {
         "NodeId": "15",
         "NodeName": "Aggregator3",
-        "Path": "examples/MathFunctions/src/Aggregator",
+        "Path": "examples/MathFunctionsRevised/src/Aggregator",
         "EntryPoint": "aggr.py",
         "CSP": "NA",
         "MemoryInMB": 256

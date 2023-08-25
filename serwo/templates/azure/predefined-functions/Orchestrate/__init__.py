@@ -129,41 +129,41 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    tsvn = yield context.call_activity("Source", serwoObject)
-    uzaw = yield context.call_activity("GenerateList", tsvn)
-    uaht = yield context.call_activity("GenerateInteger", tsvn)
-    fged = []
-    hnoj = context.call_activity("Sine", uaht)
-    mqem = context.call_activity("Cosine", uaht)
-    hxkf = context.call_activity("Factors", uaht)
-    fged.append(hnoj)
-    fged.append(mqem)
-    fged.append(hxkf)
-    ajhi = yield context.task_all(fged)
-    lvue = []
-    qdcb = context.call_activity("GenerateMatrixA", tsvn)
-    ilvy = context.call_activity("GenerateMatrixB", tsvn)
-    lvue.append(qdcb)
-    lvue.append(ilvy)
-    rufl = yield context.task_all(lvue)
-    yfgs = yield context.call_activity("Aggregator2", rufl)
-    jcnu = []
-    qrhw = context.call_activity("MatrixMultiplication", yfgs)
-    qkrr = context.call_activity("LinPack", yfgs)
-    jcnu.append(qrhw)
-    jcnu.append(qkrr)
-    svct = yield context.task_all(jcnu)
-    vzqi = []
-    ooeo = context.call_activity("FastFourierTransform", uzaw)
-    zwgp = context.call_activity("Aggregator1", ajhi)
-    pspx = context.call_activity("Aggregator3", svct)
-    vzqi.append(ooeo)
-    vzqi.append(zwgp)
-    vzqi.append(pspx)
-    bgpa = yield context.task_all(vzqi)
-    bgpa = insert_end_stats_in_metadata(bgpa)
-    uimc = yield context.call_activity("Aggregator4", bgpa)
-    return uimc
+    ejus = yield context.call_activity("Source", serwoObject)
+    mkuo = yield context.call_activity("GenerateList", ejus)
+    hzly = []
+    ibrb = context.call_activity("GenerateMatrixA", ejus)
+    mtjr = context.call_activity("GenerateMatrixB", ejus)
+    hzly.append(ibrb)
+    hzly.append(mtjr)
+    rmgj = yield context.task_all(hzly)
+    spnp = yield context.call_activity("Aggregator2", rmgj)
+    zvyv = []
+    ftwv = context.call_activity("MatrixMultiplication", spnp)
+    akkh = context.call_activity("LinPack", spnp)
+    zvyv.append(ftwv)
+    zvyv.append(akkh)
+    fwmm = yield context.task_all(zvyv)
+    pvlz = yield context.call_activity("GenerateInteger", ejus)
+    qvvw = []
+    gwfw = context.call_activity("Sine", pvlz)
+    ivqw = context.call_activity("Cosine", pvlz)
+    jkid = context.call_activity("Factors", pvlz)
+    qvvw.append(gwfw)
+    qvvw.append(ivqw)
+    qvvw.append(jkid)
+    wcmq = yield context.task_all(qvvw)
+    jxmg = []
+    wmyq = context.call_activity("FastFourierTransform", mkuo)
+    bnbi = context.call_activity("Aggregator3", fwmm)
+    uooe = context.call_activity("Aggregator1", wcmq)
+    jxmg.append(wmyq)
+    jxmg.append(bnbi)
+    jxmg.append(uooe)
+    joqn = yield context.task_all(jxmg)
+    joqn = insert_end_stats_in_metadata(joqn)
+    zjcm = yield context.call_activity("Aggregator4", joqn)
+    return zjcm
 
 
 main = df.Orchestrator.create(orchestrator_function)

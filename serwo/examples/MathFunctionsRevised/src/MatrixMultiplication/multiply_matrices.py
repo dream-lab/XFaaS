@@ -6,10 +6,10 @@ import time as t
 import numpy as np
 import os
 import json
-
+import logging
 def handle(matrix_A, matrix_B, iters):
-
     # multiply the two matrices using np.matmul
+
     startTime = t.time()
     for i in range(iters):
         result = np.matmul(matrix_A, matrix_B)
@@ -21,12 +21,13 @@ def handle(matrix_A, matrix_B, iters):
 
     return result
 
-def user_function(serwo_list_object):
+def user_function(xfaas_object):
     try:
-        objects = serwo_list_object.get_objects()
-        Body_A = objects[0].get_body()
-        Body_B = objects[1].get_body()
-        result = handle(json.loads(Body_A['matrix']), json.loads(Body_B['matrix']), Body_A['iters'])
+        body = xfaas_object.get_body()
+        Body_A = body['matrixA']
+        Body_B = body['matrixB']
+
+        result = handle(json.loads(Body_A), json.loads(Body_B), body['iters'])
         returnbody = {
             'Resulting matrix from multiplication of two randomly generated matrices': str(result)
         }

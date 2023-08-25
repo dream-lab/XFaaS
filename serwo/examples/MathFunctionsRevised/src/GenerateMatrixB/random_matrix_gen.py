@@ -8,7 +8,7 @@ import random
 from json import JSONEncoder
 np.random.seed(1)
 
-
+import logging
 class NumpyArrayEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
@@ -29,10 +29,9 @@ def handle(body):
     matrix = np.random.rand(size, size)
 
     EndTime = t.time()
-
     print("\nLatency of random matrix generation: " +str(EndTime-StartTime)+" seconds")
     returnbody = {
-        'matrix': json.dumps(matrix,cls=NumpyArrayEncoder),
+        'matrixB': json.dumps(matrix,cls=NumpyArrayEncoder),
         'size': size,
         'iters': body['iters']
     }
