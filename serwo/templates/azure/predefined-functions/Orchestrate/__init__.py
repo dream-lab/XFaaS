@@ -129,22 +129,42 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    xgcq = yield context.call_activity("TaskA", serwoObject)
-    pnez = yield context.call_activity("TaskB", xgcq)
-    ryop = yield context.call_activity("TaskC", pnez)
-    jwpy = yield context.call_activity("TaskD", ryop)
-    hwku = yield context.call_activity("TaskE", jwpy)
-    kqan = []
-    ieef = context.call_activity("TaskF", hwku)
-    ivln = context.call_activity("TaskG", hwku)
-    tvcb = context.call_activity("TaskH", hwku)
-    kqan.append(ieef)
-    kqan.append(ivln)
-    kqan.append(tvcb)
-    ydvr = yield context.task_all(kqan)
-    ydvr = insert_end_stats_in_metadata(ydvr)
-    ecjl = yield context.call_activity("TaskI", ydvr)
-    return ecjl
+    fwgg = yield context.call_activity("Source", serwoObject)
+    wgtv = yield context.call_activity("GenerateList", fwgg)
+    fslv = []
+    jqii = context.call_activity("GenerateMatrixA", fwgg)
+    cdiy = context.call_activity("GenerateMatrixB", fwgg)
+    fslv.append(jqii)
+    fslv.append(cdiy)
+    gyyw = yield context.task_all(fslv)
+    kmlv = yield context.call_activity("Aggregator2", gyyw)
+    psqj = []
+    ckoa = context.call_activity("MatrixMultiplication", kmlv)
+    ybir = context.call_activity("LinPack", kmlv)
+    psqj.append(ckoa)
+    psqj.append(ybir)
+    qdgd = yield context.task_all(psqj)
+    wqry = yield context.call_activity("GenerateInteger", fwgg)
+    jcul = []
+    ncht = context.call_activity("Sine", wqry)
+    clsw = context.call_activity("Cosine", wqry)
+    cszd = context.call_activity("Factors", wqry)
+    jcul.append(ncht)
+    jcul.append(clsw)
+    jcul.append(cszd)
+    qenq = yield context.task_all(jcul)
+    xink = []
+    edni = context.call_activity("FastFourierTransform", wgtv)
+    reun = context.call_activity("Aggregator3", qdgd)
+    sisu = context.call_activity("Aggregator1", qenq)
+    xink.append(edni)
+    xink.append(reun)
+    xink.append(sisu)
+    lidq = yield context.task_all(xink)
+    zcqo = yield context.call_activity("Aggregator4", lidq)
+    zcqo = insert_end_stats_in_metadata(zcqo)
+    hdrd = yield context.call_activity("CollectLogsMathAz", zcqo)
+    return hdrd
 
 
 main = df.Orchestrator.create(orchestrator_function)

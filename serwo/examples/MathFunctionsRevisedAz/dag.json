@@ -124,7 +124,7 @@
       {
         "NodeId": "16",
         "NodeName": "CollectLogsMathAz",
-        "Path": "examples/MathFunctionsRevisedAz/CollectLogsMathAz",
+        "Path": "examples/MathFunctionsRevisedAz/src/CollectLogsMathAz",
         "EntryPoint": "func.py",
         "CSP": "NA",
         "MemoryInMB": 256

@@ -44,7 +44,7 @@
       {
         "NodeId": "6",
         "NodeName": "CollectLogsGraphAz",
-        "Path": "examples/FileSystemRevisedAz/CollectLogsGraphAz",
+        "Path": "examples/graphAz/CollectLogsGraphAz",
         "EntryPoint": "func.py",
         "CSP": "NA",
         "MemoryInMB": 256

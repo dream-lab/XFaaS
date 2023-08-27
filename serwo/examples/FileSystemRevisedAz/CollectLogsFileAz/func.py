@@ -14,7 +14,7 @@ queue_service.encode_function = QueueMessageFormat.binary_base64encode
 queue_service.decode_function = QueueMessageFormat.binary_base64decode
 
 
-def function(serwoObject) -> SerWOObject:
+def user_function(serwoObject) -> SerWOObject:
     try:
         fin_dict = dict()
         data = serwoObject.get_body()
