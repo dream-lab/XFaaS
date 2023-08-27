@@ -1,0 +1,143 @@
+{
+    "WorkflowName": "FileSystemRevisedAz",
+    "Nodes": [
+      {
+        "NodeId": "1",
+        "NodeName": "Trigger",
+        "Path": "examples/FileSystemRevisedAz/Trigger",
+        "EntryPoint": "Trigger.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      },
+      {
+        "NodeId": "2",
+        "NodeName": "TextFileData1",
+        "Path": "examples/FileSystemRevisedAz/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "3",
+        "NodeName": "TextFileData2",
+        "Path": "examples/FileSystemRevisedAz/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "4",
+        "NodeName": "TextFileData3",
+        "Path": "examples/FileSystemRevisedAz/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "5",
+        "NodeName": "TextSort",
+        "Path": "examples/FileSystemRevisedAz/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "6",
+        "NodeName": "TextSort2",
+        "Path": "examples/FileSystemRevisedAz/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "7",
+        "NodeName": "TextSort3",
+        "Path": "examples/FileSystemRevisedAz/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "8",
+        "NodeName": "AggregateLines",
+        "Path": "examples/FileSystemRevisedAz/AggregateLines",
+        "EntryPoint": "AggregateLines.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "9",
+        "NodeName": "Aggregate",
+        "Path": "examples/FileSystemRevisedAz/Aggregate",
+        "EntryPoint": "FileSize.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "10",
+        "NodeName": "SingleString",
+        "Path": "examples/FileSystemRevisedAz/SingleString",
+        "EntryPoint": "SingleString.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "11",
+        "NodeName": "Encrypt",
+        "Path": "examples/FileSystemRevisedAz/Encrypt",
+        "EntryPoint": "Encrypt.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "12",
+        "NodeName": "CollectLogsFileAz",
+        "Path": "examples/FileSystemRevisedAz/CollectLogsFileAz",
+        "EntryPoint": "func.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      }
+    ],
+    "Edges": [
+      {
+        "Trigger": ["TextFileData1"]
+      },
+      {
+        "Trigger": ["TextFileData2"]
+      },
+      {
+        "Trigger": ["TextFileData3"]
+      },
+      {
+        "TextFileData1":["TextSort"]
+      },
+      {
+        "TextFileData2":["TextSort2"]
+       },
+       {
+        "TextFileData3":["TextSort3"]
+       },
+       { 
+        "TextSort":["AggregateLines"]
+      },
+      { 
+        "TextSort2":["AggregateLines"]
+      },
+      { 
+        "TextSort3":["AggregateLines"]
+      },
+      { 
+        "AggregateLines":["Aggregate"]
+      },
+      {
+        "Aggregate":["SingleString"]
+      },
+      {
+        "SingleString":["Encrypt"]
+      },
+      {
+        "Encrypt" : ["CollectLogsFileAz"]
+      }
+    ]
+  }
+  

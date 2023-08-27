@@ -4,8 +4,8 @@ from python.src.utils.classes.commons.serwo_objects import SerWOObject
 import os, uuid
 
 
-connect_str = "CONNECTION_STRING_PLACEHOLDER"
-queue_name = "QUEUE_NAME_PLACEHOLDER"
+connect_str = "DefaultEndpointsProtocol=https;AccountName=xfaaslogging;AccountKey=gtmYmyApGFzUN/6ZtRhqSCW6TeT8ScPmuSToqXBe/U8urzrfF+84y97LL5DvbVPLYFu4Ofz/87vT+AStOalmgg==;EndpointSuffix=core.windows.net"
+queue_name = "big-data-graph-azure"
 
 
 queue_service = QueueService(connection_string=connect_str)

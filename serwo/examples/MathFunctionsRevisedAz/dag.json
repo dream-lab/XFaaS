@@ -1,0 +1,180 @@
+{
+    "WorkflowName": "MathFunctions",
+    "Nodes": [
+      {
+        "NodeId": "1",
+        "NodeName": "Source",
+        "Path": "examples/MathFunctionsRevisedAz/src/Source",
+        "EntryPoint": "source.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "2",
+        "NodeName": "GenerateInteger",
+        "Path": "examples/MathFunctionsRevisedAz/src/GenerateInteger",
+        "EntryPoint": "random_int_gen.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "3",
+        "NodeName": "GenerateList",
+        "Path": "examples/MathFunctionsRevisedAz/src/GenerateList",
+        "EntryPoint": "random_list_gen.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "4",
+        "NodeName": "GenerateMatrixA",
+        "Path": "examples/MathFunctionsRevisedAz/src/GenerateMatrixA",
+        "EntryPoint": "random_matrix_gen.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "5",
+        "NodeName": "GenerateMatrixB",
+        "Path": "examples/MathFunctionsRevisedAz/src/GenerateMatrixB",
+        "EntryPoint": "random_matrix_gen.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "6",
+        "NodeName": "Sine",
+        "Path": "examples/MathFunctionsRevisedAz/src/Sine",
+        "EntryPoint": "find_sine.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "7",
+        "NodeName": "Cosine",
+        "Path": "examples/MathFunctionsRevisedAz/src/Cosine",
+        "EntryPoint": "find_cosine.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "8",
+        "NodeName": "Factors",
+        "Path": "examples/MathFunctionsRevisedAz/src/Factors",
+        "EntryPoint": "find_factors.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "9",
+        "NodeName": "FastFourierTransform",
+        "Path": "examples/MathFunctionsRevisedAz/src/FastFourierTransform",
+        "EntryPoint": "fft.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "10",
+        "NodeName": "MatrixMultiplication",
+        "Path": "examples/MathFunctionsRevisedAz/src/MatrixMultiplication",
+        "EntryPoint": "multiply_matrices.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "11",
+        "NodeName": "LinPack",
+        "Path": "examples/MathFunctionsRevisedAz/src/LinPack",
+        "EntryPoint": "linpack.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "12",
+        "NodeName": "Aggregator1",
+        "Path": "examples/MathFunctionsRevisedAz/src/Aggregator",
+        "EntryPoint": "aggr.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "13",
+        "NodeName": "Aggregator4",
+        "Path": "examples/MathFunctionsRevisedAz/src/Aggregator",
+        "EntryPoint": "aggr.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "14",
+        "NodeName": "Aggregator2",
+        "Path": "examples/MathFunctionsRevisedAz/src/Aggregator",
+        "EntryPoint": "aggr.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "15",
+        "NodeName": "Aggregator3",
+        "Path": "examples/MathFunctionsRevisedAz/src/Aggregator",
+        "EntryPoint": "aggr.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "16",
+        "NodeName": "CollectLogsMathAz",
+        "Path": "examples/MathFunctionsRevisedAz/CollectLogsMathAz",
+        "EntryPoint": "func.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      }
+    ],
+    "Edges": [
+        {
+            "Source": ["GenerateInteger","GenerateList", "GenerateMatrixA", "GenerateMatrixB"]
+        },
+        {
+            "GenerateInteger": ["Sine", "Cosine", "Factors"]
+        },
+        {
+            "Sine": ["Aggregator1"]
+        },
+        {
+            "Cosine": ["Aggregator1"]
+        },
+        {
+            "Factors": ["Aggregator1"]
+        },
+        {
+            "GenerateList": ["FastFourierTransform"]
+        },
+        {
+          "FastFourierTransform": ["Aggregator4"]
+        },
+        {
+          "GenerateMatrixA": ["Aggregator2"]
+        },
+        {
+          "GenerateMatrixB": ["Aggregator2"]
+        },
+        {
+          "Aggregator2": ["MatrixMultiplication","LinPack"]
+        },
+        {
+          "LinPack": ["Aggregator3"]
+        },
+        {
+          "MatrixMultiplication": ["Aggregator3"]
+        },
+        {
+          "Aggregator1": ["Aggregator4"]
+        },
+        {
+          "Aggregator3": ["Aggregator4"]
+        },
+        {
+          "Aggregator4" : ["CollectLogsMathAz"]
+        }
+    ]
+  }

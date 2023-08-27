@@ -1,0 +1,77 @@
+{
+    "WorkflowName": "graph",
+    "Nodes": [
+      {
+        "NodeId": "1",
+        "NodeName": "TaskA",
+        "Path": "examples/graphAz/graphGen",
+        "EntryPoint": "graphGen.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      },
+      {
+        "NodeId": "2",
+        "NodeName": "TaskB",
+        "Path": "examples/graphAz/graphBFT",
+        "EntryPoint": "graphBFT.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      },
+      {
+        "NodeId": "3",
+        "NodeName": "TaskC",
+        "Path": "examples/graphAz/pagerank",
+        "EntryPoint": "pagerank.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      },
+      {
+        "NodeId": "4",
+        "NodeName": "TaskD",
+        "Path": "examples/graphAz/graphMST",
+        "EntryPoint": "graphMST.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      },
+      {
+        "NodeId": "5",
+        "NodeName": "TaskE",
+        "Path": "examples/graphAz/aggregate",
+        "EntryPoint": "aggregate.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      },
+      {
+        "NodeId": "6",
+        "NodeName": "CollectLogsGraphAz",
+        "Path": "examples/FileSystemRevisedAz/CollectLogsGraphAz",
+        "EntryPoint": "func.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      }
+    ],
+    "Edges": [
+      {
+        "TaskA": ["TaskB"]
+      },
+      {  
+        "TaskA": ["TaskC"]
+      },
+      {
+        "TaskA": ["TaskD"]
+      },
+      {
+      	"TaskB": ["TaskE"]
+      },
+      {
+      	"TaskC": ["TaskE"]
+      },
+      {
+      	"TaskD": ["TaskE"]
+      },
+      {
+        "TaskE" : ["CollectLogsGraphAz"]
+      }
+    ]
+  }
+  
