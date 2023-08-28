@@ -129,21 +129,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    fcyp = yield context.call_activity("TaskA", serwoObject)
-    vlij = yield context.call_activity("TaskB", fcyp)
-    omum = yield context.call_activity("TaskC", vlij)
-    sqjb = yield context.call_activity("TaskD", omum)
-    vijb = yield context.call_activity("TaskE", sqjb)
-    cowa = []
-    xuqq = context.call_activity("TaskG", vijb)
-    qevu = context.call_activity("TaskH", vijb)
-    cowa.append(xuqq)
-    cowa.append(qevu)
-    toud = yield context.task_all(cowa)
-    kvsu = yield context.call_activity("TaskI", toud)
-    kvsu = insert_end_stats_in_metadata(kvsu)
-    nqxg = yield context.call_activity("CollectLogsImageAz", kvsu)
-    return nqxg
+    kehd = yield context.call_activity("TaskA", serwoObject)
+    loqu = []
+    qgky = context.call_activity("TaskB", kehd)
+    vgpk = context.call_activity("TaskC", kehd)
+    vqua = context.call_activity("TaskD", kehd)
+    loqu.append(qgky)
+    loqu.append(vgpk)
+    loqu.append(vqua)
+    feja = yield context.task_all(loqu)
+    lipx = yield context.call_activity("TaskE", feja)
+    lipx = insert_end_stats_in_metadata(lipx)
+    rvgx = yield context.call_activity("CollectLogsGraphAz", lipx)
+    return rvgx
 
 
 main = df.Orchestrator.create(orchestrator_function)

@@ -8,7 +8,6 @@ import json
 def handler(event):
 
     size = event.get('size')
-    edges = event.get('edges')
     for key in event.keys():
         if key == "startVertex":
             startVertex = event.get('startVertex')
@@ -16,7 +15,18 @@ def handler(event):
     else:
         startVertex = None
 
-    graph = nx.barabasi_albert_graph(size, edges)
+    if "graph_type" in event:
+        graph_type = event.get("graph_type")
+    else:
+        graph_type = "complete"
+
+    if graph_type.lower() == "barabasi":
+        edges = event.get('edges')
+        graph = nx.barabasi_albert_graph(size,edges)
+    elif graph_type.lower() == "binomial_tree":
+        graph = nx.binomial_tree(size)
+    else:
+        graph = nx.complete_graph(size)
 
     graph_dict = json_graph.adjacency_data(graph)
     returnbody = {
