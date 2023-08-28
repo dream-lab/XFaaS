@@ -19,7 +19,7 @@ class CSP:
         if self.__name == 'azure':
             self.build_az(dag_definition_file, dag_definition_path, part_id, region, user_dir)
         else:
-            aws_deployer = AWS(user_dir, dag_definition_file, "REST")
+            aws_deployer = AWS(user_dir, dag_definition_file, "REST", part_id, region)
             aws_deployer.build_resources()
             aws_deployer.build_workflow()
             aws_deployer.deploy_workflow()

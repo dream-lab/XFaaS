@@ -26,10 +26,10 @@ class AWS:
     Constructor
     """
 
-    def __init__(self, user_dir, dag_desc_filename, trigger_type, part_id):
+    def __init__(self, user_dir, dag_desc_filename, trigger_type, part_id, region):
         # populating these from external modules
         # TODO - parameterize the region as well (hardcoded for now)
-        self.__region = "ap-south-1"
+        self.__region = region
         self.__user_dir = pathlib.Path(user_dir)
         self.__dag_definition_file = dag_desc_filename
         self.__trigger_type = TriggerType.get_trigger_type(trigger_type)
@@ -60,16 +60,16 @@ class AWS:
         self.__serwo_functions_build_dir = self.__aws_build_dir / f"functions"
         self.__sam_build_dir = self.__aws_build_dir / f"sam-build"
 
-        # TODO - convert this aws-clouformation-outputs -> self.__getname() + self.__region + self.__part_id
-        self.__outputs_filepath = (
-            self.__serwo_resources_dir / f"aws-cloudformation-outputs.json"
-        )
-
         # DAG related parameters
         self.__user_dag = AWSUserDag(self.__dag_definition_path)
         self.__sam_stackname = (
             "XFaaSApp-" + self.__user_dag.get_user_dag_name()
         )  # TODO - add nonce here
+
+        # TODO - convert this aws-clouformation-outputs -> self.__getname() + self.__region + self.__part_id
+        self.__outputs_filepath = (
+            self.__serwo_resources_dir / f"aws-{self.__region}-{self.__part_id}.json"
+        )
 
     """
     NOTE - This is a replacement for the create_env.sh file
