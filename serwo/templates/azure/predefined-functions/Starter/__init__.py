@@ -19,10 +19,12 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
     if "metadata" not in request:
         job_id = request["workflow_instance_id"]
         req_ts = request["request_timestamp"]
+        session_id = request["session_id"] # NOTE - new variable for tracking the session
         meta = {
             "workflow_instance_id": job_id,
             "functions": [],
             "request_timestamp": req_ts,
+            "session_id": session_id
         }
         request["metadata"] = meta
 

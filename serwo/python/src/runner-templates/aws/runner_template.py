@@ -57,11 +57,13 @@ def lambda_handler(event, context):
             event = dict(body=new_event)
             wf_instance_id = event["body"].get("workflow_instance_id")
             request_timestamp = event["body"].get("request_timestamp")
+            session_id = event["body"].get("session_id") # NOTE - new variable to keep track of requests
             overheads = start_time - request_timestamp
             event["metadata"] = dict(
                 workflow_instance_id=wf_instance_id,
                 workflow_start_time=start_time,
                 request_timestamp=request_timestamp,
+                session_id=session_id,
                 overheads=overheads,
                 functions=[],
             )
