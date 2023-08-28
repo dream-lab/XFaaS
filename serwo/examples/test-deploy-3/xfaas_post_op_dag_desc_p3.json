@@ -1,0 +1,27 @@
+{
+    "WorkflowName": "MultiPartitionLinear-p3",
+    "Nodes": [
+      {
+        "NodeId": "6",
+        "NodeName": "TaskF",
+        "Path": "examples/test-deploy-3/src/xmlparse_23KB_25KB",
+        "EntryPoint": "func.py",
+        "CSP": "Azure",
+        "MemoryInMB": 128
+      },
+      {
+        "NodeId": "7",
+        "NodeName": "TaskG",
+        "Path": "examples/test-deploy-3/src/iostress_512wr_25KB",
+        "EntryPoint": "func.py",
+        "CSP": "Azure",
+        "MemoryInMB": 128
+      }
+    ],
+    "Edges": [
+      {
+        "TaskF": ["TaskG"]
+      }
+    ]
+  }
+  

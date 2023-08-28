@@ -230,6 +230,7 @@ class SerWOUserDag:
 
 
     def get_partitioned_graph(self, partition_point: PartitionPoint, new_node_params:dict, forward_function_params:dict):
+        # this works on the assumption that the function names are unique
         partition_point_nodeName = partition_point.get_partition_point_name()
         partition_point_nodeId = self.__nodeIDMap[partition_point_nodeName]
         # get source and sink nodes for the entire user dag
@@ -276,7 +277,7 @@ class SerWOUserDag:
            print(right_subgraph.nodes[u]['NodeName'], right_subgraph.nodes[v]['NodeName'])
 
         return left_subgraph, right_subgraph
-
+    
     
 def set_diff(a,b):
     a =set(a)

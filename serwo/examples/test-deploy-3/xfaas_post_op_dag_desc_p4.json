@@ -1,0 +1,27 @@
+{
+    "WorkflowName": "MultiPartitionLinear-p4",
+    "Nodes": [
+      {
+        "NodeId": "8",
+        "NodeName": "TaskH",
+        "Path": "examples/test-deploy-3/src/resnet_25KB",
+        "EntryPoint": "func.py",
+        "CSP": "Azure",
+        "MemoryInMB": 512
+      },
+      {
+        "NodeId": "9",
+        "NodeName": "TaskI",
+        "Path": "examples/test-deploy-3/src/memstress_128MB_25KB",
+        "EntryPoint": "func.py",
+        "CSP": "Azure",
+        "MemoryInMB": 256
+      }
+    ],
+    "Edges": [
+      {
+        "TaskH": ["TaskI"]
+      }
+    ]
+  }
+  

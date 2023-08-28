@@ -27,6 +27,8 @@ def get_user_pinned_nodes():
 if __name__ == '__main__':
     user_pinned_nodes = get_user_pinned_nodes()
     xfaas_user_dag = xfaas_init.init(DAG_DEFINITION_PATH)
+    
+    # at this step we get the partition configuration
     partition_config = xfaas_optimizer.optimize(xfaas_user_dag,
                                                 user_pinned_nodes, benchmark_path)
 

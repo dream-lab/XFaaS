@@ -4,6 +4,7 @@ import random
 import string
 from collections import defaultdict
 
+# TODO - clean this up and wire this with the serwo user dag object
 class UserDag:
     # private variables
     __dag_config_data = dict() # dag configuration (picked up from user file)

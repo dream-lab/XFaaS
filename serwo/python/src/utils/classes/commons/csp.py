@@ -15,6 +15,7 @@ class CSP:
         if self.__name == 'azure':
             azure_resource_generator.generate(user_dir, dag_definition_path,region,part_id)
         else:
+            # NOTE - this does not do anything since there is no resource creation for AWS
             pass
 
 

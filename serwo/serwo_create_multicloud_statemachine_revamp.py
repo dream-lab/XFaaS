@@ -19,40 +19,36 @@ import datetime
 # Dummy function for partition point
 
 
-def get_partition_points(partition_point):
-    # print(partition_point)
-    # left_csp = partition_point["left_csp"]
-    # right_csp = partition_point["right_csp"]
-    # out_degree = partition_point["out_degree"]
-    # id = partition_point["node_id"]
+def get_partition_points():
+    # filepaths for the partiiton configuraitons
+    filepath1 = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/test-deploy-3/xfaas_post_op_dag_desc_p1.json"
+    filepath2 = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/test-deploy-3/xfaas_post_op_dag_desc_p2.json"
+    filepath3 = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/test-deploy-3/xfaas_post_op_dag_desc_p3.json"
+    filepath4 = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/test-deploy-3/xfaas_post_op_dag_desc_p4.json"
+    return [
+        PartitionPoint("TaskB", 1, CSP.AWS, "p1", "ap-south-1", filepath1),
+        PartitionPoint("TaskE", 1, CSP.AZURE, "p2", "centralindia", filepath2),
+        PartitionPoint("TaskG", 1, CSP.AWS, "p3", "ap-east-1", filepath3),
+        PartitionPoint("TaskI", 0, CSP.AWS, "p4", "us-west-1", filepath4)
+    ]
 
-    # dag = serwo_user_dag.get_dag().nodes
-    # for nd in dag:
-    #     if nd == id:
-    #         taskname = dag[nd]["NodeName"]
-    # # print(taskname)
+def wire_partitions(user_dir):
+    partition_points = get_partition_points()
+    pp_pairs = list(zip(partition_points, partition_points[1:])).reverse()
 
-    # return [PartitionPoint(taskname, out_degree, left_csp, right_csp)]
+    # Iterate over the point pairs in reverse orders
+    for pair in pp_pairs:
+        left_part_point = pair[0]
+        right_part_point = pair[1]
+        
 
-    # TODO - the order for this list matters in order to get the subgraphs.
-    # we will deploy one subgraph at a time starting from the rightmost subgraph
-    return [PartitionPoint("TaskB", 1, CSP.AWS, CSP.AZURE)]
 
-    # new return for the partition point supporting multi multi cloud
-    # return [
-    #     PartitionPoint("TaskB", 1, CSP.AWS, "p1", "ap-south-1"),
-    #     PartitionPoint("TaskE", 1, CSP.AZURE, "p2", "centralindia"),
-    #     PartitionPoint("TaskG", 1, CSP.AWS, "p3", "ap-east-1"),
-    #     PartitionPoint("TaskI", 0, CSP.AWS, "p4", "us-west-1")
-    # ]
 
 
 """
 The function returns function_name, entry_point, template_path 
 for a pair of CSPs in a partition point
 """
-
-
 def get_egress_function_details(left_csp: CSP, right_csp: CSP, serwo_root_dir, partId):
     # here even for other clouds in addition we need all pairs
     # NOTE - this can be done only on the basis of the right CSP itself.
@@ -78,12 +74,14 @@ def get_egress_function_details(left_csp: CSP, right_csp: CSP, serwo_root_dir, p
         # TODO - add the egress function here for OpenFaaS
         # NOTE - add the partId in the egress function
         pass
+    
     if right_csp == CSP.AZURE:
         function_id = f"251-{partId}"
         function_name = "PushToStorageQueue"
         entry_point = "push_to_azure_q.py"
         path = f"{serwo_root_dir}/python/src/faas-templates/azure/push-to-storage-queue-template/{function_name}"
         return function_id, function_name, entry_point, path
+    
     if right_csp == CSP.AWS:
         function_id = f"252-{partId}"
         function_name = "PushToSQS"
@@ -559,80 +557,51 @@ if __name__ == "__main__":
     ##TODO: read from dag
     user_pinned_nodes = []
     user_pinned_csp = ""
-
-    ####
-    ##Two Partition Logic
-    ####
-    ### HAD handled two partitions separately in hurry of impl. separating out generic logic, merge 1 and 2 parts
-    ### with generic logic
-
-    if NUM_PARTS < 3:
-        valid_partition_points_after_user_pinning = (
-            serwo_user_dag.get_partition_points_after_user_pinning(
-                partition_points=all_valid_partition_points,
-                user_pinned_nodes=user_pinned_nodes,
-                num_parts=NUM_PARTS,
-                user_pinned_csp=user_pinned_csp,
-            )
-        )
-
-        partition_point = serwo_user_dag.get_best_partition(
-            partition_points=valid_partition_points_after_user_pinning,
-            num_parts=NUM_PARTS,
-            dag_path=DAG_BENCHMARK_PATH,
-            user_pinned_csp=user_pinned_csp,
-            user_pinned_nodes=user_pinned_nodes,
-        )
-    else:
-        evaluate_generic_partitioner()
-
-    # print(f'best partition_point = {partition_point}')
     """
     NOTE - the member function in the serwo_user_dag contains the logic for generating 
     all the partition points in the main spine line of the graph
     """
 
-    partition_points = get_partition_points(partition_point)
+    partition_points = get_partition_points()
     # get the details for the egress fn (new node) for a graph
     # QUESTION[TK] - are we supporting only a single partition point ?
 
     # we enumerate the partition points in reverse and start wiring and deploying 
     # the subdags and start connecting the 
-    # for partition_point1, partition_point2 in zip(partition_point, partition_point[1:]):
-    for idx, partition_point in enumerate(partition_points):
-        # set id of partition points
-        partitionId = idx + 1
-        # create a user directory for each partition point
-        # egress function details
-        egress_fn_details = add_egress_node_in_userdir(
-            partition_point=partition_point,
-            user_dir=USER_DIR,
-            serwo_root_dir=PARENT_DIRECTORY,
-            left_csp=partition_point.get_left_csp(),
-            right_csp=partition_point.get_left_csp()
-        )
+    partition_point_pairs = list(zip(partition_points, partition_points[1:])).reverse()
+    for idx, pp_pair in enumerate(partition_point_pairs):
+        partition_point_left = pp_pair[0]
+        partition_point_right = pp_pair[1]
 
-        forward_fn_details = add_forward_node_in_userdir(
-            partition_point=partition_point,
-            user_dir=USER_DIR,
-            serwo_root_dir=PARENT_DIRECTORY,
-        )
+        # Don't the addition of egress for the last partition since it ends there
+        partition_xfaas_dag = SerWOUserDag(partition_point_right.get_dag_filepath()).get_dag()
+        if idx > 0:
+            egress_fn_details = add_egress_node_in_userdir(
+                partition_point=partition_point_right,
+                user_dir=USER_DIR,
+                serwo_root_dir=PARENT_DIRECTORY,
+                left_csp=partition_point_left.get_left_csp(),
+                right_csp=partition_point_right.get_left_csp()
+            )
 
-        # generate the subgraphs
-        left_subgraph, right_subgraph = serwo_user_dag.get_partitioned_graph(
-            partition_point=partition_point,
-            new_node_params=egress_fn_details,
-            forward_function_params=forward_fn_details,
-        )
+            forward_fn_details = add_forward_node_in_userdir(
+                partition_point=partition_point_right,
+                user_dir=USER_DIR,
+                serwo_root_dir=PARENT_DIRECTORY,
+            )
+
+            # generate the subgraphs
+            subgraph = serwo_user_dag.get_partitioned_graph_v2(
+                partition_point=partition_point_right,
+                new_node_params=egress_fn_details,
+                forward_function_params=forward_fn_details,
+            )
+            partition_xfaas_dag = subgraph
 
         # generate JSONs
         ff = json.loads((open(DAG_DEFINITION_PATH, "r").read()))
         print(ff)
         workflow_name = serwo_user_dag.get_workflow_name()
-        # wf_owner = ff["WorkflowOwner"]
-        # wf_version = ff["WorkflowVersion"]
-        # wf_description = ff['WorkflowDescription']
-        # test
         wf_owner = "XfaasUSer"
         wf_version = "1.0"
         wf_description = "multicloud"
