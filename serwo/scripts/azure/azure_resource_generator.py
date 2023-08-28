@@ -24,7 +24,7 @@ def create_resources(resource_dir, out_file_path, region):
     credential = DefaultAzureCredential()
     subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
     resource_client = ResourceManagementClient(credential, subscription_id)
-    print('Creating resources for ingress azure ')
+    # print('Creating resources for ingress azure ')
     try:
         rg_result = resource_client.resource_groups.create_or_update(
             f"{resource_group_name}", {"location": f"{region}"}
@@ -42,7 +42,7 @@ def create_resources(resource_dir, out_file_path, region):
             }
         )
         account_result = poller.result()
-        print(f"Provisioned storage account {account_result.name}")
+        # print(f"Provisioned storage account {account_result.name}")
     except Exception as e:
         print(e)
 

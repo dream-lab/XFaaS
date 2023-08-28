@@ -58,15 +58,23 @@
         "MemoryInMB": 256
       },
       {
-        "NodeId" : "9",
+        "NodeId": "9",
         "NodeName": "TaskI",
+        "Path": "examples/ImageProcessAz/mobilenet",
+        "EntryPoint": "mobilenet.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId" : "10",
+        "NodeName": "TaskJ",
         "Path": "examples/ImageProcessAz/aggregator",
         "EntryPoint": "aggregator.py",
         "CSP": "NA",
         "MemoryInMB": 256
       },
       {
-        "NodeId" : "10",
+        "NodeId" : "11",
         "NodeName": "CollectLogsImageAz",
         "Path": "examples/ImageProcessAz/CollectLogsImageAz",
         "EntryPoint": "func.py",
@@ -90,16 +98,19 @@
         "TaskD": ["TaskE"]
       },
       {
-        "TaskE": ["TaskG","TaskH"]
+        "TaskE": ["TaskG","TaskH","TaskI"]
       },
       {
-        "TaskG": ["TaskI"]
+        "TaskG": ["TaskJ"]
       },
       {
-        "TaskH": ["TaskI"]
+        "TaskH": ["TaskJ"]
       },
       {
-        "TaskI": ["CollectLogsImageAz"]
+        "TaskI" : ["TaskJ"]
+      },
+      {
+        "TaskJ": ["CollectLogsImageAz"]
       }
     ]
   }

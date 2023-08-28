@@ -72,16 +72,29 @@ def insert_end_stats_in_metadata(input):
         start_delta_local = 0
         end_delta_local = 0
         func_id_local = 0
+        mem_before = 0
+        mem_after = 0
+        body_size_before = 0
+        body_size_after = 0
         for fid in meta:
             func_id_local = fid
             start_delta_local = meta[fid]["start_delta"]
             end_delta_local = meta[fid]["end_delta"]
+            if "mem_before" in meta[fid]:
+                mem_before = meta[fid]["mem_before"]
+                mem_after = meta[fid]["mem_after"]
+                body_size_before = meta[fid]["in_payload_bytes"]
+                body_size_after = meta[fid]["out_payload_bytes"]
             if fid == "0":
                 end_delta_local = end_delta
         func_json = {
             func_id_local: {
                 "start_delta": start_delta_local,
                 "end_delta": end_delta_local,
+                "mem_before" : mem_before,
+                "mem_after" : mem_after,
+                "in_payload_bytes" : body_size_before,
+                "out_payload_bytes" : body_size_after
             }
         }
         ne_list.append(func_json)

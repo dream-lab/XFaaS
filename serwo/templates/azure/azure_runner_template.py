@@ -11,7 +11,7 @@ import psutil
 import azure.functions as az_func
 from .USER_FUNCTION_PLACEHOLDER import user_function as USER_FUNCTION_PLACEHOLDER_function
 from azure.storage.queue import QueueService, QueueMessageFormat
-
+import sys
 
 connect_str_provenance = "DefaultEndpointsProtocol=https;AccountName=serwoprovenance;AccountKey=BaGZeTpyeEnO+9yd29yApEjFyzY1b4nR+3bW+mz8sJsSlBs3P29Gg8JzN4I0Lga12oefKWHI4pk3+AStD8AooA==;EndpointSuffix=core.windows.net"
 queue_name_provenance = "serwo-provenance-queue"
@@ -58,8 +58,10 @@ def main(serwoObject, context: az_func.Context) -> str:
             start_delta = 0
             meta_dict = dict()
             extracted = []
+            input_body_size = 0
             for res in serwoObject:
                 serwo_object_res = unmarshall(json.loads(res))
+                input_body_size += sys.getsizeof(serwo_object_res.get_body())
                 serwo_list_object.add_object(serwo_object_res.get_body())
                 metadata = serwo_object_res.get_metadata()
                 if start_delta == 0:
@@ -75,22 +77,27 @@ def main(serwoObject, context: az_func.Context) -> str:
             workflow_instance_id = metadata["workflow_instance_id"]
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss
+            memory_before = memory
             logging.info(
                 f"Memory Before Function Call: fid: {function_id}, wf_instance_id: {workflow_instance_id}, memory:{memory}"
             )
             serwo_list_object.set_basepath(basepath=basepath)
+
             serwoObjectResponse = USER_FUNCTION_PLACEHOLDER_function(serwo_list_object)
+            body_after = serwoObjectResponse.get_body()
+            output_body_size = sys.getsizeof(body_after)
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss
             logging.info(
                 f"Memory After Function Call: fid: {function_id}, wf_instance_id: {workflow_instance_id}, memory:{memory}"
             )
+            memory_after = memory
             func_id = function_id
             end_delta = get_delta(metadata["workflow_start_time"])
             new_meta = []
             for key in meta_dict:
                 new_meta.append({key: meta_dict[key]})
-            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta}}
+            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after, "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size}}
             new_meta.append(func_json)
             metadata["functions"] = new_meta
             # metadata[str(func_id)+'_fan_in'] = extracted
@@ -105,19 +112,25 @@ def main(serwoObject, context: az_func.Context) -> str:
             workflow_instance_id = metadata["workflow_instance_id"]
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss
+            memory_before = memory
             logging.info(
                 f"Memory Before Function Call: fid: {function_id}, wf_instance_id: {workflow_instance_id}, memory:{memory}"
             )
             serwoObject.set_basepath(basepath=basepath)
+            body_before = serwoObject.get_body()
+            input_body_size = sys.getsizeof(body_before)
             serwoObjectResponse = USER_FUNCTION_PLACEHOLDER_function(serwoObject)
+            body_after = serwoObjectResponse.get_body()
+            output_body_size = sys.getsizeof(body_after)
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss
             logging.info(
                 f"Memory After Function Call: fid: {function_id}, wf_instance_id: {workflow_instance_id}, memory:{memory}"
             )
+            memory_after = memory
             func_id = function_id
             end_delta = get_delta(metadata["workflow_start_time"])
-            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta}}
+            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after , "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size}}
             metadata["functions"].append(func_json)
             metadata = metadata
             body = serwoObjectResponse.get_body()

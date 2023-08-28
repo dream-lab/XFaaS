@@ -18,6 +18,7 @@ DAG_DEFINITION_FILE = sys.argv[2]
 DAG_DEFINITION_PATH = f"{USER_DIR}/{DAG_DEFINITION_FILE}"
 BENCHMARK_FILE = sys.argv[3]
 benchmark_path = f'{USER_DIR}/{BENCHMARK_FILE}'
+csp = sys.argv[4]
 
 def get_user_pinned_nodes():
 
@@ -33,12 +34,12 @@ if __name__ == '__main__':
     # partition_config = xfaas_optimizer.optimize(xfaas_user_dag,
     #                                             user_pinned_nodes, benchmark_path)
 
-    partition_config = [PartitionPoint("function_name", 2, CSP("azure"), None, "test", "centralindia")]
+    partition_config = [PartitionPoint("function_name", 2, CSP(csp), None, "test", "centralindia")]
 
-    for partition in partition_config:
-        print('hi')
-    xfaas_resource_generator.generate(USER_DIR, DAG_DEFINITION_PATH, partition_config)
-    # wf_id = xfaas_provenance.push_user_dag(DAG_DEFINITION_PATH)
+    wf_id = xfaas_provenance.push_user_dag(DAG_DEFINITION_PATH)
+    refactored_wf_id = xfaas_provenance.push_refactored_workflow(DAG_DEFINITION_FILE, USER_DIR, wf_id,csp)
+    wf_deployment_id = xfaas_provenance.push_deployment_logs(DAG_DEFINITION_FILE,USER_DIR,wf_id,refactored_wf_id,csp)
+    xfaas_resource_generator.generate(USER_DIR, DAG_DEFINITION_PATH, partition_config,DAG_DEFINITION_FILE)
 
 
 

@@ -20,7 +20,7 @@ def user_function(serwoObject) -> SerWOObject:
         data = serwoObject.get_body()
         print("Data to push - ", data)
         metadata = serwoObject.get_metadata()
-        fin_dict["data"] = data
+        fin_dict["data"] = "success: ok"
         fin_dict["metadata"] = metadata
         print("Fin dict - ", fin_dict)
         queue_service.put_message(queue_name, json.dumps(fin_dict).encode("utf-8"))

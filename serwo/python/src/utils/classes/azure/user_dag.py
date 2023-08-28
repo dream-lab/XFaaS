@@ -49,7 +49,6 @@ class UserDag:
 
         
         start_node = [node for node in self.__dag.nodes if self.__dag.in_degree(node) == 0][0]
-        print("Start Node", start_node)
         self.__dag.nodes[start_node]['ret'] = ["yield ", "context.call_activity(\"" + self.__dag.nodes[start_node]["NodeName"]  + "\", serwoObject)"]
        
 

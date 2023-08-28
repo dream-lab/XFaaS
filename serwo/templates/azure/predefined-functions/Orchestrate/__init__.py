@@ -77,16 +77,29 @@ def insert_end_stats_in_metadata(input):
         start_delta_local = 0
         end_delta_local = 0
         func_id_local = 0
+        mem_before = 0
+        mem_after = 0
+        body_size_before = 0
+        body_size_after = 0
         for fid in meta:
             func_id_local = fid
             start_delta_local = meta[fid]["start_delta"]
             end_delta_local = meta[fid]["end_delta"]
+            if "mem_before" in meta[fid]:
+                mem_before = meta[fid]["mem_before"]
+                mem_after = meta[fid]["mem_after"]
+                body_size_before = meta[fid]["in_payload_bytes"]
+                body_size_after = meta[fid]["out_payload_bytes"]
             if fid == "0":
                 end_delta_local = end_delta
         func_json = {
             func_id_local: {
                 "start_delta": start_delta_local,
                 "end_delta": end_delta_local,
+                "mem_before": mem_before,
+                "mem_after": mem_after,
+                "in_payload_bytes": body_size_before,
+                "out_payload_bytes": body_size_after
             }
         }
         ne_list.append(func_json)
@@ -129,19 +142,23 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    kehd = yield context.call_activity("TaskA", serwoObject)
-    loqu = []
-    qgky = context.call_activity("TaskB", kehd)
-    vgpk = context.call_activity("TaskC", kehd)
-    vqua = context.call_activity("TaskD", kehd)
-    loqu.append(qgky)
-    loqu.append(vgpk)
-    loqu.append(vqua)
-    feja = yield context.task_all(loqu)
-    lipx = yield context.call_activity("TaskE", feja)
-    lipx = insert_end_stats_in_metadata(lipx)
-    rvgx = yield context.call_activity("CollectLogsGraphAz", lipx)
-    return rvgx
+    yipc = yield context.call_activity("TaskA", serwoObject)
+    hsjh = yield context.call_activity("TaskB", yipc)
+    qzgh = yield context.call_activity("TaskC", hsjh)
+    xsrc = yield context.call_activity("TaskD", qzgh)
+    nwwl = yield context.call_activity("TaskE", xsrc)
+    hboj = []
+    bqiy = context.call_activity("TaskG", nwwl)
+    xrhf = context.call_activity("TaskH", nwwl)
+    qmth = context.call_activity("TaskI", nwwl)
+    hboj.append(bqiy)
+    hboj.append(xrhf)
+    hboj.append(qmth)
+    mffb = yield context.task_all(hboj)
+    vmpr = yield context.call_activity("TaskJ", mffb)
+    vmpr = insert_end_stats_in_metadata(vmpr)
+    awln = yield context.call_activity("CollectLogsImageAz", vmpr)
+    return awln
 
 
 main = df.Orchestrator.create(orchestrator_function)

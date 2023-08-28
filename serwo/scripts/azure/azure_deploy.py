@@ -28,7 +28,7 @@ def get_resources():
 
 
 def deploy_to_azure(storage, group, app, user_dir, region):
-    print(f'Creating User app in azure: {app}')
+    # print(f'Creating User app in azure: {app}')
     command = f'az functionapp create --consumption-plan-location {region} --runtime {runtime} --runtime-version {runtime_version} --functions-version {functions_version} --name {app} --os-type {os_type} --storage-account {storage} -g {group}'
     stream = os.popen(command)
     app_create_output = stream.read()
@@ -37,7 +37,7 @@ def deploy_to_azure(storage, group, app, user_dir, region):
     ##TODO: check if function app exists instead of sleep
     sleep(30)
     os.chdir(user_dir)
-    print(f'User app created, deploying {app}')
+    print(':' * 80,f'User app created, deploying {app}')
     stream = os.popen(f'func azure functionapp publish {app}')
     app_deploy_output = stream.read()
     # print(app_deploy_output)

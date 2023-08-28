@@ -269,7 +269,8 @@ def re_written_generator(user_fns_data):
         copy_all_dirs(fn_dir_pat,fin_func_dir)
 
         if os.path.exists(fn_dir_pat+'/dependencies'):
-            os.makedirs(fin_func_dir+'/dependencies')
+            if not os.path.exists(fin_func_dir+'/dependencies'):
+                os.makedirs(fin_func_dir+'/dependencies')
             copytree(fn_dir_pat+'/dependencies' , fin_func_dir+'/dependencies')
 
         path = runner_template_temp_dir + '/' + fn['NodeName']
