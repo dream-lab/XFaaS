@@ -129,42 +129,21 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    fwgg = yield context.call_activity("Source", serwoObject)
-    wgtv = yield context.call_activity("GenerateList", fwgg)
-    fslv = []
-    jqii = context.call_activity("GenerateMatrixA", fwgg)
-    cdiy = context.call_activity("GenerateMatrixB", fwgg)
-    fslv.append(jqii)
-    fslv.append(cdiy)
-    gyyw = yield context.task_all(fslv)
-    kmlv = yield context.call_activity("Aggregator2", gyyw)
-    psqj = []
-    ckoa = context.call_activity("MatrixMultiplication", kmlv)
-    ybir = context.call_activity("LinPack", kmlv)
-    psqj.append(ckoa)
-    psqj.append(ybir)
-    qdgd = yield context.task_all(psqj)
-    wqry = yield context.call_activity("GenerateInteger", fwgg)
-    jcul = []
-    ncht = context.call_activity("Sine", wqry)
-    clsw = context.call_activity("Cosine", wqry)
-    cszd = context.call_activity("Factors", wqry)
-    jcul.append(ncht)
-    jcul.append(clsw)
-    jcul.append(cszd)
-    qenq = yield context.task_all(jcul)
-    xink = []
-    edni = context.call_activity("FastFourierTransform", wgtv)
-    reun = context.call_activity("Aggregator3", qdgd)
-    sisu = context.call_activity("Aggregator1", qenq)
-    xink.append(edni)
-    xink.append(reun)
-    xink.append(sisu)
-    lidq = yield context.task_all(xink)
-    zcqo = yield context.call_activity("Aggregator4", lidq)
-    zcqo = insert_end_stats_in_metadata(zcqo)
-    hdrd = yield context.call_activity("CollectLogsMathAz", zcqo)
-    return hdrd
+    fcyp = yield context.call_activity("TaskA", serwoObject)
+    vlij = yield context.call_activity("TaskB", fcyp)
+    omum = yield context.call_activity("TaskC", vlij)
+    sqjb = yield context.call_activity("TaskD", omum)
+    vijb = yield context.call_activity("TaskE", sqjb)
+    cowa = []
+    xuqq = context.call_activity("TaskG", vijb)
+    qevu = context.call_activity("TaskH", vijb)
+    cowa.append(xuqq)
+    cowa.append(qevu)
+    toud = yield context.task_all(cowa)
+    kvsu = yield context.call_activity("TaskI", toud)
+    kvsu = insert_end_stats_in_metadata(kvsu)
+    nqxg = yield context.call_activity("CollectLogsImageAz", kvsu)
+    return nqxg
 
 
 main = df.Orchestrator.create(orchestrator_function)
