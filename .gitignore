@@ -13,3 +13,4 @@ analysis/
 bin/
 lib/
 pyvenv.cfg
+model
