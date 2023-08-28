@@ -3,6 +3,7 @@ import scripts.azure.azure_builder as azure_builder
 import scripts.azure.azure_deploy as azure_deployer
 
 
+from serwo.aws_create_statemachine import AWS
 class CSP:
     __name = None
 
@@ -18,7 +19,10 @@ class CSP:
         if self.__name == 'azure':
             self.build_az(dag_definition_file, dag_definition_path, part_id, region, user_dir)
         else:
-            #TODO - TK
+            aws_deployer = AWS(user_dir, dag_definition_file, "REST")
+            aws_deployer.build_resources()
+            aws_deployer.build_workflow()
+            aws_deployer.deploy_workflow()
             pass
 
 

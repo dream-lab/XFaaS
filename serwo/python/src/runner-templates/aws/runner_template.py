@@ -36,9 +36,16 @@ def get_delta(timestamp):
 def lambda_handler(event, context):
     start_time = round(time.time() * 1000)
     # Unmarshal from lambda handler
+    # capturing input payload size
+    input_payload_size_bytes = None
+
     if isinstance(event, list):
         # TODO: exception handling
         serwo_request_object = build_serwo_list_object(event)
+
+        # Calculate input payload size
+        input_payload_size_bytes = sum([sys.getsizeof(x.get_body()) for x in serwo_request_object.get_objects()])
+    
     elif isinstance(event, dict):
         # # NOTE - this is a sample if condition for the pilot jobs
         # if "body" in event:
@@ -59,6 +66,7 @@ def lambda_handler(event, context):
                 functions=[],
             )
         serwo_request_object = build_serwo_object(event)
+        input_payload_size_bytes = sys.getsizeof(serwo_request_object.get_body())
     else:
         # TODO: Report error and return
         pass
@@ -73,12 +81,14 @@ def lambda_handler(event, context):
         wf_instance_id = serwo_request_object.get_metadata().get("workflow_instance_id")
         function_id = "{{function_id_placeholder}}"
         process = psutil.Process(os.getpid())
-        memory = process.memory_info().rss
-        print(f"SerWOMemUsage::Before::{wf_instance_id},{function_id},{memory}")
+        
+        memory_before = process.memory_info().rss
+        print(f"SerWOMemUsage::Before::{wf_instance_id},{function_id},{memory_before}")
         response_object = USER_FUNCTION_PLACEHOLDER_function(serwo_request_object)
         process = psutil.Process(os.getpid())
-        memory = process.memory_info().rss
-        print(f"SerWOMemUsage::After::{wf_instance_id},{function_id},{memory}")
+        memory_after = process.memory_info().rss
+        print(f"SerWOMemUsage::After::{wf_instance_id},{function_id},{memory_after}")
+        
         # Sanity check for user function response
         if not isinstance(response_object, SerWOObject):
             status_code = 500
@@ -88,12 +98,22 @@ def lambda_handler(event, context):
                 metadata="None",
             )
         end_time_delta = get_delta(start_epoch_time)
+        
         # Get current metadata here
         metadata = serwo_request_object.get_metadata()
         function_metadata_list = metadata.get("functions")
         # NOTE - the template for generated function id
         function_metadata_list.append(
-            {function_id: dict(start_delta=start_time_delta, end_delta=end_time_delta)}
+            {
+                function_id: dict(
+                    start_delta=start_time_delta,
+                    end_delta=end_time_delta,
+                    mem_before=memory_before,
+                    mem_after=memory_after,
+                    in_payload_bytes=input_payload_size_bytes,
+                    out_payload_bytes=sys.getsizeof(response_object.get_body())
+                )
+            }
         )
         metadata.update(dict(functions=function_metadata_list))
     except Exception as e:
