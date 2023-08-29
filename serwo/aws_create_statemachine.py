@@ -221,6 +221,12 @@ class AWS:
 
         return runner_template_filename
 
+
+    def __append_xfaas_default_requirements(filepath):
+        with open(filepath, "a") as file:
+            file.write("psutil")
+            file.write("objsize")
+
     """
     Create standalone runner templates
     """
@@ -235,6 +241,15 @@ class AWS:
                 function_metadata["name"]
             ].get_runner_filename()
             function_path = function_object_map[function_metadata["name"]].get_path()
+
+            # Add the XFaaS specific requrirements on to the function requirements
+            logger.info(
+                f"Adding default requirements {function_name}"
+            )
+            self.__append_xfaas_default_requirements(
+                self.__dag_definition_path.parent / f"{function_path}/requirements.txt"
+            )
+
             function_module_name = function_object_map[
                 function_metadata["name"]
             ].get_module_name()
