@@ -222,7 +222,7 @@ class AWS:
         return runner_template_filename
 
 
-    def __append_xfaas_default_requirements(filepath):
+    def __append_xfaas_default_requirements(self, filepath):
         with open(filepath, "a") as file:
             file.write("psutil")
             file.write("objsize")
