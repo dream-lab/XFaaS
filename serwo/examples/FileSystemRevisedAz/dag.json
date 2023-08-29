@@ -35,6 +35,62 @@
       },
       {
         "NodeId": "5",
+        "NodeName": "TextFileData4",
+        "Path": "examples/FileSystemRevisedAz/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "6",
+        "NodeName": "TextFileData5",
+        "Path": "examples/FileSystemRevisedAz/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "7",
+        "NodeName": "TextFileData6",
+        "Path": "examples/FileSystemRevisedAz/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "8",
+        "NodeName": "TextFileData7",
+        "Path": "examples/FileSystemRevisedAz/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "9",
+        "NodeName": "TextFileData8",
+        "Path": "examples/FileSystemRevisedAz/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "10",
+        "NodeName": "TextFileData9",
+        "Path": "examples/FileSystemRevisedAz/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "11",
+        "NodeName": "TextFileData10",
+        "Path": "examples/FileSystemRevisedAz/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "12",
         "NodeName": "TextSort",
         "Path": "examples/FileSystemRevisedAz/TextSort",
         "EntryPoint": "TextSort.py",
@@ -42,7 +98,7 @@
         "MemoryInMB": 256
       },
       {
-        "NodeId": "6",
+        "NodeId": "13",
         "NodeName": "TextSort2",
         "Path": "examples/FileSystemRevisedAz/TextSort",
         "EntryPoint": "TextSort.py",
@@ -50,7 +106,7 @@
         "MemoryInMB": 256
       },
       {
-        "NodeId": "7",
+        "NodeId": "14",
         "NodeName": "TextSort3",
         "Path": "examples/FileSystemRevisedAz/TextSort",
         "EntryPoint": "TextSort.py",
@@ -58,7 +114,63 @@
         "MemoryInMB": 256
       },
       {
-        "NodeId": "8",
+        "NodeId": "15",
+        "NodeName": "TextSort4",
+        "Path": "examples/FileSystemRevisedAz/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "16",
+        "NodeName": "TextSort5",
+        "Path": "examples/FileSystemRevisedAz/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "17",
+        "NodeName": "TextSort6",
+        "Path": "examples/FileSystemRevisedAz/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "18",
+        "NodeName": "TextSort7",
+        "Path": "examples/FileSystemRevisedAz/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "19",
+        "NodeName": "TextSort8",
+        "Path": "examples/FileSystemRevisedAz/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "20",
+        "NodeName": "TextSort9",
+        "Path": "examples/FileSystemRevisedAz/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "21",
+        "NodeName": "TextSort10",
+        "Path": "examples/FileSystemRevisedAz/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "22",
         "NodeName": "AggregateLines",
         "Path": "examples/FileSystemRevisedAz/AggregateLines",
         "EntryPoint": "AggregateLines.py",
@@ -66,7 +178,7 @@
         "MemoryInMB": 256
       },
       {
-        "NodeId": "9",
+        "NodeId": "23",
         "NodeName": "Aggregate",
         "Path": "examples/FileSystemRevisedAz/Aggregate",
         "EntryPoint": "FileSize.py",
@@ -74,7 +186,7 @@
         "MemoryInMB": 256
       },
       {
-        "NodeId": "10",
+        "NodeId": "24",
         "NodeName": "SingleString",
         "Path": "examples/FileSystemRevisedAz/SingleString",
         "EntryPoint": "SingleString.py",
@@ -82,7 +194,7 @@
         "MemoryInMB": 256
       },
       {
-        "NodeId": "11",
+        "NodeId": "25",
         "NodeName": "Encrypt",
         "Path": "examples/FileSystemRevisedAz/Encrypt",
         "EntryPoint": "Encrypt.py",
@@ -90,7 +202,7 @@
         "MemoryInMB": 256
       },
       {
-        "NodeId": "12",
+        "NodeId": "26",
         "NodeName": "CollectLogsFileAz",
         "Path": "examples/FileSystemRevisedAz/CollectLogsFileAz",
         "EntryPoint": "func.py",
@@ -109,15 +221,57 @@
         "Trigger": ["TextFileData3"]
       },
       {
+        "Trigger": ["TextFileData4"]
+      },
+      {
+        "Trigger": ["TextFileData5"]
+      },
+      {
+        "Trigger": ["TextFileData6"]
+      },
+      {
+        "Trigger": ["TextFileData7"]
+      },
+      {
+        "Trigger": ["TextFileData8"]
+      },
+      {
+        "Trigger": ["TextFileData9"]
+      },
+      {
+        "Trigger": ["TextFileData10"]
+      },
+      {
         "TextFileData1":["TextSort"]
       },
       {
         "TextFileData2":["TextSort2"]
-       },
-       {
+      },
+      {
         "TextFileData3":["TextSort3"]
-       },
-       { 
+      },
+      {
+        "TextFileData4":["TextSort4"]
+      },
+      {
+        "TextFileData5":["TextSort5"]
+      },
+      {
+        "TextFileData6":["TextSort6"]
+      },
+      {
+        "TextFileData7":["TextSort7"]
+      },
+      {
+        "TextFileData8":["TextSort8"]
+      },
+      {
+        "TextFileData9":["TextSort9"]
+      },
+      {
+        "TextFileData10":["TextSort10"]
+      },
+      { 
         "TextSort":["AggregateLines"]
       },
       { 
@@ -125,6 +279,27 @@
       },
       { 
         "TextSort3":["AggregateLines"]
+      },
+      { 
+        "TextSort4":["AggregateLines"]
+      },
+      { 
+        "TextSort5":["AggregateLines"]
+      },
+      { 
+        "TextSort6":["AggregateLines"]
+      },
+      { 
+        "TextSort7":["AggregateLines"]
+      },
+      { 
+        "TextSort8":["AggregateLines"]
+      },
+      { 
+        "TextSort9":["AggregateLines"]
+      },
+      { 
+        "TextSort10":["AggregateLines"]
       },
       { 
         "AggregateLines":["Aggregate"]
