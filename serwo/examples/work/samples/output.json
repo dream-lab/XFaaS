@@ -1,0 +1,14 @@
+{
+    "message": "Success",
+    "result": {
+        "body": {
+            "result_of_upload": {
+                "bucket": "xfaas-workloads-sprint",
+                "result": "Zip folder uploaded successfully"
+            }
+        },
+        "metadata": null,
+        "statusCode": 200
+    },
+    "statusCode": 200
+}

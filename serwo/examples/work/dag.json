@@ -1,0 +1,93 @@
+{
+    "WorkflowName": "VideoProcessingAndCompression",
+    "Nodes": [
+      {
+        "NodeId": "1",
+        "NodeName": "DownloadVideoNode",
+        "Path": "examples/work/DownloadFromS3",
+        "EntryPoint": "download.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "2",
+        "NodeName": "VideoToAudio",
+        "Path": "examples/work/VideoToAudio",
+        "EntryPoint": "conv.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "3",
+        "NodeName": "Grayscale",
+        "Path": "examples/work/GrayScaling",
+        "EntryPoint": "grayscale.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "4",
+        "NodeName": "VideoToGif",
+        "Path": "examples/work/VideoToGif",
+        "EntryPoint": "videogif.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "5",
+        "NodeName": "SpeechToText",
+        "Path": "examples/work/SpeechToText",
+        "EntryPoint": "speechtext.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "6",
+        "NodeName": "SentimentAnalysis",
+        "Path": "examples/work/SentimentAnalysis",
+        "EntryPoint": "AnalyseSentiment.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "7",
+        "NodeName": "Agg",
+        "Path": "examples/work/Agg",
+        "EntryPoint": "agg.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "8",
+        "NodeName": "CompressToZip",
+        "Path": "examples/work/CompressToZip",
+        "EntryPoint": "compression.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      }
+     ],
+    "Edges": [
+      {
+        "DownloadVideoNode": ["VideoToAudio", "Grayscale"]
+      },
+      {
+        "Grayscale": ["VideoToGif"]
+      },
+      {
+        "VideoToAudio": ["SpeechToText"]
+      },
+      {
+        "SpeechToText": ["SentimentAnalysis"]
+      },
+      {
+        "VideoToGif": ["Agg"]
+      },
+      {
+        "SentimentAnalysis": ["Agg"]
+      },
+      {
+        "Agg": ["CompressToZip"]
+      }
+    ]
+  }
+  
