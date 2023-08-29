@@ -246,7 +246,7 @@ class AWS:
             logger.info(
                 f"Adding default requirements {function_name}"
             )
-            requriements_path = self.__dag_definition_path.parent / f"{function_path}/requirements.txt"
+            requriements_path = self.__parent_directory_path / f"{function_path}/requirements.txt"
             self.__append_xfaas_default_requirements(requriements_path)
 
             function_module_name = function_object_map[
