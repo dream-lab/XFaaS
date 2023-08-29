@@ -3,6 +3,9 @@ import json
 import uuid
 from botocore.exceptions import ClientError
 import datetime
+import os
+import pathlib
+
 
 def push_user_dag(dag_definition_path):
     print(":" * 80, ' dynamo user_dag push')
@@ -94,3 +97,33 @@ def push_deployment_logs(user_dag_file, user_dir, wf_id, refactored_wf_id , csp)
         print(e)
 
     return workflow_deployment_id
+
+
+def generate_provenance_artifacts(user_dir, wf_id, refactored_wf_id, wf_deployment_id, csp, region, part_id):
+    cwd = os.getcwd()
+
+    if "serwo" not in cwd:
+        user_dir = f"serwo/{user_dir}"
+
+    resources_dir = pathlib.Path.joinpath(
+        pathlib.Path(user_dir), "build/workflow/resources"
+    )
+
+    provenance_artifacts = {
+        "workflow_id": wf_id,
+        "refactored_workflow_id": refactored_wf_id,
+        "deployment_id": wf_deployment_id,
+    }
+
+    json_output = json.dumps(provenance_artifacts, indent=4)
+    with open(
+            pathlib.Path.joinpath(resources_dir, f"provenance-artifacts-{csp}-{region}-{part_id}.json"), "w+"
+    ) as out:
+        out.write(json_output)
+
+    deployment_structure = {"entry_csp": csp}
+    deployment_struct_json = json.dumps(deployment_structure, indent=4)
+    with open(
+            pathlib.Path.joinpath(resources_dir, f"deployment-structure-{csp}-{region}-{part_id}.json"), "w+"
+    ) as out:
+        out.write(deployment_struct_json)

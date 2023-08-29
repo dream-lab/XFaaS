@@ -11,6 +11,7 @@ from matplotlib.lines import lineStyles
 from azure.storage.queue import QueueService, QueueMessageFormat
 from serwo.python.src.utils.provenance.partiql_dynamo_wrapper import PartiQLWrapper
 
+### TODO- TK to read csp-region-part_id
 
 exp_name = sys.argv[1]
 PARENT_DIR = pathlib.Path(__file__).parent
