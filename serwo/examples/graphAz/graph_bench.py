@@ -32,7 +32,7 @@ def graphGen(event):
             "graph": graph_dict,
             "startVertex": startVertex
     }
-    sz = objsize.get_deep_size(graph_dict)
+    sz = objsize.get_deep_size(returnbody)
     print(f'Output size graphGen: {int(sz/1024)}')
     print("-----------------------------")
     return returnbody
@@ -95,13 +95,14 @@ def PageRank(body):
 
     sz = objsize.get_deep_size(body)
     print(f'Input size PageRank: {int(sz/1024)}')
-    sz = objsize.get_deep_size(result)
-    print(f'Output size PageRank: {int(sz/1024)}')
-    print("-----------------------------")
-    return {
+    returnbody = {
             'function': 'Pagerank',
             'result': result,
     }
+    sz = objsize.get_deep_size(returnbody)
+    print(f'Output size PageRank: {int(sz/1024)}')
+    print("-----------------------------")
+    return returnbody
 
 def fan_out(event):
     with concurrent.futures.ThreadPoolExecutor() as executor:
