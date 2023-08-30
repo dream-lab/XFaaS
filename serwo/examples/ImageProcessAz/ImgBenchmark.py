@@ -246,8 +246,9 @@ print("---------------------------------------------")
 
 
 # Mobilenet
-sz = objsize.get_deep_size(img)
+sz = objsize.get_deep_size(res_img)
 print(f'Input size Mobilenet : {int(sz/1024)}')
+img = decode_base64(res_img)
 img = preprocess(img)
 model_path = '/home/nikhil/work/XFaaS/serwo/examples/ImageProcessAz/models/mobilenetv2-12.onnx'
 path = '/home/nikhil/work/XFaaS/serwo/examples/ImageProcessAz/mobilenet/dependencies/data/imagenet_classes.txt'
@@ -261,8 +262,9 @@ print("---------------------------------------------")
 
 
 # Alexnet
-sz = objsize.get_deep_size(img)
+sz = objsize.get_deep_size(res_img)
 print(f'Input size Alexnet : {int(sz/1024)}')
+img = decode_base64(res_img)
 img = preprocess(img)
 model_path = '/home/nikhil/work/XFaaS/serwo/examples/ImageProcessAz/models/bvlcalexnet-12-int8.onnx'
 path = '/home/nikhil/work/XFaaS/serwo/examples/ImageProcessAz/alexnet/dependencies/data/imagenet_classes.txt'
