@@ -3,6 +3,7 @@ import networkx as nx
 from networkx.readwrite import json_graph
 import concurrent.futures
 import objsize
+import time
 
 
 def graphGen(event):
@@ -22,19 +23,24 @@ def graphGen(event):
     if graph_type.lower() == "barabasi":
         edges = event.get('edges')
         graph = nx.barabasi_albert_graph(size,edges)
-    elif graph_type.lower() == "binomial_tree":
+    if graph_type.lower() == "binomial_tree":
         graph = nx.binomial_tree(size)
+    elif graph_type.lower() == "power_law":
+        edges = event.get('edges')
+        graph = nx.powerlaw_cluster_graph(size,edges,p=0.5)
     else:
         graph = nx.complete_graph(size)
 
     graph_dict = json_graph.adjacency_data(graph)
+    print(f'Edges : {len(graph.edges)}')
+    print("==========================================")
     returnbody = {
             "graph": graph_dict,
             "startVertex": startVertex
     }
     sz = objsize.get_deep_size(returnbody)
-    print(f'Output size graphGen: {int(sz/1024)}')
-    print("-----------------------------")
+    # print(f'Output size graphGen: {int(sz/1024)}')
+    # print("-----------------------------")
     return returnbody
 
 def BFT(body):
@@ -130,9 +136,11 @@ def aggregate(body, returnbody):
 
 g_type = str(sys.argv[1])
 size = int(sys.argv[2])
+edges = int(sys.argv[3])
 
 
-event = {"size":size, "graph_type":g_type}
+event = {"size":size, "graph_type":g_type, "edges": edges}
+
 # Node 1
 r1 = graphGen(event)
 
