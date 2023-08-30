@@ -1,6 +1,0 @@
-download,workflows/custom_workflows/work/DownloadFromS3/
-grayscale,workflows/custom_workflows/work/GrayScaling/
-detection,workflows/custom_workflows/work/FaceDetection/
-videogif,workflows/custom_workflows/work/VideoToGif/
-compression,workflows/custom_workflows/work/CompressToZip/
-upload,workflows/custom_workflows/work/UplaodToS3/
