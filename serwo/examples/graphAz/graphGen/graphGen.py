@@ -26,6 +26,7 @@ def handler(event):
     elif graph_type.lower() == "binomial_tree":
         graph = nx.binomial_tree(size)
     elif graph_type.lower() == "power_law":
+        edges = event.get('edges')
         graph = nx.powerlaw_cluster_graph(size,edges,p=0.5)
     else:
         graph = nx.complete_graph(size)
