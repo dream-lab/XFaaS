@@ -1,6 +1,5 @@
 # python specific imports
 import math
-from typing import List
 import time as t
 
 # xfaas specific imports
@@ -8,7 +7,7 @@ from python.src.utils.classes.commons.serwo_objects import SerWOObject
 
 
 # find all factors of num and sort them
-def handler(num: int, req: int) -> List[int]:
+def handler(num: int, req: int):
     start_time = t.time()
     n_factors = []
     for i in range(req):

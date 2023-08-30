@@ -47,7 +47,7 @@
         "Path": "examples/ImageProcessAz/resnet",
         "EntryPoint": "resnet.py",
         "CSP": "NA",
-        "MemoryInMB": 256
+        "MemoryInMB": 512
       },
       {
         "NodeId": "7",

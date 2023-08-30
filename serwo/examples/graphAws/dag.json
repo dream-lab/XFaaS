@@ -70,7 +70,7 @@
       	"TaskD": ["TaskE"]
       },
       {
-        "TaskE" : ["CollectLogsGraphAz"]
+        "TaskE" : ["CollectLogsGraphAws"]
       }
     ]
   }

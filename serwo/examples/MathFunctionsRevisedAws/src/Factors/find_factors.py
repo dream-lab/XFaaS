@@ -1,6 +1,5 @@
 # python specific imports
 import math
-from typing import List
 import time as t
 
 # xfaas specific imports

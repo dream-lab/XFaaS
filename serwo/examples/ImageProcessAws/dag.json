@@ -47,7 +47,7 @@
         "Path": "examples/ImageProcessAws/resnet",
         "EntryPoint": "resnet.py",
         "CSP": "NA",
-        "MemoryInMB": 256
+        "MemoryInMB": 512
       },
       {
         "NodeId": "7",
@@ -110,7 +110,7 @@
         "TaskH" : ["TaskI"]
       },
       {
-        "TaskI": ["CollectLogsImageAz"]
+        "TaskI": ["CollectLogsImageAws"]
       }
     ]
   }

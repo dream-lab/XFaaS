@@ -1,5 +1,5 @@
 # XFaaS specific imports
-from .python.src.utils.classes.commons.serwo_objects import SerWOObject
+from python.src.utils.classes.commons.serwo_objects import SerWOObject
 
 #function specific imports
 import time as t
