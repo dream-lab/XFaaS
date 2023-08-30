@@ -26,6 +26,7 @@ def Trigger(body):
             "numChars":size}
     sz = objsize.get_deep_size(body)
     print(f'Output size Trigger : {int(sz/1024)}')
+    print("--------------------------------------")
     return body
 
 def generate_random_lines(n, size):
@@ -66,6 +67,9 @@ def sorter(lines):
     return lines
 
 def AggLines (strings):
+    sz = objsize.get_deep_size(strings)
+    print(f'Input size AggLines : {int(sz/1024)}')
+
     outt = []
     for st in strings:
         sz = objsize.get_deep_size(st)
@@ -81,10 +85,8 @@ def AggLines (strings):
 
 
 def merge_n_sorted_lists(lists):
-    print('here=== ',lists)
     n_pointers = len(lists)
     pointers = [0] * n_pointers
-    print('pointers: ', pointers)
     result = []
     while True:
         min_val = None
@@ -98,7 +100,6 @@ def merge_n_sorted_lists(lists):
             break
         result.append(min_val)
         pointers[min_val_idx] += 1
-    print(result)
     return result
 
 
@@ -135,34 +136,29 @@ body = {"numLines": int(sys.argv[1]),
 
 print('body: ', body)
 r1 = Trigger(body)
-print('r1: ', r1)
 
 r2 = TextFileData(r1)
-print('r2: ', r2)
 r3 = sorter(r2['rndText'])
 body = {
             "sortedText":r3,
             "numIters": r2["numIters"]
         }
-print('r3: ', body)
-lines = AggLines([body, body, body])
+lines = AggLines([body])
 r4 = {"text":lines,
             "numIters": r2["numIters"]}
-print('r4: ', r4)
 
-# sz = objsize.get_deep_size(r4["text"])
+sz = objsize.get_deep_size(r4["text"])
+print(f'Input size merge sort : {int(sz/1024)}')
 r5 = merge_n_sorted_lists(r4["text"])
-print('r5: ', r5)
 r5 = {"text":r5,
     "numIters": r2["numIters"]}
+sz = objsize.get_deep_size(r5)
+print(f'Output size merge sort : {int(sz/1024)}')
+print("------------------------------------")
+
 
 r6 = single_string(r5["text"])
-print('r6: ', r6)
 r6 = {"text":r6,
     "numIters": r2["numIters"]}
 
 r7 = encryptionHandler(r6["text"], r6["numIters"])
-print('r7: ', r7)
-# sz = objsize.get_deep_size(r5)
-# r5 = ''.join(r5)
-# r6 = encryptionHandler(r5, body["numIters"])
