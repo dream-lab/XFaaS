@@ -12,8 +12,8 @@ def user_function(serwo_list_object):
             st = []
             for text in strings:
                 st.append(text)
-            c = ''.join(st)
-            strings.append(c)
+            strings.append(st)
+            
         returnbody = {"text":strings,
                       "numIters":numIters}
         return SerWOObject(body = returnbody)

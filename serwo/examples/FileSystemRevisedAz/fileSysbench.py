@@ -58,54 +58,49 @@ def TextFileData(body):
 def sorter(lines):
     sz = objsize.get_deep_size(lines)
     print(f'Input size sorter : {int(sz/1024)}')
-    for line in lines:
-        line = sorted(line)
+    # for line in lines:
+    lines = sorted(lines)
     sz = objsize.get_deep_size(lines)
     print(f'Output size sorter : {int(sz/1024)}')
     print("------------------------------------")
     return lines
 
 def AggLines (strings):
-    sz = objsize.get_deep_size(strings)
-    print(f'Input size AggLines : {int(sz/1024)}')
-    st = []
-    for text in strings:
-        st.append(text)
-    c = ''.join(st)
-    sz = objsize.get_deep_size(c)
+    outt = []
+    for st in strings:
+        sz = objsize.get_deep_size(st)
+        liss = []
+        for text in st['sortedText']:
+            liss.append(text)
+        outt.append(liss)
+        
+    sz = objsize.get_deep_size(outt)
     print(f'Output size AggLines : {int(sz/1024)}')
     print("------------------------------------")
-    return c
+    return outt
 
-def merge_sort(arr):
-    if len(arr) <= 1:
-        return arr
 
-    mid = len(arr) // 2
-    left_half = arr[:mid]
-    right_half = arr[mid:]
-
-    left_half = merge_sort(left_half)
-    right_half = merge_sort(right_half)
-
-    return merge(left_half, right_half)
-
-def merge(left, right):
+def merge_n_sorted_lists(lists):
+    print('here=== ',lists)
+    n_pointers = len(lists)
+    pointers = [0] * n_pointers
+    print('pointers: ', pointers)
     result = []
-    left_index, right_index = 0, 0
-
-    while left_index < len(left) and right_index < len(right):
-        if left[left_index] < right[right_index]:
-            result.append(left[left_index])
-            left_index += 1
-        else:
-            result.append(right[right_index])
-            right_index += 1
-
-    result.extend(left[left_index:])
-    result.extend(right[right_index:])
-
+    while True:
+        min_val = None
+        min_val_idx = None
+        for i in range(n_pointers):
+            if pointers[i] < len(lists[i]):
+                if min_val is None or lists[i][pointers[i]] < min_val:
+                    min_val = lists[i][pointers[i]]
+                    min_val_idx = i
+        if min_val_idx is None:
+            break
+        result.append(min_val)
+        pointers[min_val_idx] += 1
+    print(result)
     return result
+
 
 def encryptionHandler(message, numOfIterations):
     sz = objsize.get_deep_size(message)
@@ -120,25 +115,54 @@ def encryptionHandler(message, numOfIterations):
     print("------------------------------------")
     return(ciphertext)
 
+def single_string(list_of_string):
+    sz = objsize.get_deep_size(list_of_string)
+    print(f'Input size single_string : {int(sz/1024)}')
+    out = ''.join(list_of_string)
+    sz = objsize.get_deep_size(out)
+    print(f'Output size single_string : {int(sz/1024)}')
+    print("------------------------------------")
+    return out
+
 
 #-----------------------------------------------------
 #-----------------------------------------------------
+
 
 body = {"numLines": int(sys.argv[1]),
         "numChars": int(sys.argv[2]),
         "numIters": int(sys.argv[3])}
 
+print('body: ', body)
 r1 = Trigger(body)
+print('r1: ', r1)
+
 r2 = TextFileData(r1)
-r3 = sorter(r2)
-lines = AggLines(r3["rndText"])
-r4 = {"text": lines}
-sz = objsize.get_deep_size(r4["text"])
-print(f'Input size merge_sort : {int(sz/1024)}')
-r5 = merge_sort(r4["text"])
-sz = objsize.get_deep_size(r5)
-print(f'Output size merge_sort : {int(sz/1024)}')
-print("------------------------------------")
-r5 = ''.join(r5)
-r6 = encryptionHandler(r5, body["numIters"])
-# print(r6)
+print('r2: ', r2)
+r3 = sorter(r2['rndText'])
+body = {
+            "sortedText":r3,
+            "numIters": r2["numIters"]
+        }
+print('r3: ', body)
+lines = AggLines([body, body, body])
+r4 = {"text":lines,
+            "numIters": r2["numIters"]}
+print('r4: ', r4)
+
+# sz = objsize.get_deep_size(r4["text"])
+r5 = merge_n_sorted_lists(r4["text"])
+print('r5: ', r5)
+r5 = {"text":r5,
+    "numIters": r2["numIters"]}
+
+r6 = single_string(r5["text"])
+print('r6: ', r6)
+r6 = {"text":r6,
+    "numIters": r2["numIters"]}
+
+r7 = encryptionHandler(r6["text"], r6["numIters"])
+print('r7: ', r7)
+# sz = objsize.get_deep_size(r5)
+# r5 = ''.join(r5)
+# r6 = encryptionHandler(r5, body["numIters"])
