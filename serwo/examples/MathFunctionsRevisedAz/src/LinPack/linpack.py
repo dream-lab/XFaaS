@@ -1,6 +1,6 @@
 from numpy import linalg
 from time import time
-from .python.src.utils.classes.commons.serwo_objects import SerWOObject
+from python.src.utils.classes.commons.serwo_objects import SerWOObject
 import json
 import logging
 def handle(matrix_A, matrix_B, n):

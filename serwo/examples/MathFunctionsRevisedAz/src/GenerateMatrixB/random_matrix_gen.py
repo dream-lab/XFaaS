@@ -21,7 +21,7 @@ def handle(body):
 
     # Generating the size of the matrix
     np.random.seed(body['seed'])
-    size = np.random.randint(100)
+    size = np.random.randint(72)
 
     #Generating a matrix by resetting the seed
     randomNo = random.randint(0,10000)
