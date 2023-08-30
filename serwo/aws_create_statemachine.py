@@ -139,6 +139,17 @@ class AWS:
         requriements_path = fn_dir / fn_requirements_filename
         self.__append_xfaas_default_requirements(requriements_path)
 
+
+        """
+        place the dependencies folder in the user function path
+        """
+        if os.path.exists(user_fn_path / "dependencies"):
+            shutil.copytree(
+                user_fn_path / "dependencies", 
+                fn_dir / "dependencies", 
+                dirs_exist_ok=True
+            )
+
         """
         place all xfaas code in user fn dir
         """
