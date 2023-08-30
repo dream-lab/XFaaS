@@ -192,46 +192,46 @@ body = {"url": str(sys.argv[1])}
 
 enc_img = download_file(body['url'])
 sz = objsize.get_deep_size(enc_img)
-print(f'Output size donwload_file : {sz}')
+print(f'Output size donwload_file : {int(sz/1024)}')
 print("---------------------------------------------")
 
 
 sz = objsize.get_deep_size(enc_img)
-print(f'Input size grayscale : {sz}')
+print(f'Input size grayscale : {int(sz/1024)}')
 gr_enc_img = rgb_to_grayscale(enc_img)
 sz = objsize.get_deep_size(gr_enc_img)
-print(f'Output size grayscale : {sz}')
+print(f'Output size grayscale : {int(sz/1024)}')
 print("---------------------------------------------")
 
 
 
 sz = objsize.get_deep_size(gr_enc_img)
-print(f'Input size flip : {sz}')
+print(f'Input size flip : {int(sz/1024)}')
 fl_img = flip(gr_enc_img)
 sz = objsize.get_deep_size(fl_img)
-print(f'Output size flip : {sz}')
+print(f'Output size flip : {int(sz/1024)}')
 print("---------------------------------------------")
 
 
 sz = objsize.get_deep_size(fl_img)
-print(f'Input size rotate : {sz}')
+print(f'Input size rotate : {int(sz/1024)}')
 rt_img = rotate(fl_img)
 sz = objsize.get_deep_size(rt_img)
-print(f'Output size rotate : {sz}')
+print(f'Output size rotate : {int(sz/1024)}')
 print("---------------------------------------------")
 
 
 sz = objsize.get_deep_size(rt_img)
-print(f'Input size resize : {sz}')
+print(f'Input size resize : {int(sz/1024)}')
 res_img = encode(resize(decode(rt_img)))
 sz = objsize.get_deep_size(res_img)
-print(f'Output size resize : {sz}')
+print(f'Output size resize : {int(sz/1024)}')
 print("---------------------------------------------")
 
 
 # Resnet
 sz = objsize.get_deep_size(res_img)
-print(f'Input size Resnet : {sz}')
+print(f'Input size Resnet : {int(sz/1024)}')
 img = decode_base64(res_img)
 img = preprocess(img)
 model_path = '/home/nikhil/work/XFaaS/serwo/examples/ImageProcessAz/models/mobilenetv2-12.onnx'
@@ -240,14 +240,14 @@ outputs = run_model(model_path, img)
 image_class = map_outputs(outputs, path)
 ret_val = {"resnet": image_class}
 sz = objsize.get_deep_size(ret_val)
-print(f'Output size Resnet : {sz}')
+print(f'Output size Resnet : {int(sz/1024)}')
 print("---------------------------------------------")
 
 
 
 # Mobilenet
 sz = objsize.get_deep_size(img)
-print(f'Input size Mobilenet : {sz}')
+print(f'Input size Mobilenet : {int(sz/1024)}')
 img = preprocess(img)
 model_path = '/home/nikhil/work/XFaaS/serwo/examples/ImageProcessAz/models/mobilenetv2-12.onnx'
 path = '/home/nikhil/work/XFaaS/serwo/examples/ImageProcessAz/mobilenet/dependencies/data/imagenet_classes.txt'
@@ -255,14 +255,14 @@ outputs = run_model(model_path, img)
 image_class = map_outputs(outputs,path)
 ret_val1 = {"mobilenet": image_class}
 sz = objsize.get_deep_size(ret_val1)
-print(f'Output size Mobilenet : {sz}')
+print(f'Output size Mobilenet : {int(sz/1024)}')
 print("---------------------------------------------")
 
 
 
 # Alexnet
 sz = objsize.get_deep_size(img)
-print(f'Input size Alexnet : {sz}')
+print(f'Input size Alexnet : {int(sz/1024)}')
 img = preprocess(img)
 model_path = '/home/nikhil/work/XFaaS/serwo/examples/ImageProcessAz/models/bvlcalexnet-12-int8.onnx'
 path = '/home/nikhil/work/XFaaS/serwo/examples/ImageProcessAz/alexnet/dependencies/data/imagenet_classes.txt'
@@ -270,7 +270,7 @@ outputs = run_model(model_path, img)
 image_class = map_outputs(outputs,path)
 ret_val2 = {"alexnet": image_class}
 sz = objsize.get_deep_size(ret_val2)
-print(f'Output size Alexnet : {sz}')
+print(f'Output size Alexnet : {int(sz/1024)}')
 print("---------------------------------------------")
 
 
@@ -278,8 +278,8 @@ print("---------------------------------------------")
 l = [ret_val, ret_val1, ret_val2]
 
 sz = objsize.get_deep_size(l)
-print(f'Input size Agg : {sz}')
+print(f'Input size Agg : {int(sz/1024)}')
 res = agg(l)
 sz = objsize.get_deep_size(res)
-print(f'Output size Agg : {sz}')
+print(f'Output size Agg : {int(sz/1024)}')
 print("---------------------------------------------")
