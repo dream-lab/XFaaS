@@ -221,11 +221,20 @@ class AWS:
 
         return runner_template_filename
 
-
+    '''
+    Function to append xfaas dependencies to the function requirements
+    '''
     def __append_xfaas_default_requirements(self, filepath):
-        with open(filepath, "a") as file:
-            file.write("psutil")
-            file.write("objsize")
+        with open(filepath, "r") as file:
+            lines = file.readlines()
+            lines.append("psutil\n")
+            lines.append("objsize\n")
+            unqiue_dependencies = set(lines)
+            file.flush()
+            
+        with open(filepath, "w") as file:
+            for line in [x.strip("\n") for x in sorted(unqiue_dependencies)]:
+                file.write(f"{line}\n")
 
     """
     Create standalone runner templates

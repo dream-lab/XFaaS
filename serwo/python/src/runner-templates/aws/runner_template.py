@@ -10,6 +10,7 @@ import string
 import logging
 import os
 import psutil
+import objsize
 from USER_FUNCTION_PLACEHOLDER import function as USER_FUNCTION_PLACEHOLDER_function
 from copy import deepcopy
 from python.src.utils.classes.commons.serwo_objects import build_serwo_object
@@ -44,7 +45,7 @@ def lambda_handler(event, context):
         serwo_request_object = build_serwo_list_object(event)
 
         # Calculate input payload size
-        input_payload_size_bytes = sum([sys.getsizeof(x.get_body()) for x in serwo_request_object.get_objects()])
+        input_payload_size_bytes = sum([objsize.get_deep_size(x.get_body()) for x in serwo_request_object.get_objects()])
     
     elif isinstance(event, dict):
         # # NOTE - this is a sample if condition for the pilot jobs
@@ -68,7 +69,7 @@ def lambda_handler(event, context):
                 functions=[],
             )
         serwo_request_object = build_serwo_object(event)
-        input_payload_size_bytes = sys.getsizeof(serwo_request_object.get_body())
+        input_payload_size_bytes = objsize.get_deep_size(serwo_request_object.get_body())
     else:
         # TODO: Report error and return
         pass
@@ -113,7 +114,7 @@ def lambda_handler(event, context):
                     mem_before=memory_before,
                     mem_after=memory_after,
                     in_payload_bytes=input_payload_size_bytes,
-                    out_payload_bytes=sys.getsizeof(response_object.get_body())
+                    out_payload_bytes=objsize.get_deep_size(response_object.get_body())
                 )
             }
         )
