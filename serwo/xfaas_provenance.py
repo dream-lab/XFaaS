@@ -101,9 +101,9 @@ def push_deployment_logs(user_dag_file, user_dir, wf_id, refactored_wf_id , csp)
 
 def generate_provenance_artifacts(user_dir, wf_id, refactored_wf_id, wf_deployment_id, csp, region, part_id):
     cwd = os.getcwd()
-
-    if "serwo" not in cwd:
-        user_dir = f"serwo/{user_dir}"
+   
+    # if "serwo" not in cwd:
+    #     user_dir = f"serwo/{user_dir}"
 
     resources_dir = pathlib.Path.joinpath(
         pathlib.Path(user_dir), "build/workflow/resources"
