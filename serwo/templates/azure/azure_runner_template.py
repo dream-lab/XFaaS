@@ -12,6 +12,7 @@ import azure.functions as az_func
 from .USER_FUNCTION_PLACEHOLDER import user_function as USER_FUNCTION_PLACEHOLDER_function
 from azure.storage.queue import QueueService, QueueMessageFormat
 import sys
+import objsize
 
 connect_str_provenance = "DefaultEndpointsProtocol=https;AccountName=serwoprovenance;AccountKey=BaGZeTpyeEnO+9yd29yApEjFyzY1b4nR+3bW+mz8sJsSlBs3P29Gg8JzN4I0Lga12oefKWHI4pk3+AStD8AooA==;EndpointSuffix=core.windows.net"
 queue_name_provenance = "serwo-provenance-queue"
@@ -61,7 +62,7 @@ def main(serwoObject, context: az_func.Context) -> str:
             input_body_size = 0
             for res in serwoObject:
                 serwo_object_res = unmarshall(json.loads(res))
-                input_body_size += sys.getsizeof(serwo_object_res.get_body())
+                input_body_size += objsize.get_deep_size(serwo_object_res.get_body())
                 serwo_list_object.add_object(serwo_object_res.get_body())
                 metadata = serwo_object_res.get_metadata()
                 if start_delta == 0:
@@ -85,7 +86,7 @@ def main(serwoObject, context: az_func.Context) -> str:
 
             serwoObjectResponse = USER_FUNCTION_PLACEHOLDER_function(serwo_list_object)
             body_after = serwoObjectResponse.get_body()
-            output_body_size = sys.getsizeof(body_after)
+            output_body_size = objsize.get_deep_size(body_after)
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss
             logging.info(
@@ -118,10 +119,10 @@ def main(serwoObject, context: az_func.Context) -> str:
             )
             serwoObject.set_basepath(basepath=basepath)
             body_before = serwoObject.get_body()
-            input_body_size = sys.getsizeof(body_before)
+            input_body_size = objsize.get_deep_size(body_before)
             serwoObjectResponse = USER_FUNCTION_PLACEHOLDER_function(serwoObject)
             body_after = serwoObjectResponse.get_body()
-            output_body_size = sys.getsizeof(body_after)
+            output_body_size = objsize.get_deep_size(body_after)
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss
             logging.info(

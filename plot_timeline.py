@@ -16,14 +16,19 @@ from serwo.python.src.utils.provenance.partiql_dynamo_wrapper import PartiQLWrap
 exp_name = sys.argv[1]
 PARENT_DIR = pathlib.Path(__file__).parent
 ####### Read from a file ######
+folder = "temp-exp-harness-results"
 with open(
-    f"serwo/examples/{exp_name}/build/workflow/resources/provenance-artifacts.json", "r"
+    # f"serwo/examples/{exp_name}/build/workflow/resources/provenance-artifacts.json", "r"
+    f"{folder}/provenance-artifacts.json", "r"
 ) as f:
     config = json.load(f)
     workflow_refactored_id = config["refactored_workflow_id"]
     workflow_deployment_id = config["deployment_id"]
 
-with open(f"serwo/examples/{exp_name}/queue_details.json", "r") as f:
+# with open(f"serwo/examples/{exp_name}/queue_details.json", "r") as f:
+#     queue_details = json.load(f)
+
+with open(f"{folder}/queue-details.json", "r") as f:
     queue_details = json.load(f)
 
 connect_str = queue_details["connectionString"]
@@ -109,7 +114,7 @@ def add_invocations_to_dynamodb():
 
 
 def get_e2e_timeline(workflow_deployment_id):
-    last_func_id = "17"
+    last_func_id = "5"
     e2e_timings = []
     partiQLWrapper = PartiQLWrapper("workflow_invocation_table")
     output = partiQLWrapper.run_partiql(
@@ -121,6 +126,16 @@ def get_e2e_timeline(workflow_deployment_id):
         e2e_timings.append(item["functions"][last_func_id]["end_delta"])
     print(e2e_timings)
     return e2e_timings
+
+def delete_temp(workflow_deployment_id):
+    for idx in range(1, 602):
+        print("Starting delete all items for", workflow_deployment_id, idx)
+        partiQLWrapper = PartiQLWrapper("workflow_invocation_table")
+        output = partiQLWrapper.run_partiql(
+            statement=f"DELETE FROM workflow_invocation_table WHERE workflow_deployment_id=? and workflow_invocation_id=?",
+            params=[workflow_deployment_id, str(idx)],
+        )
+        print(output)
 
 
 def plot_from_dynamo():
@@ -146,3 +161,4 @@ if __name__ == "__main__":
     add_invocations_to_dynamodb()
     print("[INFO]::Plotting Timeline")
     plot_from_dynamo()
+
