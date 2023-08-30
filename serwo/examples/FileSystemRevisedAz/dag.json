@@ -179,9 +179,9 @@
       },
       {
         "NodeId": "23",
-        "NodeName": "Aggregate",
-        "Path": "examples/FileSystemRevisedAz/Aggregate",
-        "EntryPoint": "FileSize.py",
+        "NodeName": "MergeAggregate",
+        "Path": "examples/FileSystemRevisedAz/MergeAggregate",
+        "EntryPoint": "MergeAggregate.py",
         "CSP": "NA",
         "MemoryInMB": 256
       },
@@ -302,10 +302,10 @@
         "TextSort10":["AggregateLines"]
       },
       { 
-        "AggregateLines":["Aggregate"]
+        "AggregateLines":["MergeAggregate"]
       },
       {
-        "Aggregate":["SingleString"]
+        "MergeAggregate":["SingleString"]
       },
       {
         "SingleString":["Encrypt"]
