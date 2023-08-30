@@ -72,16 +72,7 @@
         "EntryPoint": "aggregator.py",
         "CSP": "NA",
         "MemoryInMB": 256
-      },
-      {
-        "NodeId" : "10",
-        "NodeName": "CollectLogsImageAz",
-        "Path": "examples/ImageProcessAz/CollectLogsImageAz",
-        "EntryPoint": "func.py",
-        "CSP": "NA",
-        "MemoryInMB": 256
       }
-
       
     ],
     "Edges": [
@@ -98,7 +89,7 @@
         "TaskD": ["TaskE"]
       },
       {
-        "TaskE": ["TaskF","TaskG","TaskH"]
+        "TaskE": ["TaskF","TaskHG","TaskH"]
       },
       {
         "TaskF": ["TaskI"]
@@ -108,9 +99,6 @@
       },
       {
         "TaskH" : ["TaskI"]
-      },
-      {
-        "TaskI": ["CollectLogsImageAz"]
       }
     ]
   }
