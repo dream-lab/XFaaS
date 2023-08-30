@@ -114,7 +114,7 @@ def lambda_handler(event, context):
                     mem_before=memory_before,
                     mem_after=memory_after,
                     in_payload_bytes=input_payload_size_bytes,
-                    out_payload_bytes=sys.getsizeof(response_object.get_body())
+                    out_payload_bytes=objsize.get_deep_size(response_object.get_body())
                 )
             }
         )
