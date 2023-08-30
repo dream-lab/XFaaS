@@ -25,6 +25,8 @@ def handler(event):
         graph = nx.barabasi_albert_graph(size,edges)
     elif graph_type.lower() == "binomial_tree":
         graph = nx.binomial_tree(size)
+    elif graph_type.lower() == "power_law":
+        graph = nx.powerlaw_cluster_graph(size,edges,p=0.5)
     else:
         graph = nx.complete_graph(size)
 

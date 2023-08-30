@@ -15,3 +15,5 @@ lib/
 pyvenv.cfg
 model
 orchestrator.py
+generated_jmx_resources
+generated_shell_scripts
