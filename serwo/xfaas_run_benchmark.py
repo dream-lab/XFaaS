@@ -151,8 +151,9 @@ def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_i
     return jmx_template_path,jmx_output_path,jmx_output_filename
 
 
-def generate_shell_script_and_scp():
-    output_path = pathlib.Path(__file__).parent / f"benchmark_resources/generated_shell_scripts/azure_shell_script.sh"
+def generate_shell_script_and_scp(payload_size, wf_name, rps, duration):
+    shell_file_name  = f"azure-{payload_size}-{wf_name}-{rps}-{duration}.sh"
+    output_path = pathlib.Path(__file__).parent / f"benchmark_resources/generated_shell_scripts/{shell_file_name}"
     code = "#!/bin/sh\n"
     for command in azure_shell_script_commands:
         code += command + "\n"
@@ -160,21 +161,27 @@ def generate_shell_script_and_scp():
     with open(output_path, "w") as f:
         f.write(code)
     os.system(f"scp {output_path} {azure_user_id}@{azure_server_ip}:.")
-    os.system(f"ssh {azure_user_id}@{azure_server_ip} 'chmod +x azure_shell_script.sh'")
-    # os.system(f"ssh {azure_user_id}@{azure_server_ip} './azure_shell_script.sh'")
+    os.system(f"ssh {azure_user_id}@{azure_server_ip} 'chmod +x {shell_file_name}'")
+    # os.system(f"ssh {azure_user_id}@{azure_server_ip} {shell_file_name}")
     
 
 def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory):
     dynamism_data = read_dynamism_file(dynamism)
     if csp == 'azure':
         execute_url = get_azure_app_url(csp,region,part_id,wf_user_directory)
-        session_id = 0
+        if payload_size == 'small':
+            session_id = 100
+        elif payload_size == 'medium':
+            session_id = 200
+        elif payload_size == 'large':
+            session_id = 300
+
         for d in dynamism_data:
             duration_fraction = d[0]
             rps_fraction = d[1]
             make_azure_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, dynamism, session_id, wf_user_directory, part_id, region )
             session_id += 1
-        generate_shell_script_and_scp()
+        generate_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction)
 
 
     elif csp == 'aws':

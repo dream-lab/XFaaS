@@ -132,6 +132,13 @@ class AWS:
         logger.info(f"Moving requirements file for {fn_name} for user at to {fn_dir}")
         shutil.copyfile(src=f"{user_fn_path / fn_requirements_filename}", dst=f"{fn_dir / fn_requirements_filename}")
 
+        # Add the XFaaS specific requrirements on to the function requirements
+        logger.info(
+            f"Adding default requirements {fn_name}"
+        )
+        requriements_path = fn_dir / fn_requirements_filename
+        self.__append_xfaas_default_requirements(requriements_path)
+
         """
         place all xfaas code in user fn dir
         """
@@ -221,11 +228,20 @@ class AWS:
 
         return runner_template_filename
 
-
+    '''
+    Function to append xfaas dependencies to the function requirements
+    '''
     def __append_xfaas_default_requirements(self, filepath):
-        with open(filepath, "a") as file:
-            file.write("psutil")
-            file.write("objsize")
+        with open(filepath, "r") as file:
+            lines = file.readlines()
+            lines.append("psutil\n")
+            lines.append("objsize\n")
+            unqiue_dependencies = set(lines)
+            file.flush()
+            
+        with open(filepath, "w") as file:
+            for line in [x.strip("\n") for x in sorted(unqiue_dependencies)]:
+                file.write(f"{line}\n")
 
     """
     Create standalone runner templates
@@ -241,13 +257,6 @@ class AWS:
                 function_metadata["name"]
             ].get_runner_filename()
             function_path = function_object_map[function_metadata["name"]].get_path()
-
-            # Add the XFaaS specific requrirements on to the function requirements
-            logger.info(
-                f"Adding default requirements {function_name}"
-            )
-            requriements_path = self.__parent_directory_path / f"{function_path}/requirements.txt"
-            self.__append_xfaas_default_requirements(requriements_path)
 
             function_module_name = function_object_map[
                 function_metadata["name"]
