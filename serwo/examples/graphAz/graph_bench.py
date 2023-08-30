@@ -95,7 +95,9 @@ def PageRank(body):
 
     sz = objsize.get_deep_size(body)
     print(f'Input size PageRank: {int(sz/1024)}')
+
     sz = objsize.get_deep_size(result)
+
     print(f'Output size PageRank: {int(sz/1024)}')
     print("-----------------------------")
     return {
@@ -139,4 +141,6 @@ for idx in enumerate(fan_out(r1)):
     aggregate(idx[1], returnbody)
 
 o_sz = objsize.get_deep_size(returnbody)
-print(f'Output size Final : {o_sz}')
+
+# print(returnbody)
+print(f'Output size Final : {int(o_sz/1024)}')

@@ -25,7 +25,7 @@ def Trigger(body):
             "numLines":n,
             "numChars":size}
     sz = objsize.get_deep_size(body)
-    print(f'Output size Trigger : {sz}')
+    print(f'Output size Trigger : {int(sz/1024)}')
     return body
 
 def generate_random_lines(n, size):
@@ -44,36 +44,36 @@ def TextFileData(body):
     size = body["numChars"]
     numIters = body["numIters"]
     sz = objsize.get_deep_size(body)
-    print(f'Input size TextFileData : {sz}')
+    print(f'Input size TextFileData : {int(sz/1024)}')
     rnd_text = generate_random_lines(n, size)
     bod = {
             "rndText": rnd_text,
             "numIters": numIters
     }
     sz = objsize.get_deep_size(bod)
-    print(f'Output size TextFileData : {sz}')
+    print(f'Output size TextFileData : {int(sz/1024)}')
     print("------------------------------------")
     return bod
 
 def sorter(lines):
     sz = objsize.get_deep_size(lines)
-    print(f'Input size sorter : {sz}')
+    print(f'Input size sorter : {int(sz/1024)}')
     for line in lines:
         line = sorted(line)
     sz = objsize.get_deep_size(lines)
-    print(f'Output size sorter : {sz}')
+    print(f'Output size sorter : {int(sz/1024)}')
     print("------------------------------------")
     return lines
 
 def AggLines (strings):
     sz = objsize.get_deep_size(strings)
-    print(f'Input size AggLines : {sz}')
+    print(f'Input size AggLines : {int(sz/1024)}')
     st = []
     for text in strings:
         st.append(text)
     c = ''.join(st)
     sz = objsize.get_deep_size(c)
-    print(f'Output size AggLines : {sz}')
+    print(f'Output size AggLines : {int(sz/1024)}')
     print("------------------------------------")
     return c
 
@@ -109,14 +109,14 @@ def merge(left, right):
 
 def encryptionHandler(message, numOfIterations):
     sz = objsize.get_deep_size(message)
-    print(f'Input size Encryption : {sz}')
+    print(f'Input size Encryption : {int(sz/1024)}')
     KEY = b"\xa1\xf6%\x8c\x87}_\xcd\x89dHE8\xbf\xc9,"
     for loops in range(numOfIterations):
         aes = AESModeOfOperationCTR(KEY)
         ciphertext = aes.encrypt(message)
 
     sz = objsize.get_deep_size(ciphertext)
-    print(f'Output size Encryption : {sz}')
+    print(f'Output size Encryption : {int(sz/1024)}')
     print("------------------------------------")
     return(ciphertext)
 
@@ -134,10 +134,10 @@ r3 = sorter(r2)
 lines = AggLines(r3["rndText"])
 r4 = {"text": lines}
 sz = objsize.get_deep_size(r4["text"])
-print(f'Input size merge_sort : {sz}')
+print(f'Input size merge_sort : {int(sz/1024)}')
 r5 = merge_sort(r4["text"])
 sz = objsize.get_deep_size(r5)
-print(f'Output size merge_sort : {sz}')
+print(f'Output size merge_sort : {int(sz/1024)}')
 print("------------------------------------")
 r5 = ''.join(r5)
 r6 = encryptionHandler(r5, body["numIters"])
