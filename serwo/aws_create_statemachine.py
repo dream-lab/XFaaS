@@ -136,7 +136,7 @@ class AWS:
         logger.info(
             f"Adding default requirements {fn_name}"
         )
-        requriements_path = fn_dir / fn_requirements_filename"
+        requriements_path = fn_dir / fn_requirements_filename
         self.__append_xfaas_default_requirements(requriements_path)
 
         """
