@@ -142,42 +142,42 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    jrbv = yield context.call_activity("Source", serwoObject)
-    cbyk = yield context.call_activity("GenerateList", jrbv)
-    riyw = []
-    hobs = context.call_activity("GenerateMatrixA", jrbv)
-    ucwr = context.call_activity("GenerateMatrixB", jrbv)
-    riyw.append(hobs)
-    riyw.append(ucwr)
-    xpxo = yield context.task_all(riyw)
-    twvi = yield context.call_activity("Aggregator2", xpxo)
-    folh = []
-    ncsz = context.call_activity("MatrixMultiplication", twvi)
-    ulhe = context.call_activity("LinPack", twvi)
-    folh.append(ncsz)
-    folh.append(ulhe)
-    zuhl = yield context.task_all(folh)
-    vuwg = yield context.call_activity("GenerateInteger", jrbv)
-    uqhd = []
-    vzdq = context.call_activity("Sine", vuwg)
-    mzpv = context.call_activity("Cosine", vuwg)
-    lvog = context.call_activity("Factors", vuwg)
-    uqhd.append(vzdq)
-    uqhd.append(mzpv)
-    uqhd.append(lvog)
-    ufdm = yield context.task_all(uqhd)
-    ugaw = []
-    fzts = context.call_activity("FastFourierTransform", cbyk)
-    umkk = context.call_activity("Aggregator3", zuhl)
-    cbfy = context.call_activity("Aggregator1", ufdm)
-    ugaw.append(fzts)
-    ugaw.append(umkk)
-    ugaw.append(cbfy)
-    zsyd = yield context.task_all(ugaw)
-    hubs = yield context.call_activity("Aggregator4", zsyd)
-    hubs = insert_end_stats_in_metadata(hubs)
-    hbhv = yield context.call_activity("CollectLogsMathAz", hubs)
-    return hbhv
+    kehh = yield context.call_activity("Source", serwoObject)
+    mfib = yield context.call_activity("GenerateList", kehh)
+    egiq = yield context.call_activity("GenerateInteger", kehh)
+    xtma = []
+    jnan = context.call_activity("Sine", egiq)
+    npuj = context.call_activity("Cosine", egiq)
+    giqs = context.call_activity("Factors", egiq)
+    xtma.append(jnan)
+    xtma.append(npuj)
+    xtma.append(giqs)
+    fhdd = yield context.task_all(xtma)
+    qkmc = []
+    wxgj = context.call_activity("GenerateMatrixA", kehh)
+    xyvw = context.call_activity("GenerateMatrixB", kehh)
+    qkmc.append(wxgj)
+    qkmc.append(xyvw)
+    iygs = yield context.task_all(qkmc)
+    ztit = yield context.call_activity("Aggregator2", iygs)
+    wocw = []
+    zwmh = context.call_activity("MatrixMultiplication", ztit)
+    kykb = context.call_activity("LinPack", ztit)
+    wocw.append(zwmh)
+    wocw.append(kykb)
+    xhpv = yield context.task_all(wocw)
+    rwey = []
+    cocp = context.call_activity("FastFourierTransform", mfib)
+    dozl = context.call_activity("Aggregator1", fhdd)
+    jmbu = context.call_activity("Aggregator3", xhpv)
+    rwey.append(cocp)
+    rwey.append(dozl)
+    rwey.append(jmbu)
+    lexl = yield context.task_all(rwey)
+    diic = yield context.call_activity("Aggregator4", lexl)
+    diic = insert_end_stats_in_metadata(diic)
+    spuv = yield context.call_activity("CollectLogsMathAz", diic)
+    return spuv
 
 
 main = df.Orchestrator.create(orchestrator_function)

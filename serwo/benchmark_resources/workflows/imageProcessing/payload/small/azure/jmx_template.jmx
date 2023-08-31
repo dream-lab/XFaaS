@@ -45,7 +45,7 @@
     &quot;workflow_instance_id&quot; : ${__counter(FALSE)},&#xd;
     &quot;request_timestamp&quot;: ${__time(,)},&#xd;
     &quot;session_id&quot;: SESSION ,&#xd;
-    &quot;body&quot;: {&quot;url&quot;:&quot;https://i.imgur.com/5yuQHFP.jpg&quot;}&#xd;
+    &quot;body&quot;: {&quot;url&quot;:&quot;https://i.imgur.com/MgrsE2G.jpg&quot;}&#xd;
 }&#xd;
 </stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>

@@ -1,0 +1,17 @@
+[
+    {
+        "OutputKey": "ExecuteApi",
+        "OutputValue": "https://7is67gmpnj.execute-api.ap-south-1.amazonaws.com/serwo",
+        "Description": "Execute API endpoint"
+    },
+    {
+        "OutputKey": "MathFunctionsArn",
+        "OutputValue": "arn:aws:states:ap-south-1:235319806087:stateMachine:MathFunctions-BQSnRP340NN2",
+        "Description": "Serwo CLI State machine ARN"
+    },
+    {
+        "OutputKey": "MathFunctionsRoleArn",
+        "OutputValue": "arn:aws:iam::235319806087:role/XFaaSApp-MathFunctions-MathFunctionsRole-1NYQS61CE0TPS",
+        "Description": "IAM Role created for Serwo CLI State machine based on the specified SAM Policy Templates"
+    }
+]
