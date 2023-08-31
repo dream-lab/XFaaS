@@ -145,18 +145,18 @@ def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, 
     
 
 def send_jmx_file_to_aws_server(jmx_output_path,jmx_output_filename, path_to_pem_file):
-    aws_server_jmx_files_dir = f"/home/{aws_user_id}/bigdata-jmx-files/"
+    aws_server_jmx_files_dir = f"/home/{aws_user_id}/bigdata-jmx-files"
     remote_copy_command = f"scp -i {path_to_pem_file} {jmx_output_path} {aws_user_id}@{aws_server_ip}:{aws_server_jmx_files_dir}"
     os.system(remote_copy_command)
-    experiment_begin_command = f"apache-jmeter-5.5/bin/jmeter -n -t {aws_server_jmx_files_dir}/{jmx_output_filename}  -l {aws_server_jmx_files_dir}/{jmx_output_filename}.jtl"
+    experiment_begin_command = f"/home/{aws_user_id}/apache-jmeter-5.5/bin/jmeter -n -t {aws_server_jmx_files_dir}/{jmx_output_filename}  -l {aws_server_jmx_files_dir}/{jmx_output_filename}.jtl"
     aws_shell_script_commands.append(experiment_begin_command)
-
+    
 
 def send_jmx_file_to_azure_server(jmx_output_path,jmx_output_filename):
-    azure_server_jmx_files_dir = f"/home/{azure_user_id}/bigdata-jmx-files/"
+    azure_server_jmx_files_dir = f"/home/{azure_user_id}/bigdata-jmx-files"
     remote_copy_command = f"scp {jmx_output_path} {azure_user_id}@{azure_server_ip}:{azure_server_jmx_files_dir}"
     os.system(remote_copy_command)
-    experiment_begin_command = f"apache-jmeter-5.4.3/bin/jmeter -n -t {azure_server_jmx_files_dir}/{jmx_output_filename}  -l {azure_server_jmx_files_dir}/{jmx_output_filename}.jtl"
+    experiment_begin_command = f"/home/{azure_user_id}/apache-jmeter-5.4.3/bin/jmeter -n -t {azure_server_jmx_files_dir}/{jmx_output_filename}  -l {azure_server_jmx_files_dir}/{jmx_output_filename}.jtl"
     azure_shell_script_commands.append(experiment_begin_command)
     
     
@@ -177,8 +177,8 @@ def generate_azure_shell_script_and_scp(payload_size, wf_name, rps, duration):
         code += "sleep 20\n"
     with open(output_path, "w") as f:
         f.write(code)
-    os.system(f"scp {output_path} {azure_user_id}@{azure_server_ip}:.")
-    os.system(f"ssh {azure_user_id}@{azure_server_ip} 'chmod +x {shell_file_name}'")
+    os.system(f"scp {output_path} {azure_user_id}@{azure_server_ip}:shell_scripts/")
+    os.system(f"ssh {azure_user_id}@{azure_server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
     # os.system(f"ssh {azure_user_id}@{azure_server_ip} {shell_file_name}")
     
 
@@ -191,8 +191,8 @@ def generate_aws_shell_script_and_scp(payload_size, wf_name, rps, duration):
         code += "sleep 20\n"
     with open(output_path, "w") as f:
         f.write(code)
-    os.system(f"scp -i {path_to_pem_file} {output_path} {aws_user_id}@{aws_server_ip}:.")
-    os.system(f"ssh -i {path_to_pem_file} {aws_user_id}@{aws_server_ip} 'chmod +x {shell_file_name}'")
+    os.system(f"scp -i {path_to_pem_file} {output_path} {aws_user_id}@{aws_server_ip}:shell_scripts/")
+    os.system(f"ssh -i {path_to_pem_file} {aws_user_id}@{aws_server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
     # os.system(f"ssh -i {path_to_pem_file} {aws_user_id}@{aws_server_ip} {shell_file_name}")
 
 
