@@ -140,7 +140,8 @@ def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, 
     else:
         provenance_artefacts['experiment_conf'] = experiment_conf
 
-    with open(provenance_artefacts_path, "w") as f:
+    provenance_artefacts_updated_path = f"{wf_user_directory}/build/workflow/resources/provenance-artifacts-{csp}-{region}-{part_id}-{payload_size}.json"
+    with open(f"{provenance_artefacts_updated_path}", "w") as f:
         json.dump(provenance_artefacts, f,indent=4)
     
 
