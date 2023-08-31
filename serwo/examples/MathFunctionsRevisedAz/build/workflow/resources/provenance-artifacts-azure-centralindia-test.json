@@ -1,0 +1,16 @@
+{
+    "workflow_id": "4bc099e1-e1e1-4c14-b54f-79165fb9fd83",
+    "refactored_workflow_id": "57d7e6eb-f74f-410c-86d3-a303d85bbf57",
+    "deployment_id": "76154d98-a0d7-4fc7-8c3e-99c74d91e2ed",
+    "experiment_conf": {
+        "100": {
+            "jmx_output_filename": "azure-math-small-static-1-600-session-100.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 600.0,
+            "payload_size": "small",
+            "wf_name": "math",
+            "dynamism": "static"
+        }
+    }
+}
