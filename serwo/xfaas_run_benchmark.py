@@ -19,7 +19,10 @@ parser.add_argument("--dynamism",dest='dynamism',type=str,help="Dynamism: Values
 parser.add_argument("--wf-name",dest='wf_name',type=str,help="Workflow name")
 parser.add_argument("--wf-user-directory",dest='wf_user_directory',type=str,help="Workflow user directory")
 parser.add_argument("--path-to-pem",dest='path_to_pem',type=str,help="Path to pem file")
+parser.add_argument("provenance-artifact-filename",dest='provenance_artifact_filename',type=str,help="Provenance artifact filename")
 
+args = parser.parse_args()
+provenance_artifact_filename = args.provenance_artifact_filename
 azure_server_ip = '4.240.90.234'
 azure_user_id = 'azureuser'
 
@@ -140,7 +143,7 @@ def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, 
     else:
         provenance_artefacts['experiment_conf'] = experiment_conf
 
-    provenance_artefacts_updated_path = f"{wf_user_directory}/build/workflow/resources/provenance-artifacts-{csp}-{region}-{part_id}-{payload_size}.json"
+    provenance_artefacts_updated_path = f"{provenance_artifact_filename}.json"
     with open(f"{provenance_artefacts_updated_path}", "w") as f:
         json.dump(provenance_artefacts, f,indent=4)
     
@@ -175,7 +178,7 @@ def generate_azure_shell_script_and_scp(payload_size, wf_name, rps, duration):
     code = "#!/bin/sh\n"
     for command in azure_shell_script_commands:
         code += command + "\n"
-        code += "sleep 20\n"
+        # code += "sleep 20\n"
     with open(output_path, "w") as f:
         f.write(code)
     os.system(f"scp {output_path} {azure_user_id}@{azure_server_ip}:shell_scripts/")
@@ -189,7 +192,7 @@ def generate_aws_shell_script_and_scp(payload_size, wf_name, rps, duration):
     code = "#!/bin/sh\n"
     for command in aws_shell_script_commands:
         code += command + "\n"
-        code += "sleep 20\n"
+        # code += "sleep 20\n"
     with open(output_path, "w") as f:
         f.write(code)
     os.system(f"scp -i {path_to_pem_file} {output_path} {aws_user_id}@{aws_server_ip}:shell_scripts/")
@@ -201,34 +204,51 @@ def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_us
     dynamism_data = read_dynamism_file(dynamism)
     if csp == 'azure':
         execute_url = get_azure_app_url(csp,region,part_id,wf_user_directory)
-        if payload_size == 'small':
-            session_id = 100
-        elif payload_size == 'medium':
-            session_id = 200
-        elif payload_size == 'large':
-            session_id = 300
+        
+        dynamism_updated = dynamism
 
+        if dynamism == 'sawtooth':
+            dynamism_updated = "st"
+        elif dynamism == 'alibaba':
+            dynamism_updated = "a"
+        elif dynamism == 'step-up':
+            dynamism_updated = "su"
+        elif dynamism == 'google':
+            dynamism_updated = "g"
+
+        session_id = dynamism_updated + payload_size
+        i = 1
         for d in dynamism_data:
             duration_fraction = d[0]
             rps_fraction = d[1]
+            session_id = session_id + str(i)
             make_azure_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, dynamism, session_id, wf_user_directory, part_id, region )
-            session_id += 1
+            i += 1
         generate_azure_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction)
 
 
     elif csp == 'aws':
-        if payload_size == 'small':
-            session_id = 100
-        elif payload_size == 'medium':
-            session_id = 200
-        elif payload_size == 'large':
-            session_id = 300
+        dynamism_updated = dynamism
+
+        if dynamism == 'sawtooth':
+            dynamism_updated = "st"
+        elif dynamism == 'alibaba':
+            dynamism_updated = "a"
+        elif dynamism == 'step-up':
+            dynamism_updated = "su"
+        elif dynamism == 'google':
+            dynamism_updated = "g"
+
+        session_id = dynamism_updated + payload_size 
+
         execute_url, state_machine_arn = get_aws_resources(csp,region,part_id,wf_user_directory)
+        i =  1
         for d in dynamism_data:
             duration_fraction = d[0]
             rps_fraction = d[1]
+            session_id = session_id + str(i)
             make_aws_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, path_to_pem_file)
-            session_id += 1
+            i += 1
         generate_aws_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction)
         
     
@@ -246,6 +266,7 @@ if __name__ == "__main__":
     wf_name = args.wf_name
     wf_user_directory = args.wf_user_directory
     path_to_pem_file = args.path_to_pem
+    
 
     run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,path_to_pem_file)
 

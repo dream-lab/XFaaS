@@ -1,5 +1,5 @@
 {
   "connectionString": "DefaultEndpointsProtocol=https;AccountName=xfaaslogging;AccountKey=gtmYmyApGFzUN/6ZtRhqSCW6TeT8ScPmuSToqXBe/U8urzrfF+84y97LL5DvbVPLYFu4Ofz/87vT+AStOalmgg==;EndpointSuffix=core.windows.net",
-  "queue": "big-data-math-aws"
+  "queue": "big-data-aws"
 
 }

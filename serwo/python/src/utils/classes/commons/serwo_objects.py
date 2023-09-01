@@ -85,6 +85,7 @@ def build_serwo_list_object(event):
                 workflow_start_time=incoming_metadata.get("workflow_start_time"),
                 overheads=incoming_metadata.get("overheads"),
                 request_timestamp=incoming_metadata.get("request_timestamp"),
+                session_id=incoming_metadata.get("session_id")
             )
         )
         # get the functions list for each record and add it to a dict to remove duplicates

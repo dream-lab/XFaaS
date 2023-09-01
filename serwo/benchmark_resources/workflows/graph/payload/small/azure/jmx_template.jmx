@@ -44,7 +44,7 @@
                 <stringProp name="Argument.value">{&#xd;
     &quot;workflow_instance_id&quot; : ${__counter(FALSE)},&#xd;
     &quot;request_timestamp&quot;: ${__time(,)},&#xd;
-    &quot;session_id&quot;: SESSION ,&#xd;
+    &quot;session_id&quot;: &quot;SESSION &quot; ,&#xd;
     &quot;body&quot;: {&quot;size&quot;: 24,&quot;edges&quot;:4,&quot;graph_type&quot;:&quot;complete&quot;}&#xd;
 }&#xd;
 </stringProp>

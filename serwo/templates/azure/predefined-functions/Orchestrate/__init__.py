@@ -11,42 +11,46 @@ import uuid
 
 
 def trace_containers(metadata):
+    function_id = 0
     container_path = "/tmp/serwo/container.txt"
     if not os.path.exists(container_path):
-        logging.info("File doesnt exist, generating....")
         os.mkdir("/tmp/serwo")
         f = open(container_path, "w")
         uuid_gen = str(uuid.uuid4())
+        metadata[uuid_gen] = []
         f.write(uuid_gen)
         f.close()
-
         if uuid_gen in metadata:
-            metadata[uuid_gen].append(
-                {"workflow_instance_id":
-                    metadata["workflow_instance_id"], "func_id": 0}
-            )
+            uuid_map = metadata[uuid_gen]
+            workflow_instance_id = metadata["workflow_instance_id"]
+            if workflow_instance_id in uuid_map:
+                metadata[uuid][workflow_instance_id].append(function_id)
+            else:
+                metadata[uuid_gen][workflow_instance_id] = []
+                metadata[uuid_gen][workflow_instance_id].append(function_id)
         else:
-            metadata[uuid_gen] = []
-            metadata[uuid_gen].append(
-                {"workflow_instance_id":
-                    metadata["workflow_instance_id"], "func_id": 0}
-            )
+            metadata[uuid_gen] = {}
+            workflow_instance_id = metadata["workflow_instance_id"]
 
+            metadata[uuid_gen][workflow_instance_id] = []
+            metadata[uuid_gen][workflow_instance_id].append(function_id)
     else:
         f = open(container_path, "r")
         saved_uuid = f.read()
         f.close()
         if saved_uuid in metadata:
-            metadata[saved_uuid].append(
-                {"workflow_instance_id":
-                    metadata["workflow_instance_id"], "func_id": 0}
-            )
+            workflow_instance_id = metadata["workflow_instance_id"]
+            if workflow_instance_id in metadata[saved_uuid]:
+                metadata[saved_uuid][workflow_instance_id].append(function_id)
+            else:
+                metadata[saved_uuid][workflow_instance_id] = []
+                metadata[saved_uuid][workflow_instance_id].append(function_id)
         else:
-            metadata[saved_uuid] = []
-            metadata[saved_uuid].append(
-                {"workflow_instance_id":
-                    metadata["workflow_instance_id"], "func_id": 0}
-            )
+
+            metadata[saved_uuid] = {}
+            workflow_instance_id = metadata["workflow_instance_id"]
+            metadata[saved_uuid][workflow_instance_id] = []
+            metadata[uuid_gen][workflow_instance_id].append(function_id)
 
 
 def get_delta(start_time):
@@ -129,7 +133,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         metadata["request_timestamp"] = request_timestamp
     func_id = 255
 
-    # trace_containers(metadata)
+    trace_containers(metadata)
 
     start_delta = get_delta(metadata["workflow_start_time"])
     process = psutil.Process(os.getpid())
@@ -142,42 +146,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    kehh = yield context.call_activity("Source", serwoObject)
-    mfib = yield context.call_activity("GenerateList", kehh)
-    egiq = yield context.call_activity("GenerateInteger", kehh)
-    xtma = []
-    jnan = context.call_activity("Sine", egiq)
-    npuj = context.call_activity("Cosine", egiq)
-    giqs = context.call_activity("Factors", egiq)
-    xtma.append(jnan)
-    xtma.append(npuj)
-    xtma.append(giqs)
-    fhdd = yield context.task_all(xtma)
-    qkmc = []
-    wxgj = context.call_activity("GenerateMatrixA", kehh)
-    xyvw = context.call_activity("GenerateMatrixB", kehh)
-    qkmc.append(wxgj)
-    qkmc.append(xyvw)
-    iygs = yield context.task_all(qkmc)
-    ztit = yield context.call_activity("Aggregator2", iygs)
-    wocw = []
-    zwmh = context.call_activity("MatrixMultiplication", ztit)
-    kykb = context.call_activity("LinPack", ztit)
-    wocw.append(zwmh)
-    wocw.append(kykb)
-    xhpv = yield context.task_all(wocw)
-    rwey = []
-    cocp = context.call_activity("FastFourierTransform", mfib)
-    dozl = context.call_activity("Aggregator1", fhdd)
-    jmbu = context.call_activity("Aggregator3", xhpv)
-    rwey.append(cocp)
-    rwey.append(dozl)
-    rwey.append(jmbu)
-    lexl = yield context.task_all(rwey)
-    diic = yield context.call_activity("Aggregator4", lexl)
-    diic = insert_end_stats_in_metadata(diic)
-    spuv = yield context.call_activity("CollectLogsMathAz", diic)
-    return spuv
+    olgq = yield context.call_activity("TaskA", serwoObject)
+    rqve = []
+    rett = context.call_activity("TaskB", olgq)
+    ault = context.call_activity("TaskC", olgq)
+    rsbv = context.call_activity("TaskD", olgq)
+    rqve.append(rett)
+    rqve.append(ault)
+    rqve.append(rsbv)
+    ljsh = yield context.task_all(rqve)
+    ruvu = yield context.call_activity("TaskE", ljsh)
+    ruvu = insert_end_stats_in_metadata(ruvu)
+    uucs = yield context.call_activity("CollectLogsGraphAz", ruvu)
+    return uucs
 
 
 main = df.Orchestrator.create(orchestrator_function)
