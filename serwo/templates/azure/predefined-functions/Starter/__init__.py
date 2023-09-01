@@ -20,11 +20,13 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
         job_id = request["workflow_instance_id"]
         req_ts = request["request_timestamp"]
         session_id = request["session_id"] # NOTE - new variable for tracking the session
+        deployment_id = request["deployment_id"]
         meta = {
             "workflow_instance_id": job_id,
             "functions": [],
             "request_timestamp": req_ts,
-            "session_id": session_id
+            "session_id": session_id,
+            "deployment_id": deployment_id
         }
         request["metadata"] = meta
 

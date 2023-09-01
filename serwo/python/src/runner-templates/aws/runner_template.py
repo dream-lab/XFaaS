@@ -60,6 +60,7 @@ def lambda_handler(event, context):
             wf_instance_id = event["body"].get("workflow_instance_id")
             request_timestamp = event["body"].get("request_timestamp")
             session_id = event["body"].get("session_id") # NOTE - new variable to keep track of requests
+            deployment_id = event["body"].get("deployment_id")
             overheads = start_time - request_timestamp
             event["metadata"] = dict(
                 workflow_instance_id=wf_instance_id,
@@ -67,6 +68,7 @@ def lambda_handler(event, context):
                 request_timestamp=request_timestamp,
                 session_id=session_id,
                 overheads=overheads,
+                deployment_id=deployment_id,
                 functions=[],
             )
         serwo_request_object = build_serwo_object(event)

@@ -24,6 +24,7 @@ parser.add_argument("--provenance-artifact-filename",dest='provenance_artifact_f
 
 args = parser.parse_args()
 provenance_artifact_filename = args.provenance_artifact_filename
+deployment_id = ''
 azure_server_ip = '4.240.90.234'
 azure_user_id = 'azureuser'
 
@@ -76,6 +77,7 @@ def template_azure_jmx_file(rps, duration, execute_url, payload_size, input_jmx,
     duration_keyword = "DURATION"
     payload_size_keyword = "PAYLOAD"
     session_id_keyword = "SESSION"
+    deployment_id_keyword = "DEPLOYMENT_ID"
 
     with open(input_jmx) as f:
         data = f.read()
@@ -84,19 +86,22 @@ def template_azure_jmx_file(rps, duration, execute_url, payload_size, input_jmx,
     data = data.replace(duration_keyword, str(int(duration)))
     data = data.replace(payload_size_keyword, payload_size)
     data = data.replace(session_id_keyword, str(session_id))
+    data = data.replace(deployment_id_keyword, deployment_id)
     
     with open(output_path, "w") as f:
         f.write(data)
 
 
 def template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload_size, input_jmx, output_path, session_id):
-
+    global deployment_id
     rps_keyword = "RPS"
     execute_url_keyword = "URL"
     duration_keyword = "DURATION"
     payload_size_keyword = "PAYLOAD"
     state_machine_arn_keyword = "STATE_MACHINE_ARN"
     session_id_keyword = "SESSION"
+    deployment_id_keyword = "DEPLOYMENT_ID"
+
 
     with open(input_jmx) as f:
         data = f.read() 
@@ -106,6 +111,7 @@ def template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload
     data = data.replace(payload_size_keyword, payload_size)
     data = data.replace(state_machine_arn_keyword, state_machine_arn)
     data = data.replace(session_id_keyword, str(session_id))
+    data = data.replace(deployment_id_keyword, deployment_id)
 
     with open(output_path, "w") as f:
         f.write(data)
@@ -258,9 +264,12 @@ def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_us
 def copy_provenance_artifacts(csp, region, part_id, wf_user_directory):
     ## make a directory provenance-artifacts in the user workflow directory
     ## copy the provenance artifacts from the build directory to the user workflow directory
-    
+    global deployment_id
     os.makedirs(f"{wf_user_directory}/provenance-artifacts", exist_ok=True)
     provenance_artefacts_path = f"{wf_user_directory}/build/workflow/resources/provenance-artifacts-{csp}-{region}-{part_id}.json"
+    with open(provenance_artefacts_path) as f:
+        provenance_artifact = json.load(f)
+    deployment_id = provenance_artifact['deployment_id']
 
     provenance_artefacts_updated_path = f"{wf_user_directory}/provenance-artifacts/{provenance_artifact_filename}.json"
    

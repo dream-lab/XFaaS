@@ -24,7 +24,7 @@ def trace_containers(metadata):
             uuid_map = metadata[uuid_gen]
             workflow_instance_id = metadata["workflow_instance_id"]
             if workflow_instance_id in uuid_map:
-                metadata[uuid][workflow_instance_id].append(function_id)
+                metadata[uuid_gen][workflow_instance_id].append(function_id)
             else:
                 metadata[uuid_gen][workflow_instance_id] = []
                 metadata[uuid_gen][workflow_instance_id].append(function_id)
@@ -146,19 +146,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    olgq = yield context.call_activity("TaskA", serwoObject)
-    rqve = []
-    rett = context.call_activity("TaskB", olgq)
-    ault = context.call_activity("TaskC", olgq)
-    rsbv = context.call_activity("TaskD", olgq)
-    rqve.append(rett)
-    rqve.append(ault)
-    rqve.append(rsbv)
-    ljsh = yield context.task_all(rqve)
-    ruvu = yield context.call_activity("TaskE", ljsh)
-    ruvu = insert_end_stats_in_metadata(ruvu)
-    uucs = yield context.call_activity("CollectLogsGraphAz", ruvu)
-    return uucs
+    nrnj = yield context.call_activity("TaskA", serwoObject)
+    qgna = []
+    ipri = context.call_activity("TaskB", nrnj)
+    owzv = context.call_activity("TaskC", nrnj)
+    jgan = context.call_activity("TaskD", nrnj)
+    qgna.append(ipri)
+    qgna.append(owzv)
+    qgna.append(jgan)
+    qbwe = yield context.task_all(qgna)
+    tmat = yield context.call_activity("TaskE", qbwe)
+    tmat = insert_end_stats_in_metadata(tmat)
+    jsiy = yield context.call_activity("CollectLogsGraphAz", tmat)
+    return jsiy
 
 
 main = df.Orchestrator.create(orchestrator_function)
