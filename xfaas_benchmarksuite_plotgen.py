@@ -177,7 +177,6 @@ def get_timings(dynamo_items, session_id):
         
         # get e2e timings
         if item["session_id"].strip() == session_id:
-            logger.info("Coming here")
             count = count + 1
             timings["e2e_timings"].append(int(item["functions"][sink_node]["end_delta"]))
 
@@ -479,6 +478,9 @@ def plotter(workflow_deployment_id, experiment_conf):
     dynamo_items = get_from_dynamo(
                         workflow_deployment_id=workflow_deployment_id
                     )
+    # add a filter based on deployment Id (since a single queue will contain multiple session ids)
+    filtered_dynamo_items = defaultdict(list)
+    filtered_dynamo_items["Items"] = [item for item in dynamo_items["Items"] if item["workflow_deployment_id"] == workflow_deployment_id]
 
     timings_all_sessions = dict()
     e2e_all_sessions = []
@@ -488,7 +490,7 @@ def plotter(workflow_deployment_id, experiment_conf):
     # create the session_id -> timings dict.
     for session_id, conf in experiment_conf.items():
         logger.info(f"Getting Timings For Session Id - {session_id}")
-        timings = get_timings(dynamo_items=dynamo_items, session_id=session_id)
+        timings = get_timings(dynamo_items=filtered_dynamo_items, session_id=session_id)
         e2e_timings = timings["e2e_timings"]
         logger.info(len(e2e_timings))
         e2e_all_sessions += e2e_timings 
