@@ -1,0 +1,117 @@
+{
+    "WorkflowName": "imageProcessing",
+    "Nodes": [
+      {
+        "NodeId": "1",
+        "NodeName": "TaskA",
+        "Path": "examples/ImageProcessAws/fetchData",
+        "EntryPoint": "fetch.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "2",
+        "NodeName": "TaskB",
+        "Path": "examples/ImageProcessAws/grayscale",
+        "EntryPoint": "rgb2Gray.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "3",
+        "NodeName": "TaskC",
+        "Path": "examples/ImageProcessAws/flip",
+        "EntryPoint": "flip.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "4",
+        "NodeName": "TaskD",
+        "Path": "examples/ImageProcessAws/rotate",
+        "EntryPoint": "rotate.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "5",
+        "NodeName": "TaskE",
+        "Path": "examples/ImageProcessAws/resize",
+        "EntryPoint": "resize.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "6",
+        "NodeName": "TaskF",
+        "Path": "examples/ImageProcessAws/resnet",
+        "EntryPoint": "resnet.py",
+        "CSP": "NA",
+        "MemoryInMB": 512
+      },
+      {
+        "NodeId": "7",
+        "NodeName": "TaskG",
+        "Path": "examples/ImageProcessAws/alexnet",
+        "EntryPoint": "alexnet.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "8",
+        "NodeName": "TaskH",
+        "Path": "examples/ImageProcessAws/mobilenet",
+        "EntryPoint": "mobilenet.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId" : "9",
+        "NodeName": "TaskI",
+        "Path": "examples/ImageProcessAws/aggregator",
+        "EntryPoint": "aggregator.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId" : "10",
+        "NodeName": "CollectLogsImageAws",
+        "Path": "examples/ImageProcessAws/CollectLogsImageAws",
+        "EntryPoint": "func.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      }
+
+      
+    ],
+    "Edges": [
+      {
+        "TaskA": ["TaskB"]
+      },
+      {
+        "TaskB": ["TaskC"]
+      },
+      {
+        "TaskC": ["TaskD"]
+      },
+      {
+        "TaskD": ["TaskE"]
+      },
+      {
+        "TaskE": ["TaskF","TaskG","TaskH"]
+      },
+      {
+        "TaskF": ["TaskI"]
+      },
+      {
+        "TaskG": ["TaskI"]
+      },
+      {
+        "TaskH" : ["TaskI"]
+      },
+      {
+        "TaskI": ["CollectLogsImageAws"]
+      }
+    ]
+  }
+  

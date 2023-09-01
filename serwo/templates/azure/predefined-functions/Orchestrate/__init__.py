@@ -11,42 +11,46 @@ import uuid
 
 
 def trace_containers(metadata):
+    function_id = 0
     container_path = "/tmp/serwo/container.txt"
     if not os.path.exists(container_path):
-        logging.info("File doesnt exist, generating....")
         os.mkdir("/tmp/serwo")
         f = open(container_path, "w")
         uuid_gen = str(uuid.uuid4())
+        metadata[uuid_gen] = []
         f.write(uuid_gen)
         f.close()
-
         if uuid_gen in metadata:
-            metadata[uuid_gen].append(
-                {"workflow_instance_id":
-                    metadata["workflow_instance_id"], "func_id": 0}
-            )
+            uuid_map = metadata[uuid_gen]
+            workflow_instance_id = metadata["workflow_instance_id"]
+            if workflow_instance_id in uuid_map:
+                metadata[uuid][workflow_instance_id].append(function_id)
+            else:
+                metadata[uuid_gen][workflow_instance_id] = []
+                metadata[uuid_gen][workflow_instance_id].append(function_id)
         else:
-            metadata[uuid_gen] = []
-            metadata[uuid_gen].append(
-                {"workflow_instance_id":
-                    metadata["workflow_instance_id"], "func_id": 0}
-            )
+            metadata[uuid_gen] = {}
+            workflow_instance_id = metadata["workflow_instance_id"]
 
+            metadata[uuid_gen][workflow_instance_id] = []
+            metadata[uuid_gen][workflow_instance_id].append(function_id)
     else:
         f = open(container_path, "r")
         saved_uuid = f.read()
         f.close()
         if saved_uuid in metadata:
-            metadata[saved_uuid].append(
-                {"workflow_instance_id":
-                    metadata["workflow_instance_id"], "func_id": 0}
-            )
+            workflow_instance_id = metadata["workflow_instance_id"]
+            if workflow_instance_id in metadata[saved_uuid]:
+                metadata[saved_uuid][workflow_instance_id].append(function_id)
+            else:
+                metadata[saved_uuid][workflow_instance_id] = []
+                metadata[saved_uuid][workflow_instance_id].append(function_id)
         else:
-            metadata[saved_uuid] = []
-            metadata[saved_uuid].append(
-                {"workflow_instance_id":
-                    metadata["workflow_instance_id"], "func_id": 0}
-            )
+
+            metadata[saved_uuid] = {}
+            workflow_instance_id = metadata["workflow_instance_id"]
+            metadata[saved_uuid][workflow_instance_id] = []
+            metadata[uuid_gen][workflow_instance_id].append(function_id)
 
 
 def get_delta(start_time):
@@ -129,7 +133,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         metadata["request_timestamp"] = request_timestamp
     func_id = 255
 
-    # trace_containers(metadata)
+    trace_containers(metadata)
 
     start_delta = get_delta(metadata["workflow_start_time"])
     process = psutil.Process(os.getpid())
@@ -142,6 +146,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
+<<<<<<< HEAD
     etcn = yield context.call_activity("Trigger", serwoObject)
     nlna = yield context.call_activity("TextFileData4", etcn)
     dgze = yield context.call_activity("TextFileData2", etcn)
@@ -182,6 +187,5 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     waaa = insert_end_stats_in_metadata(waaa)
     irrg = yield context.call_activity("CollectLogsFileAz", waaa)
     return irrg
-
 
 main = df.Orchestrator.create(orchestrator_function)

@@ -1,0 +1,318 @@
+{
+    "WorkflowName": "FileSystem",
+    "Nodes": [
+      {
+        "NodeId": "1",
+        "NodeName": "Trigger",
+        "Path": "examples/FileSystemRevisedAws/Trigger",
+        "EntryPoint": "Trigger.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      },
+      {
+        "NodeId": "2",
+        "NodeName": "TextFileData1",
+        "Path": "examples/FileSystemRevisedAws/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "3",
+        "NodeName": "TextFileData2",
+        "Path": "examples/FileSystemRevisedAws/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "4",
+        "NodeName": "TextFileData3",
+        "Path": "examples/FileSystemRevisedAws/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "5",
+        "NodeName": "TextFileData4",
+        "Path": "examples/FileSystemRevisedAws/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "6",
+        "NodeName": "TextFileData5",
+        "Path": "examples/FileSystemRevisedAws/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "7",
+        "NodeName": "TextFileData6",
+        "Path": "examples/FileSystemRevisedAws/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "8",
+        "NodeName": "TextFileData7",
+        "Path": "examples/FileSystemRevisedAws/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "9",
+        "NodeName": "TextFileData8",
+        "Path": "examples/FileSystemRevisedAws/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "10",
+        "NodeName": "TextFileData9",
+        "Path": "examples/FileSystemRevisedAws/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "11",
+        "NodeName": "TextFileData10",
+        "Path": "examples/FileSystemRevisedAws/TextFileData",
+        "EntryPoint": "Data.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "12",
+        "NodeName": "TextSort",
+        "Path": "examples/FileSystemRevisedAws/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "13",
+        "NodeName": "TextSort2",
+        "Path": "examples/FileSystemRevisedAws/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "14",
+        "NodeName": "TextSort3",
+        "Path": "examples/FileSystemRevisedAws/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "15",
+        "NodeName": "TextSort4",
+        "Path": "examples/FileSystemRevisedAws/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "16",
+        "NodeName": "TextSort5",
+        "Path": "examples/FileSystemRevisedAws/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "17",
+        "NodeName": "TextSort6",
+        "Path": "examples/FileSystemRevisedAws/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "18",
+        "NodeName": "TextSort7",
+        "Path": "examples/FileSystemRevisedAws/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "19",
+        "NodeName": "TextSort8",
+        "Path": "examples/FileSystemRevisedAws/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "20",
+        "NodeName": "TextSort9",
+        "Path": "examples/FileSystemRevisedAws/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "21",
+        "NodeName": "TextSort10",
+        "Path": "examples/FileSystemRevisedAws/TextSort",
+        "EntryPoint": "TextSort.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "22",
+        "NodeName": "AggregateLines",
+        "Path": "examples/FileSystemRevisedAws/AggregateLines",
+        "EntryPoint": "AggregateLines.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "23",
+        "NodeName": "MergeAggregate",
+        "Path": "examples/FileSystemRevisedAws/MergeAggregate",
+        "EntryPoint": "MergeAggregate.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "24",
+        "NodeName": "SingleString",
+        "Path": "examples/FileSystemRevisedAws/SingleString",
+        "EntryPoint": "SingleString.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "25",
+        "NodeName": "Encrypt",
+        "Path": "examples/FileSystemRevisedAws/Encrypt",
+        "EntryPoint": "Encrypt.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      },
+      {
+        "NodeId": "26",
+        "NodeName": "CollectLogsFileAws",
+        "Path": "examples/FileSystemRevisedAws/CollectLogsFileAws",
+        "EntryPoint": "func.py",
+        "CSP": "NA",
+        "MemoryInMB": 256
+      }
+    ],
+    "Edges": [
+      {
+        "Trigger": ["TextFileData1"]
+      },
+      {
+        "Trigger": ["TextFileData2"]
+      },
+      {
+        "Trigger": ["TextFileData3"]
+      },
+      {
+        "Trigger": ["TextFileData4"]
+      },
+      {
+        "Trigger": ["TextFileData5"]
+      },
+      {
+        "Trigger": ["TextFileData6"]
+      },
+      {
+        "Trigger": ["TextFileData7"]
+      },
+      {
+        "Trigger": ["TextFileData8"]
+      },
+      {
+        "Trigger": ["TextFileData9"]
+      },
+      {
+        "Trigger": ["TextFileData10"]
+      },
+      {
+        "TextFileData1":["TextSort"]
+      },
+      {
+        "TextFileData2":["TextSort2"]
+      },
+      {
+        "TextFileData3":["TextSort3"]
+      },
+      {
+        "TextFileData4":["TextSort4"]
+      },
+      {
+        "TextFileData5":["TextSort5"]
+      },
+      {
+        "TextFileData6":["TextSort6"]
+      },
+      {
+        "TextFileData7":["TextSort7"]
+      },
+      {
+        "TextFileData8":["TextSort8"]
+      },
+      {
+        "TextFileData9":["TextSort9"]
+      },
+      {
+        "TextFileData10":["TextSort10"]
+      },
+      { 
+        "TextSort":["AggregateLines"]
+      },
+      { 
+        "TextSort2":["AggregateLines"]
+      },
+      { 
+        "TextSort3":["AggregateLines"]
+      },
+      { 
+        "TextSort4":["AggregateLines"]
+      },
+      { 
+        "TextSort5":["AggregateLines"]
+      },
+      { 
+        "TextSort6":["AggregateLines"]
+      },
+      { 
+        "TextSort7":["AggregateLines"]
+      },
+      { 
+        "TextSort8":["AggregateLines"]
+      },
+      { 
+        "TextSort9":["AggregateLines"]
+      },
+      { 
+        "TextSort10":["AggregateLines"]
+      },
+      { 
+        "AggregateLines":["MergeAggregate"]
+      },
+      {
+        "MergeAggregate":["SingleString"]
+      },
+      {
+        "SingleString":["Encrypt"]
+      },
+      {
+        "Encrypt" : ["CollectLogsFileAws"]
+      }
+    ]
+  }
+  
