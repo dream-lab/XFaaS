@@ -89,7 +89,7 @@
         "TaskD": ["TaskE"]
       },
       {
-        "TaskE": ["TaskF","TaskHG","TaskH"]
+        "TaskE": ["TaskF","TaskG","TaskH"]
       },
       {
         "TaskF": ["TaskI"]
