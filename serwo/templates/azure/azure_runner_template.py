@@ -50,6 +50,12 @@ def push_metadata_to_provenance(metadata):
 #     except Exception as e:
 #         logging.info(f'Exception in pushing metadata: {e}')
 
+def merge_containers_logs(metadata_list, metadata):
+    pass
+
+    #write this code
+
+
 
 def main(serwoObject, context: az_func.Context) -> str:
     try:
@@ -60,6 +66,7 @@ def main(serwoObject, context: az_func.Context) -> str:
             meta_dict = dict()
             extracted = []
             input_body_size = 0
+            metadata_list = []
             for res in serwoObject:
                 serwo_object_res = unmarshall(json.loads(res))
                 input_body_size += objsize.get_deep_size(serwo_object_res.get_body())
@@ -68,6 +75,7 @@ def main(serwoObject, context: az_func.Context) -> str:
                 if start_delta == 0:
                     start_delta = get_delta(metadata["workflow_start_time"])
                 metadata = serwo_object_res.get_metadata()
+                metadata_list.append(metadata)
                 for key in metadata:
                     if "-" in key:
                         extracted.append((key, metadata[key]))
@@ -75,6 +83,8 @@ def main(serwoObject, context: az_func.Context) -> str:
                 for data in meta_list:
                     for key in data:
                         meta_dict[key] = data[key]
+
+            
             workflow_instance_id = metadata["workflow_instance_id"]
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss
@@ -101,14 +111,15 @@ def main(serwoObject, context: az_func.Context) -> str:
             func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after, "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size}}
             new_meta.append(func_json)
             metadata["functions"] = new_meta
+            merge_containers_logs(metadata_list,metadata)
             # metadata[str(func_id)+'_fan_in'] = extracted
-            # trace_containers(metadata)
+            trace_containers(metadata)
             body = serwoObjectResponse.get_body()
             return SerWOObject(body=body, metadata=metadata).to_json()
         else:
             serwoObject = unmarshall(json.loads(serwoObject))
             metadata = serwoObject.get_metadata()
-            # trace_containers(metadata)
+            trace_containers(metadata)
             start_delta = get_delta(metadata["workflow_start_time"])
             workflow_instance_id = metadata["workflow_instance_id"]
             process = psutil.Process(os.getpid())
@@ -144,7 +155,6 @@ def main(serwoObject, context: az_func.Context) -> str:
 def trace_containers(metadata):
     container_path = "/tmp/serwo/container.txt"
     if not os.path.exists(container_path):
-        logging.info("File doesnt exist, generating....")
         os.mkdir("/tmp/serwo")
         f = open(container_path, "w")
         uuid_gen = str(uuid.uuid4())
@@ -152,42 +162,37 @@ def trace_containers(metadata):
         f.write(uuid_gen)
         f.close()
         if uuid_gen in metadata:
-            metadata[uuid_gen].append(
-                {
-                    "workflow_instance_id": metadata["workflow_instance_id"],
-                    "func_id": function_id,
-                }
-            )
+            uuid_map = metadata[uuid_gen]
+            workflow_instance_id = metadata["workflow_instance_id"]
+            if workflow_instance_id in uuid_map:
+                metadata[uuid][workflow_instance_id].append(function_id)
+            else:
+                metadata[uuid_gen][workflow_instance_id] = []
+                metadata[uuid_gen][workflow_instance_id].append(function_id)
         else:
-            metadata[uuid_gen] = []
-            metadata[uuid_gen].append(
-                {
-                    "workflow_instance_id": metadata["workflow_instance_id"],
-                    "func_id": function_id,
-                }
-            )
+            metadata[uuid_gen] = {}
+            workflow_instance_id = metadata["workflow_instance_id"]
+
+            metadata[uuid_gen][workflow_instance_id] = []
+            metadata[uuid_gen][workflow_instance_id].append(function_id)
     else:
         f = open(container_path, "r")
         saved_uuid = f.read()
         f.close()
-        logging.info(
-            "file exists dumping metadata = " + str(metadata) + " saved = " + saved_uuid
-        )
         if saved_uuid in metadata:
-            metadata[saved_uuid].append(
-                {
-                    "workflow_instance_id": metadata["workflow_instance_id"],
-                    "func_id": function_id,
-                }
-            )
+            workflow_instance_id = metadata["workflow_instance_id"]
+            if workflow_instance_id in metadata[saved_uuid]:
+                metadata[saved_uuid][workflow_instance_id].append(function_id)
+            else:
+                metadata[saved_uuid][workflow_instance_id] = []
+                metadata[saved_uuid][workflow_instance_id].append(function_id)
         else:
-            metadata[saved_uuid] = []
-            metadata[saved_uuid].append(
-                {
-                    "workflow_instance_id": metadata["workflow_instance_id"],
-                    "func_id": function_id,
-                }
-            )
+
+            metadata[saved_uuid] = {}
+            workflow_instance_id = metadata["workflow_instance_id"]
+            metadata[saved_uuid][workflow_instance_id] = []
+            metadata[uuid_gen][workflow_instance_id].append(function_id)
+            
 
 
 def unmarshall(serwoObject):

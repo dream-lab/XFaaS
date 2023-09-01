@@ -201,34 +201,49 @@ def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_us
     dynamism_data = read_dynamism_file(dynamism)
     if csp == 'azure':
         execute_url = get_azure_app_url(csp,region,part_id,wf_user_directory)
-        if payload_size == 'small':
-            session_id = 100
-        elif payload_size == 'medium':
-            session_id = 200
-        elif payload_size == 'large':
-            session_id = 300
+        
+        dynamism_updated = dynamism
 
+        if dynamism == 'sawtooth':
+            dynamism_updated = "st"
+        elif dynamism == 'alibaba':
+            dynamism_updated = "a"
+        elif dynamism == 'step-up':
+            dynamism_updated = "su"
+        elif dynamism == 'google':
+            dynamism_updated = "g"
+
+        session_id = dynamism_updated + payload_size
+        i = 1
         for d in dynamism_data:
             duration_fraction = d[0]
             rps_fraction = d[1]
             make_azure_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, dynamism, session_id, wf_user_directory, part_id, region )
-            session_id += 1
+            session_id = session_id + str(i)
         generate_azure_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction)
 
 
     elif csp == 'aws':
-        if payload_size == 'small':
-            session_id = 100
-        elif payload_size == 'medium':
-            session_id = 200
-        elif payload_size == 'large':
-            session_id = 300
+        dynamism_updated = dynamism
+
+        if dynamism == 'sawtooth':
+            dynamism_updated = "st"
+        elif dynamism == 'alibaba':
+            dynamism_updated = "a"
+        elif dynamism == 'step-up':
+            dynamism_updated = "su"
+        elif dynamism == 'google':
+            dynamism_updated = "g"
+
+        session_id = dynamism_updated + payload_size 
+
         execute_url, state_machine_arn = get_aws_resources(csp,region,part_id,wf_user_directory)
+        i =  1
         for d in dynamism_data:
             duration_fraction = d[0]
             rps_fraction = d[1]
             make_aws_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, path_to_pem_file)
-            session_id += 1
+            session_id = session_id + str(i)
         generate_aws_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction)
         
     
