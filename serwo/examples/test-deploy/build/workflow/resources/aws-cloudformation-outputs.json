@@ -1,0 +1,17 @@
+[
+    {
+        "OutputKey": "ExecuteApi",
+        "OutputValue": "https://edy5lk5o4a.execute-api.ap-south-1.amazonaws.com/serwo",
+        "Description": "Execute API endpoint"
+    },
+    {
+        "OutputKey": "RefactoringTestRoleArn",
+        "OutputValue": "arn:aws:iam::235319806087:role/SerwoApp-RefactoringTest-RefactoringTestRole-1UYS3JM1QI92A",
+        "Description": "IAM Role created for Serwo CLI State machine based on the specified SAM Policy Templates"
+    },
+    {
+        "OutputKey": "RefactoringTestArn",
+        "OutputValue": "arn:aws:states:ap-south-1:235319806087:stateMachine:RefactoringTest-3y5ugFvGb7po",
+        "Description": "Serwo CLI State machine ARN"
+    }
+]

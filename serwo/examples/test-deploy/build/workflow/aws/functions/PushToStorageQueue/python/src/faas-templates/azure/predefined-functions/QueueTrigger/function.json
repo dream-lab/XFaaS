@@ -1,0 +1,1 @@
+{"scriptFile": "__init__.py", "bindings": [{"name": "msg", "type": "queueTrigger", "direction": "in", "connection": "AzureWebJobsStorage", "queueName": "serwo-ingress"}, {"name": "starter", "type": "durableClient", "direction": "in"}]}
