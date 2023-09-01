@@ -3,6 +3,7 @@ import argparse
 import subprocess
 import pathlib
 import os
+import shutil
 
 parser = argparse.ArgumentParser(
     prog="ProgramName",
@@ -19,7 +20,7 @@ parser.add_argument("--dynamism",dest='dynamism',type=str,help="Dynamism: Values
 parser.add_argument("--wf-name",dest='wf_name',type=str,help="Workflow name")
 parser.add_argument("--wf-user-directory",dest='wf_user_directory',type=str,help="Workflow user directory")
 parser.add_argument("--path-to-pem",dest='path_to_pem',type=str,help="Path to pem file")
-parser.add_argument("provenance-artifact-filename",dest='provenance_artifact_filename',type=str,help="Provenance artifact filename")
+parser.add_argument("--provenance-artifact-filename",dest='provenance_artifact_filename',type=str,help="Provenance artifact filename")
 
 args = parser.parse_args()
 provenance_artifact_filename = args.provenance_artifact_filename
@@ -125,10 +126,11 @@ def make_azure_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url, 
 
 
 def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region):
-    provenance_artefacts_path = f"{wf_user_directory}/build/workflow/resources/provenance-artifacts-{csp}-{region}-{part_id}.json"
-    with open(provenance_artefacts_path) as f:
+   
+    provenance_artefacts_updated_path = f"{wf_user_directory}/provenance-artifacts/{provenance_artifact_filename}.json"
+    with open(provenance_artefacts_updated_path) as f:
         provenance_artefacts = json.load(f)
-    experiment_conf = { f"{session_id}": {
+    experiment_conf =  {
             "jmx_output_filename": jmx_output_filename,
             "csp": csp,
             "rps": int(rps/60),
@@ -136,14 +138,15 @@ def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, 
             "payload_size": payload_size,
             "wf_name": wf_name,
             "dynamism": dynamism
-        }
     }
+    
     if "experiment_conf" in provenance_artefacts:
-        provenance_artefacts['experiment_conf'].update(experiment_conf)
+        provenance_artefacts['experiment_conf'][session_id] = experiment_conf
     else:
-        provenance_artefacts['experiment_conf'] = experiment_conf
+        provenance_artefacts['experiment_conf'] = {}
+        provenance_artefacts['experiment_conf'][session_id] = experiment_conf
 
-    provenance_artefacts_updated_path = f"{provenance_artifact_filename}.json"
+
     with open(f"{provenance_artefacts_updated_path}", "w") as f:
         json.dump(provenance_artefacts, f,indent=4)
     
@@ -201,6 +204,7 @@ def generate_aws_shell_script_and_scp(payload_size, wf_name, rps, duration):
 
 
 def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,path_to_pem_file):
+    copy_provenance_artifacts(csp, region, part_id, wf_user_directory)
     dynamism_data = read_dynamism_file(dynamism)
     if csp == 'azure':
         execute_url = get_azure_app_url(csp,region,part_id,wf_user_directory)
@@ -221,8 +225,8 @@ def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_us
         for d in dynamism_data:
             duration_fraction = d[0]
             rps_fraction = d[1]
-            session_id = session_id + str(i)
-            make_azure_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, dynamism, session_id, wf_user_directory, part_id, region )
+            ne_session_id = session_id + str(i)
+            make_azure_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region )
             i += 1
         generate_azure_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction)
 
@@ -246,10 +250,21 @@ def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_us
         for d in dynamism_data:
             duration_fraction = d[0]
             rps_fraction = d[1]
-            session_id = session_id + str(i)
-            make_aws_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, path_to_pem_file)
+            ne_session_id = session_id + str(i)
+            make_aws_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file)
             i += 1
         generate_aws_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction)
+
+def copy_provenance_artifacts(csp, region, part_id, wf_user_directory):
+    ## make a directory provenance-artifacts in the user workflow directory
+    ## copy the provenance artifacts from the build directory to the user workflow directory
+    
+    os.makedirs(f"{wf_user_directory}/provenance-artifacts", exist_ok=True)
+    provenance_artefacts_path = f"{wf_user_directory}/build/workflow/resources/provenance-artifacts-{csp}-{region}-{part_id}.json"
+
+    provenance_artefacts_updated_path = f"{wf_user_directory}/provenance-artifacts/{provenance_artifact_filename}.json"
+   
+    shutil.copyfile(provenance_artefacts_path, provenance_artefacts_updated_path)
         
     
 
