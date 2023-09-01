@@ -1,17 +1,17 @@
 [
     {
-        "OutputKey": "graphRoleArn",
-        "OutputValue": "arn:aws:iam::235319806087:role/XFaaSApp-graph-graphRole-GHIF5X18S6X8",
-        "Description": "IAM Role created for Serwo CLI State machine based on the specified SAM Policy Templates"
-    },
-    {
         "OutputKey": "ExecuteApi",
-        "OutputValue": "https://73tez13cpk.execute-api.ap-south-1.amazonaws.com/serwo",
+        "OutputValue": "https://8ccsk5yoq1.execute-api.ap-south-1.amazonaws.com/serwo",
         "Description": "Execute API endpoint"
     },
     {
-        "OutputKey": "graphArn",
-        "OutputValue": "arn:aws:states:ap-south-1:235319806087:stateMachine:graph-KoiH95YvxmhV",
+        "OutputKey": "graphEightRpsArn",
+        "OutputValue": "arn:aws:states:ap-south-1:235319806087:stateMachine:graphEightRps-2y7Ledzfhw51",
         "Description": "Serwo CLI State machine ARN"
+    },
+    {
+        "OutputKey": "graphEightRpsRoleArn",
+        "OutputValue": "arn:aws:iam::235319806087:role/XFaaSApp-graphEightRps-graphEightRpsRole-TYQ1YJZ62B08",
+        "Description": "IAM Role created for Serwo CLI State machine based on the specified SAM Policy Templates"
     }
 ]

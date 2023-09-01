@@ -20,3 +20,5 @@ generated_jmx_resources
 generated_shell_scripts
 temp-exp-harness-results/
 scratch/
+serwo/examples/graphAwsFourRps
+serwo/examples/graphAwsMedium
