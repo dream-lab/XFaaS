@@ -176,7 +176,8 @@ def get_timings(dynamo_items, session_id):
         # logger.info(f"Processing {item['workflow_invocation_id']}")
         
         # get e2e timings
-        if item["session_id"] == session_id:
+        if item["session_id"].strip() == session_id:
+            logger.info("Coming here")
             count = count + 1
             timings["e2e_timings"].append(int(item["functions"][sink_node]["end_delta"]))
 
@@ -393,7 +394,7 @@ def plot_box_plots(xfaas_dag, timings_all_sessions):
         fontdict = {'size': 12}
 
         ax.set_xlabel(f"{wf_name}", fontdict=fontdict)
-        ax.set_ylabel("Exec Time (sec)", fontdict=fontdict)
+        ax.set_ylabel("Time (sec)", fontdict=fontdict)
         ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
 
         interleaved_label_ids = []
@@ -462,12 +463,13 @@ def plot_box_plots(xfaas_dag, timings_all_sessions):
         fig.savefig(plots_path / f"interleaved_exec_box_{wf_name}_{csp}_{dynamism}_{payload}.{format}", bbox_inches='tight')
         
 
-    # conditional plotting
+    # conditional plotting 
     if is_interleaved:
         plot_interleaved()
-    else:
-        plot_func_exec_box()
-        plot_edge_exec_box()
+    
+    # NOTE - uncomment this if you want edge and func exec separate
+    # plot_func_exec_box()
+    # plot_edge_exec_box()
 
 
 def plotter(workflow_deployment_id, experiment_conf):
@@ -520,7 +522,7 @@ if __name__ == "__main__":
     parser.add_argument("--artifacts-filename",dest='artifacts_filename',type=str,help="Provenance Artifacts Filename")
     parser.add_argument("--interleaved",dest='is_interleaved',type=bool,help="Plot Interleaved")
     parser.add_argument("--format",dest="format",type=str,help="Plot format (svg | pdf)")
-    parser.add_argument("--out-dir",des="out_dir",type=str,help="Output directory")
+    parser.add_argument("--out-dir",dest="out_dir",type=str,help="Output directory")
     args = parser.parse_args()
 
     user_dir = pathlib.Path(args.user_dir)
@@ -537,7 +539,9 @@ if __name__ == "__main__":
     if not os.path.exists(plots_path):
         os.mkdir(plots_path)
 
-    with open(user_dir / f"build/workflow/resources/{provenance_filename}", "r") as f:
+    provenance_path = user_dir / f"provenance-artifacts/{provenance_filename}"
+    # with open(user_dir / f"build/workflow/resources/{provenance_filename}", "r") as f:
+    with open(user_dir / f"{provenance_path}", "r") as f:
         config = json.load(f)
         workflow_refactored_id = config["refactored_workflow_id"]
         workflow_deployment_id = config["deployment_id"]
@@ -557,8 +561,8 @@ if __name__ == "__main__":
     dagfilepath = user_dir / "dag-original.json"
     xfaas_dag = DagLoader(dagfilepath).get_dag()
 
-    # logger.info("Getting from Queue and Adding to file")
-    # items = get_from_queue_add_to_file()
+    logger.info("Getting from Queue and Adding to file")
+    items = get_from_queue_add_to_file()
     # logger.info("Pushing to DynamoDB")
     # add_items_to_dynamodb(items)
     
