@@ -165,7 +165,7 @@ def trace_containers(metadata):
             uuid_map = metadata[uuid_gen]
             workflow_instance_id = metadata["workflow_instance_id"]
             if workflow_instance_id in uuid_map:
-                metadata[uuid][workflow_instance_id].append(function_id)
+                metadata[uuid_gen][workflow_instance_id].append(function_id)
             else:
                 metadata[uuid_gen][workflow_instance_id] = []
                 metadata[uuid_gen][workflow_instance_id].append(function_id)
@@ -192,7 +192,7 @@ def trace_containers(metadata):
             workflow_instance_id = metadata["workflow_instance_id"]
             metadata[saved_uuid][workflow_instance_id] = []
             metadata[uuid_gen][workflow_instance_id].append(function_id)
-            
+
 
 
 def unmarshall(serwoObject):

@@ -44,7 +44,7 @@
                 <stringProp name="Argument.value">{&#xd;
    &quot;stateMachineArn&quot;: &quot;STATE_MACHINE_ARN&quot;,&#xd;
   
-   &quot;input&quot;:&quot;{\&quot;workflow_instance_id\&quot;:${__counter(FALSE)},\&quot;request_timestamp\&quot;: ${__time(,)}, \&quot;session_id\&quot;: \&quot;SESSION\&quot; , \&quot;numLines\&quot;: 700,\&quot;numChars\&quot;:100,\&quot;numofiterations\&quot;:1}&quot;&#xd;
+   &quot;input&quot;:&quot;{\&quot;deployment_id\&quot;: \&quot;DEPLOYMENT_ID\&quot;, \&quot;workflow_instance_id\&quot;:${__counter(FALSE)},\&quot;request_timestamp\&quot;: ${__time(,)}, \&quot;session_id\&quot;: \&quot;SESSION\&quot; , \&quot;numLines\&quot;: 700,\&quot;numChars\&quot;:100,\&quot;numofiterations\&quot;:1}&quot;&#xd;
   }&#xd;                &#xd;
 </stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>

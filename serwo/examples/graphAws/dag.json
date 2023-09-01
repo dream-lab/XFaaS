@@ -47,7 +47,7 @@
         "Path": "examples/graphAws/CollectLogsGraphAws",
         "EntryPoint": "func.py",
         "CSP": "NA",
-        "MemoryInMB": 256
+        "MemoryInMB": 128
       }
     ],
     "Edges": [
