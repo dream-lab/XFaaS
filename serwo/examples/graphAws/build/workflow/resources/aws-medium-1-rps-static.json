@@ -1,0 +1,16 @@
+{
+    "workflow_id": "ec026f6c-e4b2-437b-9b19-d03fca56de2f",
+    "refactored_workflow_id": "3b2afcfc-7069-43c1-9dcd-4d8f04eb0096",
+    "deployment_id": "df962a4d-de1b-4242-8895-6079a664978a",
+    "experiment_conf": {
+        "staticmedium1": {
+            "jmx_output_filename": "aws-graph-medium-static-1-300-session-staticmedium1.jmx",
+            "csp": "aws",
+            "rps": 1,
+            "duration": 300.0,
+            "payload_size": "medium",
+            "wf_name": "graph",
+            "dynamism": "static"
+        }
+    }
+}

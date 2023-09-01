@@ -1,4 +1,5 @@
-build/
+serwo/examples/graphAws/build/workflow/aws
+serwo/examples/graphAws/build/workflow/azure
 archive/
 __pycache__
 sam-build/
