@@ -1,0 +1,16 @@
+{
+    "workflow_id": "6d6adc4f-74f2-46f1-8245-dde9b1791a49",
+    "refactored_workflow_id": "f87d721a-6c17-4e9a-888f-ebc656c1ed86",
+    "deployment_id": "73ab46a9-076e-498a-8ea5-4076e894da8f",
+    "experiment_conf": {
+        "staticmedium1": {
+            "jmx_output_filename": "azure-graph-medium-static-1-1-session-staticmedium1.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 1.0,
+            "payload_size": "medium",
+            "wf_name": "graph",
+            "dynamism": "static"
+        }
+    }
+}

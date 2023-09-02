@@ -50,10 +50,28 @@ def push_metadata_to_provenance(metadata):
 #     except Exception as e:
 #         logging.info(f'Exception in pushing metadata: {e}')
 
-def merge_containers_logs(metadata_list, metadata):
-    pass
 
-    #write this code
+def union(list1, list2):
+    return list(set(list1) | set(list2))
+
+def merge_containers_logs(metadata_list, metadata):
+    workflow_instance_id = str(metadata["workflow_instance_id"])
+    god_dict = dict()
+    for meta in metadata_list:
+        for key in meta:
+            if "-" in key and workflow_instance_id in meta[key]:
+                if key in god_dict:
+                    god_dict[key] = union(meta[key][workflow_instance_id], god_dict[key])
+                else:
+                    god_dict[key] = meta[key][workflow_instance_id]
+    
+    for meta in metadata_list:
+        for key in meta:
+            if "-" in key and workflow_instance_id in meta[key]:
+                metadata[key][workflow_instance_id] = god_dict[key]
+    
+    
+
 
 
 
@@ -111,15 +129,14 @@ def main(serwoObject, context: az_func.Context) -> str:
             func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after, "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size}}
             new_meta.append(func_json)
             metadata["functions"] = new_meta
-            merge_containers_logs(metadata_list,metadata)
-            # metadata[str(func_id)+'_fan_in'] = extracted
-            trace_containers(metadata)
+            # merge_containers_logs(metadata_list,metadata)
+            # trace_containers(metadata)
             body = serwoObjectResponse.get_body()
             return SerWOObject(body=body, metadata=metadata).to_json()
         else:
             serwoObject = unmarshall(json.loads(serwoObject))
             metadata = serwoObject.get_metadata()
-            trace_containers(metadata)
+            # trace_containers(metadata)
             start_delta = get_delta(metadata["workflow_start_time"])
             workflow_instance_id = metadata["workflow_instance_id"]
             process = psutil.Process(os.getpid())
@@ -158,12 +175,12 @@ def trace_containers(metadata):
         os.mkdir("/tmp/serwo")
         f = open(container_path, "w")
         uuid_gen = str(uuid.uuid4())
-        metadata[uuid_gen] = []
+        metadata[uuid_gen] = {}
         f.write(uuid_gen)
         f.close()
         if uuid_gen in metadata:
             uuid_map = metadata[uuid_gen]
-            workflow_instance_id = metadata["workflow_instance_id"]
+            workflow_instance_id = str(metadata["workflow_instance_id"])
             if workflow_instance_id in uuid_map:
                 metadata[uuid_gen][workflow_instance_id].append(function_id)
             else:
@@ -171,16 +188,16 @@ def trace_containers(metadata):
                 metadata[uuid_gen][workflow_instance_id].append(function_id)
         else:
             metadata[uuid_gen] = {}
-            workflow_instance_id = metadata["workflow_instance_id"]
+            workflow_instance_id = str(metadata["workflow_instance_id"])
 
             metadata[uuid_gen][workflow_instance_id] = []
             metadata[uuid_gen][workflow_instance_id].append(function_id)
-    else:
+    else: 
         f = open(container_path, "r")
         saved_uuid = f.read()
         f.close()
         if saved_uuid in metadata:
-            workflow_instance_id = metadata["workflow_instance_id"]
+            workflow_instance_id = str(metadata["workflow_instance_id"])
             if workflow_instance_id in metadata[saved_uuid]:
                 metadata[saved_uuid][workflow_instance_id].append(function_id)
             else:
@@ -189,7 +206,7 @@ def trace_containers(metadata):
         else:
 
             metadata[saved_uuid] = {}
-            workflow_instance_id = metadata["workflow_instance_id"]
+            workflow_instance_id = str(metadata["workflow_instance_id"])
             metadata[saved_uuid][workflow_instance_id] = []
             metadata[uuid_gen][workflow_instance_id].append(function_id)
 

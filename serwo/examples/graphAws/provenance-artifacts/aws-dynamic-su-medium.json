@@ -1,0 +1,52 @@
+{
+    "workflow_id": "a697c5b8-8bc3-4f16-96c4-d9f43e5c49c0",
+    "refactored_workflow_id": "67a72a09-18d8-411d-9fb1-f6c8aee521db",
+    "deployment_id": "32517545-94ac-4761-a2ca-6735636953d6",
+    "experiment_conf": {
+        "step_functionmedium1": {
+            "jmx_output_filename": "aws-graph-medium-step_function-1-60-session-step_functionmedium1.jmx",
+            "csp": "aws",
+            "rps": 1,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "graph",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium2": {
+            "jmx_output_filename": "aws-graph-medium-step_function-4-60-session-step_functionmedium2.jmx",
+            "csp": "aws",
+            "rps": 4,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "graph",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium3": {
+            "jmx_output_filename": "aws-graph-medium-step_function-8-60-session-step_functionmedium3.jmx",
+            "csp": "aws",
+            "rps": 8,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "graph",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium4": {
+            "jmx_output_filename": "aws-graph-medium-step_function-4-60-session-step_functionmedium4.jmx",
+            "csp": "aws",
+            "rps": 4,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "graph",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium5": {
+            "jmx_output_filename": "aws-graph-medium-step_function-1-60-session-step_functionmedium5.jmx",
+            "csp": "aws",
+            "rps": 1,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "graph",
+            "dynamism": "step_function"
+        }
+    }
+}
