@@ -16,12 +16,12 @@ def trace_containers(metadata):
         os.mkdir("/tmp/serwo")
         f = open(container_path, "w")
         uuid_gen = str(uuid.uuid4())
-        metadata[uuid_gen] = []
+        metadata[uuid_gen] = {}
         f.write(uuid_gen)
         f.close()
         if uuid_gen in metadata:
             uuid_map = metadata[uuid_gen]
-            workflow_instance_id = metadata["workflow_instance_id"]
+            workflow_instance_id = str(metadata["workflow_instance_id"])
             if workflow_instance_id in uuid_map:
                 metadata[uuid_gen][workflow_instance_id].append(function_id)
             else:
@@ -29,7 +29,7 @@ def trace_containers(metadata):
                 metadata[uuid_gen][workflow_instance_id].append(function_id)
         else:
             metadata[uuid_gen] = {}
-            workflow_instance_id = metadata["workflow_instance_id"]
+            workflow_instance_id = str(metadata["workflow_instance_id"])
 
             metadata[uuid_gen][workflow_instance_id] = []
             metadata[uuid_gen][workflow_instance_id].append(function_id)
@@ -49,7 +49,7 @@ def trace_containers(metadata):
             metadata[saved_uuid] = {}
             workflow_instance_id = metadata["workflow_instance_id"]
             metadata[saved_uuid][workflow_instance_id] = []
-            metadata[uuid_gen][workflow_instance_id].append(function_id)
+            metadata[saved_uuid][workflow_instance_id].append(function_id)
 
 def get_delta(start_time):
     curr_time = int(time.time() * 1000)
@@ -131,7 +131,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         metadata["request_timestamp"] = request_timestamp
     func_id = 255
 
-    trace_containers(metadata)
+    # trace_containers(metadata)
 
     start_delta = get_delta(metadata["workflow_start_time"])
     process = psutil.Process(os.getpid())

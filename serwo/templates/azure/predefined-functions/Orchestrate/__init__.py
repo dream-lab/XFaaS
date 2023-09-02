@@ -17,12 +17,12 @@ def trace_containers(metadata):
         os.mkdir("/tmp/serwo")
         f = open(container_path, "w")
         uuid_gen = str(uuid.uuid4())
-        metadata[uuid_gen] = []
+        metadata[uuid_gen] = {}
         f.write(uuid_gen)
         f.close()
         if uuid_gen in metadata:
             uuid_map = metadata[uuid_gen]
-            workflow_instance_id = metadata["workflow_instance_id"]
+            workflow_instance_id = str(metadata["workflow_instance_id"])
             if workflow_instance_id in uuid_map:
                 metadata[uuid_gen][workflow_instance_id].append(function_id)
             else:
@@ -30,7 +30,7 @@ def trace_containers(metadata):
                 metadata[uuid_gen][workflow_instance_id].append(function_id)
         else:
             metadata[uuid_gen] = {}
-            workflow_instance_id = metadata["workflow_instance_id"]
+            workflow_instance_id = str(metadata["workflow_instance_id"])
 
             metadata[uuid_gen][workflow_instance_id] = []
             metadata[uuid_gen][workflow_instance_id].append(function_id)
@@ -50,7 +50,7 @@ def trace_containers(metadata):
             metadata[saved_uuid] = {}
             workflow_instance_id = metadata["workflow_instance_id"]
             metadata[saved_uuid][workflow_instance_id] = []
-            metadata[uuid_gen][workflow_instance_id].append(function_id)
+            metadata[saved_uuid][workflow_instance_id].append(function_id)
 
 
 def get_delta(start_time):
@@ -133,7 +133,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         metadata["request_timestamp"] = request_timestamp
     func_id = 255
 
-    trace_containers(metadata)
+    # trace_containers(metadata)
 
     start_delta = get_delta(metadata["workflow_start_time"])
     process = psutil.Process(os.getpid())
@@ -146,19 +146,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    nrnj = yield context.call_activity("TaskA", serwoObject)
-    qgna = []
-    ipri = context.call_activity("TaskB", nrnj)
-    owzv = context.call_activity("TaskC", nrnj)
-    jgan = context.call_activity("TaskD", nrnj)
-    qgna.append(ipri)
-    qgna.append(owzv)
-    qgna.append(jgan)
-    qbwe = yield context.task_all(qgna)
-    tmat = yield context.call_activity("TaskE", qbwe)
-    tmat = insert_end_stats_in_metadata(tmat)
-    jsiy = yield context.call_activity("CollectLogsGraphAz", tmat)
-    return jsiy
+    abuc = yield context.call_activity("TaskA", serwoObject)
+    iwhs = []
+    dmti = context.call_activity("TaskB", abuc)
+    haxz = context.call_activity("TaskC", abuc)
+    fkxy = context.call_activity("TaskD", abuc)
+    iwhs.append(dmti)
+    iwhs.append(haxz)
+    iwhs.append(fkxy)
+    yhpv = yield context.task_all(iwhs)
+    xvmk = yield context.call_activity("TaskE", yhpv)
+    xvmk = insert_end_stats_in_metadata(xvmk)
+    hyor = yield context.call_activity("CollectLogsGraphAz", xvmk)
+    return hyor
 
 
 main = df.Orchestrator.create(orchestrator_function)

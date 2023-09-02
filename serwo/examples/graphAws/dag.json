@@ -1,5 +1,5 @@
 {
-    "WorkflowName": "graphEightRps",
+    "WorkflowName": "graphSTDynamic",
     "Nodes": [
       {
         "NodeId": "1",

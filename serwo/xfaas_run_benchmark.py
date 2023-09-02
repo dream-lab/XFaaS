@@ -181,8 +181,8 @@ def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_i
     return jmx_template_path,jmx_output_path,jmx_output_filename
 
 
-def generate_azure_shell_script_and_scp(payload_size, wf_name, rps, duration):
-    shell_file_name  = f"azure-{payload_size}-{wf_name}-{rps}-{duration}.sh"
+def generate_azure_shell_script_and_scp(payload_size, wf_name, rps, duration,dynamism):
+    shell_file_name  = f"azure-{payload_size}-{wf_name}-{rps}-{duration}-{dynamism}.sh"
     output_path = pathlib.Path(__file__).parent / f"benchmark_resources/generated_shell_scripts/{shell_file_name}"
     code = "#!/bin/sh\n"
     for command in azure_shell_script_commands:
@@ -195,8 +195,8 @@ def generate_azure_shell_script_and_scp(payload_size, wf_name, rps, duration):
     # os.system(f"ssh {azure_user_id}@{azure_server_ip} {shell_file_name}")
     
 
-def generate_aws_shell_script_and_scp(payload_size, wf_name, rps, duration):
-    shell_file_name  = f"aws-{payload_size}-{wf_name}-{rps}-{duration}.sh"
+def generate_aws_shell_script_and_scp(payload_size, wf_name, rps, duration,dynamism):
+    shell_file_name  = f"aws-{payload_size}-{wf_name}-{rps}-{duration}-{dynamism}.sh"
     output_path = pathlib.Path(__file__).parent / f"benchmark_resources/generated_shell_scripts/{shell_file_name}"
     code = "#!/bin/sh\n"
     for command in aws_shell_script_commands:
@@ -211,6 +211,7 @@ def generate_aws_shell_script_and_scp(payload_size, wf_name, rps, duration):
 
 def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,path_to_pem_file):
     copy_provenance_artifacts(csp, region, part_id, wf_user_directory)
+    saw_tooth = [(8,1),(8,2),(8,3),(8,4),(8,5),(8,6),(8,7),(8,8)]
     dynamism_data = read_dynamism_file(dynamism)
     if csp == 'azure':
         execute_url = get_azure_app_url(csp,region,part_id,wf_user_directory)
@@ -233,8 +234,10 @@ def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_us
             rps_fraction = d[1]
             ne_session_id = session_id + str(i)
             make_azure_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region )
+            ## temp hack for sawtooth
+            # make_azure_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region )
             i += 1
-        generate_azure_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction)
+        generate_azure_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction,dynamism)
 
 
     elif csp == 'aws':
@@ -257,9 +260,12 @@ def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_us
             duration_fraction = d[0]
             rps_fraction = d[1]
             ne_session_id = session_id + str(i)
-            make_aws_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file)
+            # make_aws_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file)
+
+            ## temp hack for sawtooth
+            make_aws_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file)
             i += 1
-        generate_aws_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction)
+        generate_aws_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction,dynamism)
 
 def copy_provenance_artifacts(csp, region, part_id, wf_user_directory):
     ## make a directory provenance-artifacts in the user workflow directory
