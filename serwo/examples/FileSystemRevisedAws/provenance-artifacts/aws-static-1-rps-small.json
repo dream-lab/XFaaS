@@ -1,0 +1,16 @@
+{
+    "workflow_id": "4ecaea35-e488-447c-9c94-b51b6fcd4da2",
+    "refactored_workflow_id": "64c41383-0f8d-48e3-b374-aa7a2c7acfc4",
+    "deployment_id": "aca42740-e165-462b-b6f8-7c198c137d35",
+    "experiment_conf": {
+        "staticsmall1": {
+            "jmx_output_filename": "aws-fileProcessing-small-static-1-300-session-staticsmall1.jmx",
+            "csp": "aws",
+            "rps": 1,
+            "duration": 300.0,
+            "payload_size": "small",
+            "wf_name": "fileProcessing",
+            "dynamism": "static"
+        }
+    }
+}

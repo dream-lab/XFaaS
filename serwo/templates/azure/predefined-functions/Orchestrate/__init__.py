@@ -146,19 +146,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    zcis = yield context.call_activity("TaskA", serwoObject)
-    fwml = []
-    suzy = context.call_activity("TaskB", zcis)
-    cpoy = context.call_activity("TaskC", zcis)
-    utty = context.call_activity("TaskD", zcis)
-    fwml.append(suzy)
-    fwml.append(cpoy)
-    fwml.append(utty)
-    odxa = yield context.task_all(fwml)
-    injc = yield context.call_activity("TaskE", odxa)
-    injc = insert_end_stats_in_metadata(injc)
-    snbf = yield context.call_activity("CollectLogsGraphAz", injc)
-    return snbf
+    uxba = yield context.call_activity("TaskA", serwoObject)
+    ytut = []
+    gcxv = context.call_activity("TaskB", uxba)
+    dabb = context.call_activity("TaskC", uxba)
+    euap = context.call_activity("TaskD", uxba)
+    ytut.append(gcxv)
+    ytut.append(dabb)
+    ytut.append(euap)
+    wpoz = yield context.task_all(ytut)
+    rimu = yield context.call_activity("TaskE", wpoz)
+    rimu = insert_end_stats_in_metadata(rimu)
+    odda = yield context.call_activity("CollectLogsGraphAz", rimu)
+    return odda
 
 
 main = df.Orchestrator.create(orchestrator_function)
