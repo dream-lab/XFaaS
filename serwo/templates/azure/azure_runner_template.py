@@ -129,14 +129,14 @@ def main(serwoObject, context: az_func.Context) -> str:
             func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after, "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size}}
             new_meta.append(func_json)
             metadata["functions"] = new_meta
-            # merge_containers_logs(metadata_list,metadata)
-            # trace_containers(metadata)
+            merge_containers_logs(metadata_list,metadata)
+            trace_containers(metadata)
             body = serwoObjectResponse.get_body()
             return SerWOObject(body=body, metadata=metadata).to_json()
         else:
             serwoObject = unmarshall(json.loads(serwoObject))
             metadata = serwoObject.get_metadata()
-            # trace_containers(metadata)
+            trace_containers(metadata)
             start_delta = get_delta(metadata["workflow_start_time"])
             workflow_instance_id = metadata["workflow_instance_id"]
             process = psutil.Process(os.getpid())
