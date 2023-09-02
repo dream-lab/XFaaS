@@ -1,0 +1,52 @@
+{
+    "workflow_id": "0374ca86-437a-4f74-8665-3f9c36667b2c",
+    "refactored_workflow_id": "f6dec2ff-4c77-463a-985e-1b4502cc1238",
+    "deployment_id": "cf212d89-cd9c-4566-95e4-a17e52e0e3f9",
+    "experiment_conf": {
+        "step_functionmedium1": {
+            "jmx_output_filename": "aws-fileProcessing-medium-step_function-1-60-session-step_functionmedium1.jmx",
+            "csp": "aws",
+            "rps": 1,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium2": {
+            "jmx_output_filename": "aws-fileProcessing-medium-step_function-4-60-session-step_functionmedium2.jmx",
+            "csp": "aws",
+            "rps": 4,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium3": {
+            "jmx_output_filename": "aws-fileProcessing-medium-step_function-8-60-session-step_functionmedium3.jmx",
+            "csp": "aws",
+            "rps": 8,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium4": {
+            "jmx_output_filename": "aws-fileProcessing-medium-step_function-4-60-session-step_functionmedium4.jmx",
+            "csp": "aws",
+            "rps": 4,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium5": {
+            "jmx_output_filename": "aws-fileProcessing-medium-step_function-1-60-session-step_functionmedium5.jmx",
+            "csp": "aws",
+            "rps": 1,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "step_function"
+        }
+    }
+}

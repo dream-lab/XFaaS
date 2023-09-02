@@ -130,13 +130,13 @@ def main(serwoObject, context: az_func.Context) -> str:
             new_meta.append(func_json)
             metadata["functions"] = new_meta
             # merge_containers_logs(metadata_list,metadata)
-            # trace_containers(metadata)
+            trace_containers(metadata)
             body = serwoObjectResponse.get_body()
             return SerWOObject(body=body, metadata=metadata).to_json()
         else:
             serwoObject = unmarshall(json.loads(serwoObject))
             metadata = serwoObject.get_metadata()
-            # trace_containers(metadata)
+            trace_containers(metadata)
             start_delta = get_delta(metadata["workflow_start_time"])
             workflow_instance_id = metadata["workflow_instance_id"]
             process = psutil.Process(os.getpid())
@@ -175,40 +175,40 @@ def trace_containers(metadata):
         os.mkdir("/tmp/serwo")
         f = open(container_path, "w")
         uuid_gen = str(uuid.uuid4())
-        metadata[uuid_gen] = {}
+        # metadata[uuid_gen] = {}
         f.write(uuid_gen)
         f.close()
-        if uuid_gen in metadata:
-            uuid_map = metadata[uuid_gen]
-            workflow_instance_id = str(metadata["workflow_instance_id"])
-            if workflow_instance_id in uuid_map:
-                metadata[uuid_gen][workflow_instance_id].append(function_id)
-            else:
-                metadata[uuid_gen][workflow_instance_id] = []
-                metadata[uuid_gen][workflow_instance_id].append(function_id)
-        else:
-            metadata[uuid_gen] = {}
-            workflow_instance_id = str(metadata["workflow_instance_id"])
+        # if uuid_gen in metadata:
+        #     uuid_map = metadata[uuid_gen]
+        #     workflow_instance_id = str(metadata["workflow_instance_id"])
+        #     if workflow_instance_id in uuid_map:
+        #         metadata[uuid_gen][workflow_instance_id].append(function_id)
+        #     else:
+        #         metadata[uuid_gen][workflow_instance_id] = []
+        #         metadata[uuid_gen][workflow_instance_id].append(function_id)
+        # else:
+        #     metadata[uuid_gen] = {}
+        #     workflow_instance_id = str(metadata["workflow_instance_id"])
 
-            metadata[uuid_gen][workflow_instance_id] = []
-            metadata[uuid_gen][workflow_instance_id].append(function_id)
+        #     metadata[uuid_gen][workflow_instance_id] = []
+        #     metadata[uuid_gen][workflow_instance_id].append(function_id)
     else: 
         f = open(container_path, "r")
         saved_uuid = f.read()
         f.close()
-        if saved_uuid in metadata:
-            workflow_instance_id = str(metadata["workflow_instance_id"])
-            if workflow_instance_id in metadata[saved_uuid]:
-                metadata[saved_uuid][workflow_instance_id].append(function_id)
-            else:
-                metadata[saved_uuid][workflow_instance_id] = []
-                metadata[saved_uuid][workflow_instance_id].append(function_id)
-        else:
+        # if saved_uuid in metadata:
+        #     workflow_instance_id = str(metadata["workflow_instance_id"])
+        #     if workflow_instance_id in metadata[saved_uuid]:
+        #         metadata[saved_uuid][workflow_instance_id].append(function_id)
+        #     else:
+        #         metadata[saved_uuid][workflow_instance_id] = []
+        #         metadata[saved_uuid][workflow_instance_id].append(function_id)
+        # else:
 
-            metadata[saved_uuid] = {}
-            workflow_instance_id = str(metadata["workflow_instance_id"])
-            metadata[saved_uuid][workflow_instance_id] = []
-            metadata[uuid_gen][workflow_instance_id].append(function_id)
+        #     metadata[saved_uuid] = {}
+        #     workflow_instance_id = str(metadata["workflow_instance_id"])
+        #     metadata[saved_uuid][workflow_instance_id] = []
+        #     metadata[uuid_gen][workflow_instance_id].append(function_id)
 
 
 

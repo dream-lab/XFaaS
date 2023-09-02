@@ -233,9 +233,10 @@ def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_us
             duration_fraction = d[0]
             rps_fraction = d[1]
             ne_session_id = session_id + str(i)
-            make_azure_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region )
-            ## temp hack for sawtooth
-            # make_azure_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region )
+            if "sawtooth" != dynamism:
+                make_azure_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region )
+            if "sawtooth" == dynamism:
+                make_azure_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region )
             i += 1
         generate_azure_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction,dynamism)
 
@@ -260,10 +261,11 @@ def run(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_us
             duration_fraction = d[0]
             rps_fraction = d[1]
             ne_session_id = session_id + str(i)
-            # make_aws_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file)
+            if "sawtooth" != dynamism:
+                make_aws_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file)
 
-            ## temp hack for sawtooth
-            make_aws_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file)
+            if "sawtooth" == dynamism:
+                make_aws_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file)
             i += 1
         generate_aws_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction,dynamism)
 
