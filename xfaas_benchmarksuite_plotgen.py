@@ -93,32 +93,38 @@ def create_dynamo_db_items():
             ):
                 queue_item = json.loads(message.content.decode("utf-8"))
                 metadata = queue_item["metadata"]
-                dynamo_item = {}
                 
-                # invocation id is a combination of the instanceId-sessionId
-                invocation_id = f"{metadata['workflow_instance_id']}-{metadata['session_id']}"
+                # Filtering based on workflow deployment id during creation itself
+                if metadata["deployment_id"].strip() == workflow_deployment_id:
 
-                dynamo_item["workflow_deployment_id"] = workflow_deployment_id
-                # dynamo_item["workflow_invocation_id"] = str(
-                #     metadata["workflow_instance_id"]
-                # )
-                dynamo_item["workflow_invocation_id"] = invocation_id
-                dynamo_item["client_request_time_ms"] = str(
-                    metadata["request_timestamp"]
-                )
-                dynamo_item["invocation_start_time_ms"] = str(
-                    metadata["workflow_start_time"]
-                )
+                    dynamo_item = {}
+                    
+                    # invocation id is a combination of the instanceId-sessionId
+                    invocation_id = f"{metadata['workflow_instance_id']}-{metadata['session_id']}"
 
-                # add session id to dynamo db
-                dynamo_item["session_id"] = str(metadata["session_id"])
+                    # NOTE - the deployment id is now being propagated in the provenance via modified runner templates
+                    # needed it for filtering on the experiment data
+                    dynamo_item["workflow_deployment_id"] = metadata["deployment_id"]
+                    # dynamo_item["workflow_invocation_id"] = str(
+                    #     metadata["workflow_instance_id"]
+                    # )
+                    dynamo_item["workflow_invocation_id"] = invocation_id
+                    dynamo_item["client_request_time_ms"] = str(
+                        metadata["request_timestamp"]
+                    )
+                    dynamo_item["invocation_start_time_ms"] = str(
+                        metadata["workflow_start_time"]
+                    )
 
-                dynamo_item["functions"] = {}
-                for item in metadata["functions"]:
-                    for key in item.keys():
-                        dynamo_item["functions"][key] = item[key]
+                    # add session id to dynamo db
+                    dynamo_item["session_id"] = str(metadata["session_id"])
 
-                dynamodb_item_list.append(dynamo_item)
+                    dynamo_item["functions"] = {}
+                    for item in metadata["functions"]:
+                        for key in item.keys():
+                            dynamo_item["functions"][key] = item[key]
+
+                    dynamodb_item_list.append(dynamo_item)
 
     return dynamodb_item_list
 
@@ -215,7 +221,7 @@ def delete_from_dynamo(workflow_deployment_id):
             logger.info(output)
 
 
-def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions):
+def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions, timeline):
     fig, ax = plt.subplots()
     fig.set_dpi(400)
     fontdict = {'size': 12}
@@ -228,56 +234,100 @@ def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions):
     #         f"E2E timeline plot - {conf['wf_name']} - {conf['csp']} - {conf['duration']/60}mins - {conf['rps']}RPS",
     #         fontdict=fontdict
     # )
-    ax.set_xlabel("Invocation Id", fontdict=fontdict)
+    
     ax.set_ylabel("E2E time (sec)", fontdict=fontdict)
 
     # plotting the exec time in seconds and not milliseconds
     y_val = [y/1000 for y in e2e_all_sessions]
-    ax.plot(x_val, [y/1000 for y in e2e_all_sessions])
+
+    # NOTE - PLOT WITH INVOCATION ID
+    # ax.set_xlabel("Invocation Id", fontdict=fontdict)
+    # ax.plot(x_val, [y/1000 for y in e2e_all_sessions])
+    # ax.set_xticks(labels)
+    # ax.set_xticklabels([str(x) for x in labels], 
+    #                    fontdict=fontdict,
+    #                    rotation=90)
 
 
-    # Xticks are straighforward
-    ax.set_xticks(labels)
-    ax.set_xticklabels([str(x) for x in labels], fontdict=fontdict)
+    # NOTE - PLOT WITH TIMELINE
+    ax.set_xlabel("Timeline (sec)", fontdict=fontdict)
+    ax.plot(timeline, [y/1000 for y in e2e_all_sessions])
+    ax.xaxis.set_tick_params(which='major', labelsize=fontdict['size'])
+
 
     # Auto adjustment of yticklables (Do manually if needed)
-    ymax = max(y_val)
-    yticks = []
-    count = 0
-    multiplier = 5
-    while(count*multiplier <= ymax):
-        yticks.append(count*multiplier)
-        count = count + 1
-    yticks.append(count*multiplier)
+    # ymax = max(y_val)
+    # yticks = []
+    # count = 0
+    # multiplier = 5
+    # while(count*multiplier <= ymax):
+    #     yticks.append(count*multiplier)
+    #     count = count + 1
+    # yticks.append(count*multiplier)
 
     # CUSTOM yticks
-    # yticks = [0, 5, 10, 15]
-    # ytickslabels = [str(x) for x in yticks]
+    yticks = [0, 5, 10, 15, 20]
+    ytickslabels = [str(x) for x in yticks]
     # ax.set_ylim(ymax=10)
-    # ax.set_yticks(yticks)
-    # ax.set_yticklabels(ytickslabels,
-    #                   fontdict=fontdict)
+    ax.set_yticks(yticks)
+    ax.set_yticklabels(ytickslabels,
+                      fontdict=fontdict)
     
     # Uncomment this for general purpose
-    ax.set_yticks(yticks)
-    ax.set_yticklabels([str(y) for y in yticks])
+    # ax.set_yticks(yticks)
+    # ax.set_yticklabels([str(y) for y in yticks])
 
     ax.set_ylim(ymin=0)
     ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
+    
 
-    if len(time_marker_sessions) > 1:
-        cumm_marker = time_marker_sessions[0]
-        rps_change_markers = []
-        for x in time_marker_sessions[1:]:
-            rps_change_markers.append(cumm_marker)
-            cumm_marker = cumm_marker + x
+    # STEP FUNCTION OVERLAY - (START)
+    # NOTE - step function overlay
+    # # Sawtooth step y 
+    # step_y = [1,2,3,4,5,6,7,8,0]*3
+    # multiplier = 8
+    # step_x = []
+    # invoc_id = 0
+    # for rps in step_y:
+    #     if rps == 0:
+    #         invoc_id = invoc_id + 60
+    #     else:
+    #         invoc_id = invoc_id + 8
+    #     step_x.append(invoc_id)
 
-        logger.info(rps_change_markers)
-        ax.vlines(  rps_change_markers,
-                    ymin=0,
-                    ymax=max(yticks), 
-                    linestyles='dashed',
-                    color='grey' )
+    # Step up down config
+    step_y = [1,4,8,4,1]
+    invoc_id = 0
+    step_x = []
+    for rps in step_y:
+        invoc_id = invoc_id + 60
+        step_x.append(invoc_id)
+
+    logger.info(f"Step X - {step_x}")
+    ax2 = ax.twinx()
+    ax2.set_ylim(ymin=0)
+    ax2.set_ylabel("RPS", fontdict=fontdict)
+    ax2.set_yticks([y for y in range(0, 9)])
+    ax2.set_yticklabels([str(y) for y in range(0, 9)], fontdict=fontdict)
+    ax2.step([0] + step_x, [1] + step_y, linestyle='dashed', color='red')
+    # STEP FUNCTION OVERLAY - (END)
+    
+
+    # NOTE - code to add vlines (start)
+    # if len(time_marker_sessions) > 1:
+    #     cumm_marker = time_marker_sessions[0]
+    #     rps_change_markers = []
+    #     for x in time_marker_sessions[1:]:
+    #         rps_change_markers.append(cumm_marker)
+    #         cumm_marker = cumm_marker + x
+
+    #     logger.info(rps_change_markers)
+    #     ax.vlines(  rps_change_markers,
+    #                 ymin=0,
+    #                 ymax=max(yticks), 
+    #                 linestyles='dashed',
+    #                 color='grey' )
+    # NOTE - code to add vlines (end)
 
     ax.grid(axis="y", which="major", linestyle="-", color="black")
     ax.grid(axis="y", which="minor", linestyle="--", color="grey")
@@ -287,7 +337,7 @@ def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions):
     fig.savefig(plots_path / f"e2e_timeline_{wf_name}_{csp}_{dynamism}_{payload}.{format}", bbox_inches='tight')
     # plt.show()
 
-def plot_box_plots(xfaas_dag, timings_all_sessions):
+def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
     
     # combine the session id timings for each edge into a single list (edge key - 'u-v')
     # create dict(
@@ -414,6 +464,26 @@ def plot_box_plots(xfaas_dag, timings_all_sessions):
             else:
                 return np.array(distribution_dict["functions"][id])
 
+        #
+        def get_cumm_time_func(time_map, num_iters):
+            cumm_time = []
+            for idx in range(0, num_iters):
+                temp = []
+                for key in time_map.keys():
+                    temp.append(time_map[key][idx])
+                cumm_time.append(temp)
+            return np.array([sum(x) for x in cumm_time])
+        
+        def get_cumm_time_edge(time_map, edge_set, num_iters):
+            cumm_time = []
+            for idx in range(0, num_iters):
+                maxval = -1
+                for key in edge_set:
+                    if time_map[key][idx] > maxval:
+                        maxval = time_map[key][idx]
+                cumm_time.append(maxval)
+            return cumm_time
+
         # create some sort of an ordered labels for the interleaved plot
         for u in xfaas_dag.nodes:
             if u not in visited:
@@ -432,9 +502,48 @@ def plot_box_plots(xfaas_dag, timings_all_sessions):
                             showfliers=False)  # fill with color
                             # labels=interfunction_labels)
         
-        # NOTE - modify this label to include the function and edge abbreviations
-        interleaved_labels_modified = ['GGen', 'GGen-BFT', 'GGen-PR', 'GGen-MST', 'BFT', 'BFT-Agg', 'PR', 'PR-Agg', 'MST', 'MST-Agg', 'Agg']
+        cumm_labels = []
+        ######## CUMMULATIVE TIME ADDITION #########
+        # UNCOMMENT / COMMENT FROM HERE (START) 
+        # Get the cummulative function timings
+        ax2 = ax.twinx()
+        ax2.set_ylabel("Cummulative Time (sec)", fontdict=fontdict)
+        cumm_labels = ['Cumm. Func', 'Cumm. Edge', 'Cumm. E2E']
+        cumm_func_time = get_cumm_time_func(time_map=distribution_dict["functions"], num_iters=len(e2e_all_sessions))
+        cumm_edge_time1 = get_cumm_time_edge(time_map=distribution_dict["edges"], 
+                                            num_iters=len(e2e_all_sessions), 
+                                            edge_set=['1-2', '1-3', '1-4'])
         
+        cumm_edge_time2 = get_cumm_time_edge(time_map=distribution_dict["edges"], 
+                                            num_iters=len(e2e_all_sessions), 
+                                            edge_set=['2-5', '3-5', '4-5'])
+        cumm_edge_time = np.array([sum(x) for x in list(zip(cumm_edge_time1, cumm_edge_time2))])
+        
+        cumm_e2e_time = np.array([t/1000 for t in e2e_all_sessions])
+
+        bplot2 = ax2.boxplot([cumm_func_time, cumm_edge_time, cumm_e2e_time],
+                             positions=[len(interleaved_data) + offset for offset in range(1,4)],
+                             vert=True,
+                             patch_artist=True,
+                             showfliers=False)
+        
+        
+        # color='pink'
+        colors = ['blue', 'green', 'brown']
+        for patch, color in zip(bplot2['boxes'], colors):
+            patch.set_facecolor(color)
+
+        yticks_ax2 = [0, 0.1, 0.2, 0.3, 0.4]
+        ax2.set_ylim(ymin=0, ymax=max(yticks_ax2))
+        ax2.set_yticks(yticks_ax2)
+        ax2.set_yticklabels([str(x) for x in yticks_ax2])
+        ax2.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
+        # UNCOMMENT / COMMENT FROM HERE (END)
+        ######## CUMMULATIVE TIME ADDITION #########
+
+
+        # NOTE - modify this label to include the function and edge abbreviations
+        interleaved_labels_modified = ['GGen', 'GGen-BFT', 'GGen-PR', 'GGen-MST', 'BFT', 'BFT-Agg', 'PR', 'PR-Agg', 'MST', 'MST-Agg', 'Agg'] + cumm_labels
         logger.info(f"Interleaved Labels - {interleaved_labels_modified}")
         ax.set_xticklabels(interleaved_labels_modified, 
                            rotation=90,
@@ -442,19 +551,18 @@ def plot_box_plots(xfaas_dag, timings_all_sessions):
         
 
         # CUSTOM yticks
-        # yticks = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
-        # ytickslabels = [str(x) for x in yticks]
-        # ax.set_ylim(ymax=0.8)
-        # ax.set_yticks(yticks)
-        # ax.set_yticklabels(ytickslabels,
-        #                    fontdict=fontdict)
+        yticks_ax1 = [0, 0.05, 0.1, 0.15, 0.2]
+        ytickslabels = [str(x) for x in yticks_ax1]
+        ax.set_ylim(ymin=0, ymax=max(yticks_ax1))
+        ax.set_yticks(yticks_ax1)
+        ax.set_yticklabels(ytickslabels,
+                           fontdict=fontdict)
 
         ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
 
         for idx, patch in enumerate(bplot1['boxes']):
             patch.set_facecolor(get_color(interleaved_label_ids[idx]))
 
-        ax.set_ylim(ymin=0)
         ax.grid(axis="y", which="major", linestyle="-", color="black")
         ax.grid(axis="y", which="minor", linestyle="--", color="grey")
         ax.set_axisbelow(True)
@@ -479,40 +587,44 @@ def plotter(workflow_deployment_id, experiment_conf):
                         workflow_deployment_id=workflow_deployment_id
                     )
     # add a filter based on deployment Id (since a single queue will contain multiple session ids)
-    filtered_dynamo_items = defaultdict(list)
-    filtered_dynamo_items["Items"] = [item for item in dynamo_items["Items"] if item["workflow_deployment_id"] == workflow_deployment_id]
+    # filtered_dynamo_items = defaultdict(list)
+    # filtered_dynamo_items["Items"] = [item for item in dynamo_items["Items"] if item["workflow_deployment_id"] == workflow_deployment_id]
 
     timings_all_sessions = dict()
     e2e_all_sessions = []
     time_marker_sessions = []
-    
+    timestamps = sorted([int(item["invocation_start_time_ms"]) for item in dynamo_items["Items"]])
+    start_time = timestamps[0]
+    # NOTE - this timeline is in seconds
+    timeline = [(x-start_time)/1000 for x in timestamps]
 
     # create the session_id -> timings dict.
     for session_id, conf in experiment_conf.items():
         logger.info(f"Getting Timings For Session Id - {session_id}")
-        timings = get_timings(dynamo_items=filtered_dynamo_items, session_id=session_id)
+        timings = get_timings(dynamo_items=dynamo_items, session_id=session_id)
         e2e_timings = timings["e2e_timings"]
         logger.info(len(e2e_timings))
         e2e_all_sessions += e2e_timings 
         time_marker_sessions.append(len(e2e_timings))   
         timings_all_sessions[session_id] = timings
 
+    # NOTE - that the e2e_timings all sessions are in milliseconds here 
+    # The plotting part is where we do a /1000 for convert to seconds
     # plot e2e timeline
-    plot_e2e_timeline(
-        e2e_all_sessions=e2e_all_sessions,
-        time_marker_sessions=time_marker_sessions
-    )
+    # plot_e2e_timeline(
+    #     e2e_all_sessions=e2e_all_sessions,
+    #     time_marker_sessions=time_marker_sessions,
+    #     timeline=timeline
+    # )
 
     # plot box plots
     plot_box_plots(
         xfaas_dag=xfaas_dag,
-        timings_all_sessions=timings_all_sessions
+        timings_all_sessions=timings_all_sessions,
+        e2e_all_sessions=e2e_all_sessions
     )
 
     
-
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="ProgramName",
@@ -563,8 +675,8 @@ if __name__ == "__main__":
     dagfilepath = user_dir / "dag-original.json"
     xfaas_dag = DagLoader(dagfilepath).get_dag()
 
-    logger.info("Getting from Queue and Adding to file")
-    items = get_from_queue_add_to_file()
+    # logger.info("Getting from Queue and Adding to file")
+    # items = get_from_queue_add_to_file()
     # logger.info("Pushing to DynamoDB")
     # add_items_to_dynamodb(items)
     

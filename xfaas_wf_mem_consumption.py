@@ -59,7 +59,6 @@ def plot_mem_usage_boxplot(timings):
         
         ax.set_ylim(ymin=0, ymax=60)
         ax.vlines(vlines, ymin=0, ymax=60, linestyles='solid', color='darkgrey')
-
         ax.grid(axis="y", which="major", linestyle="-", color="black")
         ax.grid(axis="y", which="minor", linestyle="--", color="grey")
         ax.set_axisbelow(True)
@@ -73,9 +72,10 @@ if __name__ == "__main__":
         epilog="Text at the bottom of help",
     )
 
-    parser.add_argument("--mem-usage-logfile",dest='mem_logfile',type=str,help="Path to memory usage logfile")
+    parser.add_argument("--logfile",dest='mem_logfile',type=str,help="Path to memory usage logfile")
     parser.add_argument("--output-filename",dest='output_filename',type=str,help="Output Filename")
     parser.add_argument("--format",dest="format",type=str,help="Plot format (svg | pdf)")
+    parser.add_argument("--plottype",dest="plot_type",type=str,help="Plot format (cpu | mem)")
     args = parser.parse_args()
 
     mem_logfile = pathlib.Path(args.mem_logfile)

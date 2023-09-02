@@ -27,3 +27,4 @@ stashed/
 serwo/examples/graphAwsFourRps
 serwo/examples/graphAwsMedium
 build
+*.jsonl
