@@ -50,7 +50,3 @@ def user_function(xfaas_object) -> SerWOObject:
         print(e)
         logging.info(e)
         raise Exception("[SerWOLite-Error]::Error at user function",e)
-
-
-
-

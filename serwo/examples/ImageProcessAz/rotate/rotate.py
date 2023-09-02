@@ -5,7 +5,7 @@ import base64
 
 # XFaaS specific imports
 from python.src.utils.classes.commons.serwo_objects import SerWOObject
-
+from python.src.utils.classes.commons.serwo_objects import *
 
 def rotate(encoded_image):
     try:
@@ -54,3 +54,8 @@ def user_function(xfaas_object):
     except Exception as e:
         print(e)
         raise Exception("[SerWOLite-Error]::Error at user function",e)
+
+
+path = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/rotate/inputs/input.json'
+req = build_req_from_file(path)
+rtt = Rotate(req)

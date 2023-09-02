@@ -32,17 +32,7 @@ class SerWOObject:
     def to_json(self):
         return json.dumps(self.__dict__, default=lambda o: o.__dict__)
 
-    def build_req_from_file(path):
-        with open(path, "r") as file:
-            # Write data to the file
-            req_txt = file.read()
-            req_json = json.loads(req_txt)
-            self = self.from_json(req_json)
 
-    def write_req_to_file(self, path):
-        with open(path, "w") as file:
-            # Write data to the file
-            file.write(self.to_json())
 
     @staticmethod
     def from_json(json_dct):
@@ -79,6 +69,20 @@ class SerWOObjectsList:
         self._basepath = basepath
 
 
+def build_req_from_file(path):
+    with open(path, "r") as file:
+        # Write data to the file
+        req_txt = file.read()
+        req_json = json.loads(req_txt)
+        req = SerWOObject.from_json(req_json)
+
+    return req
+
+def write_req_to_file(req, path):
+    with open(path, "w") as file:
+        # Write data to the file
+        file.write(req.to_json())
+        
 def build_serwo_list_object(event):
     """
     perform a union of all the metadata from incoming branches and

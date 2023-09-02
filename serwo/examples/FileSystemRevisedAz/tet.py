@@ -249,7 +249,7 @@ def write_req_to_file(req, path):
         file.write(req.to_json())
 
 body = {"numIters":1,
-        "numLines":100,
+        "numLines":150,
         "numChars":100}
 
 req = SerWOObject(body=body)

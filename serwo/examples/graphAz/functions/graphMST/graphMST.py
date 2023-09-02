@@ -4,8 +4,7 @@ import networkx as nx
 # function specific imports
 import logging
 from networkx.readwrite import json_graph
-import json
-
+import objsize
 
 def MST(body):
     graph = nx.adjacency_graph(body.get("graph"))
@@ -34,6 +33,12 @@ def MSTHandler(xfaas_object):
 
 path = '/home/azureuser/XFaaS/serwo/examples/graphAz/functions/graphMST/input.json'
 req = build_req_from_file(path)
-mst_ret = MSTHandler(req)
 
-print(mst_ret.get_body())
+i_sz = objsize.get_deep_size(req)
+mst_ret = MSTHandler(req)
+o_sz = objsize.get_deep_size(mst_ret)
+
+
+with open('/home/azureuser/XFaaS/serwo/examples/graphAz/functions/in_out.txt', 'a+') as file:
+    file.write(f'MST, {i_sz}, {o_sz}\n')
+    file.close()

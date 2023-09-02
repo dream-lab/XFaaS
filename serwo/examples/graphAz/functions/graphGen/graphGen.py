@@ -5,8 +5,7 @@ import networkx as nx
 # function specific imports
 import logging
 from networkx.readwrite import json_graph
-import cProfile, pstats
-
+import objsize
 
 def graphGen(event):
 
@@ -56,12 +55,13 @@ def graphGenHandler(xfaas_object) -> SerWOObject:
 
 
 path = '/home/azureuser/XFaaS/serwo/examples/graphAz/functions/graphGen/input.json'
+
 req = build_req_from_file(path)
-
-# profiler = cProfile.Profile()
-# profiler.enable()
+i_sz = objsize.get_deep_size(req)
 ret_obj = graphGenHandler(req)
-# profiler.disable()
+o_sz = objsize.get_deep_size(ret_obj)
 
-# stats = pstats.Stats(profiler).sort_stats('tottime')
-# stats.print_stats()
+
+with open('/home/azureuser/XFaaS/serwo/examples/graphAz/functions/in_out.txt', 'a+') as file:
+    file.write(f'graphGen, {i_sz}, {o_sz}\n')
+    file.close()

@@ -4,6 +4,7 @@ from python.src.utils.classes.commons.serwo_objects import build_req_from_file
 import networkx as nx
 # function specific imports
 import logging
+import objsize
 
 
 def PageRank(body):
@@ -33,6 +34,12 @@ def PageRankHandler(xfaas_object) -> SerWOObject:
 
 path = '/home/azureuser/XFaaS/serwo/examples/graphAz/functions/pagerank/input.json'
 req = build_req_from_file(path)
-pg_ret = PageRankHandler(req)
 
-print(pg_ret.get_body())
+i_sz = objsize.get_deep_size(req)
+pg_ret = PageRankHandler(req)
+o_sz = objsize.get_deep_size(pg_ret)
+
+
+with open('/home/azureuser/XFaaS/serwo/examples/graphAz/functions/in_out.txt', 'a+') as file:
+    file.write(f'Pagerank, {i_sz}, {o_sz}\n')
+    file.close()

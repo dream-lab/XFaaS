@@ -46,11 +46,11 @@ def BFTHandler(xfaas_object) -> SerWOObject:
 path = '/home/azureuser/XFaaS/serwo/examples/graphAz/functions/graphBFT/input.json'
 req = build_req_from_file(path)
 
-sz = objsize.get_deep_size(req)
-print("Input size : ", sz/1024)
+i_sz = objsize.get_deep_size(req)
 bft_ret = BFTHandler(req)
-sz = objsize.get_deep_size(bft_ret)
-print("Output size : ", sz/1024)
+o_sz = objsize.get_deep_size(bft_ret)
 
 
-print(bft_ret.get_body())
+with open('/home/azureuser/XFaaS/serwo/examples/graphAz/functions/in_out.txt', 'a+') as file:
+    file.write(f'BFT, {i_sz}, {o_sz}\n')
+    file.close()
