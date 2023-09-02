@@ -13,6 +13,8 @@ from .USER_FUNCTION_PLACEHOLDER import user_function as USER_FUNCTION_PLACEHOLDE
 from azure.storage.queue import QueueService, QueueMessageFormat
 import sys
 import objsize
+import random
+import string
 
 connect_str_provenance = "DefaultEndpointsProtocol=https;AccountName=serwoprovenance;AccountKey=BaGZeTpyeEnO+9yd29yApEjFyzY1b4nR+3bW+mz8sJsSlBs3P29Gg8JzN4I0Lga12oefKWHI4pk3+AStD8AooA==;EndpointSuffix=core.windows.net"
 queue_name_provenance = "serwo-provenance-queue"
@@ -29,6 +31,12 @@ queue_service_provenance.decode_function = QueueMessageFormat.binary_base64decod
 
 function_id = {{func_id_placeholder}}
 
+
+def generate_random_string(N):
+    res = ''.join(random.choices(string.ascii_lowercase + string.ascii_uppercase +
+                                string.digits, k=N))
+ 
+    return res
 
 def get_delta(start_time):
     curr_time = int(time.time() * 1000)
@@ -71,7 +79,6 @@ def merge_containers_logs(metadata_list, metadata):
                 metadata[key][workflow_instance_id] = god_dict[key]
     
     
-
 
 
 
@@ -126,17 +133,26 @@ def main(serwoObject, context: az_func.Context) -> str:
             new_meta = []
             for key in meta_dict:
                 new_meta.append({key: meta_dict[key]})
-            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after, "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size}}
+            container_directory = f'/tmp/xfaas'
+            
+            container_id = fetch_or_make_container_id(container_directory)
+            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after, "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size,"cid":container_id}}
             new_meta.append(func_json)
             metadata["functions"] = new_meta
-            # merge_containers_logs(metadata_list,metadata)
-            trace_containers(metadata)
+            
+
             body = serwoObjectResponse.get_body()
             return SerWOObject(body=body, metadata=metadata).to_json()
         else:
             serwoObject = unmarshall(json.loads(serwoObject))
             metadata = serwoObject.get_metadata()
-            trace_containers(metadata)
+            container_directory = f'/tmp/xfaas'
+            
+            container_id = fetch_or_make_container_id(container_directory)
+
+
+            
+            
             start_delta = get_delta(metadata["workflow_start_time"])
             workflow_instance_id = metadata["workflow_instance_id"]
             process = psutil.Process(os.getpid())
@@ -159,7 +175,7 @@ def main(serwoObject, context: az_func.Context) -> str:
             memory_after = memory
             func_id = function_id
             end_delta = get_delta(metadata["workflow_start_time"])
-            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after , "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size}}
+            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after , "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size,"cid": container_id}}
             metadata["functions"].append(func_json)
             metadata = metadata
             body = serwoObjectResponse.get_body()
@@ -167,6 +183,18 @@ def main(serwoObject, context: az_func.Context) -> str:
     except Exception as e:
         logging.info("excep= " + str(e))
         return None
+
+def fetch_or_make_container_id(container_directory):
+    if os.path.exists(container_directory):
+        files = os.listdir(container_directory)
+        for file in files:
+                filename = file
+        container_id = filename
+    else:
+        container_id = generate_random_string(3)
+        os.mkdir(container_directory)
+        os.mkdir(f'{container_directory}/{container_id}')
+    return container_id
 
 
 def trace_containers(metadata):

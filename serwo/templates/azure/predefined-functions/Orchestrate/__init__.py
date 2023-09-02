@@ -85,6 +85,7 @@ def insert_end_stats_in_metadata(input):
         mem_after = 0
         body_size_before = 0
         body_size_after = 0
+        cid = ''
         for fid in meta:
             func_id_local = fid
             start_delta_local = meta[fid]["start_delta"]
@@ -94,6 +95,7 @@ def insert_end_stats_in_metadata(input):
                 mem_after = meta[fid]["mem_after"]
                 body_size_before = meta[fid]["in_payload_bytes"]
                 body_size_after = meta[fid]["out_payload_bytes"]
+                cid = meta[fid]["cid"]
             if fid == "0":
                 end_delta_local = end_delta
         func_json = {
@@ -103,7 +105,8 @@ def insert_end_stats_in_metadata(input):
                 "mem_before": mem_before,
                 "mem_after": mem_after,
                 "in_payload_bytes": body_size_before,
-                "out_payload_bytes": body_size_after
+                "out_payload_bytes": body_size_after,
+                "cid": cid
             }
         }
         ne_list.append(func_json)
@@ -133,8 +136,6 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         metadata["request_timestamp"] = request_timestamp
     func_id = 255
 
-    # trace_containers(metadata)
-
     start_delta = get_delta(metadata["workflow_start_time"])
     process = psutil.Process(os.getpid())
     memory = process.memory_info().rss
@@ -146,19 +147,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    uxba = yield context.call_activity("TaskA", serwoObject)
-    ytut = []
-    gcxv = context.call_activity("TaskB", uxba)
-    dabb = context.call_activity("TaskC", uxba)
-    euap = context.call_activity("TaskD", uxba)
-    ytut.append(gcxv)
-    ytut.append(dabb)
-    ytut.append(euap)
-    wpoz = yield context.task_all(ytut)
-    rimu = yield context.call_activity("TaskE", wpoz)
-    rimu = insert_end_stats_in_metadata(rimu)
-    odda = yield context.call_activity("CollectLogsGraphAz", rimu)
-    return odda
+    sgdj = yield context.call_activity("TaskA", serwoObject)
+    cyhi = []
+    zewq = context.call_activity("TaskB", sgdj)
+    qioq = context.call_activity("TaskC", sgdj)
+    qyym = context.call_activity("TaskD", sgdj)
+    cyhi.append(zewq)
+    cyhi.append(qioq)
+    cyhi.append(qyym)
+    dbzj = yield context.task_all(cyhi)
+    zmst = yield context.call_activity("TaskE", dbzj)
+    zmst = insert_end_stats_in_metadata(zmst)
+    wuxt = yield context.call_activity("CollectLogsGraphAz", zmst)
+    return wuxt
 
 
 main = df.Orchestrator.create(orchestrator_function)
