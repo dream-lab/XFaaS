@@ -147,42 +147,23 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    lhrm = yield context.call_activity("Source", serwoObject)
-    xhuz = yield context.call_activity("GenerateList", lhrm)
-    rwih = []
-    ccnj = context.call_activity("GenerateMatrixA", lhrm)
-    uepd = context.call_activity("GenerateMatrixB", lhrm)
-    rwih.append(ccnj)
-    rwih.append(uepd)
-    ouyh = yield context.task_all(rwih)
-    hbbs = yield context.call_activity("Aggregator2", ouyh)
-    itwr = []
-    trdv = context.call_activity("MatrixMultiplication", hbbs)
-    nqwg = context.call_activity("LinPack", hbbs)
-    itwr.append(trdv)
-    itwr.append(nqwg)
-    dgzq = yield context.task_all(itwr)
-    pcgo = yield context.call_activity("GenerateInteger", lhrm)
-    bukj = []
-    ujys = context.call_activity("Sine", pcgo)
-    nhfd = context.call_activity("Cosine", pcgo)
-    fevo = context.call_activity("Factors", pcgo)
-    bukj.append(ujys)
-    bukj.append(nhfd)
-    bukj.append(fevo)
-    irjt = yield context.task_all(bukj)
-    lcfp = []
-    heum = context.call_activity("FastFourierTransform", xhuz)
-    psxx = context.call_activity("Aggregator3", dgzq)
-    dpnh = context.call_activity("Aggregator1", irjt)
-    lcfp.append(heum)
-    lcfp.append(psxx)
-    lcfp.append(dpnh)
-    gnip = yield context.task_all(lcfp)
-    zmev = yield context.call_activity("Aggregator4", gnip)
-    zmev = insert_end_stats_in_metadata(zmev)
-    cxrz = yield context.call_activity("CollectLogsMathAz", zmev)
-    return cxrz
+    xyvp = yield context.call_activity("TaskA", serwoObject)
+    fxtg = yield context.call_activity("TaskB", xyvp)
+    mavo = yield context.call_activity("TaskC", fxtg)
+    ohdw = yield context.call_activity("TaskD", mavo)
+    aitm = yield context.call_activity("TaskE", ohdw)
+    qlgo = []
+    oslt = context.call_activity("TaskF", aitm)
+    ctqe = context.call_activity("TaskG", aitm)
+    hdxh = context.call_activity("TaskH", aitm)
+    qlgo.append(oslt)
+    qlgo.append(ctqe)
+    qlgo.append(hdxh)
+    yzwx = yield context.task_all(qlgo)
+    fyoj = yield context.call_activity("TaskI", yzwx)
+    fyoj = insert_end_stats_in_metadata(fyoj)
+    oeco = yield context.call_activity("CollectLogsImageAz", fyoj)
+    return oeco
 
 
 main = df.Orchestrator.create(orchestrator_function)

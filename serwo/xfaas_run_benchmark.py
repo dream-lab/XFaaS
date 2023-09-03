@@ -87,6 +87,9 @@ def template_azure_jmx_file(rps, duration, execute_url, payload_size, input_jmx,
     data = data.replace(payload_size_keyword, payload_size)
     data = data.replace(session_id_keyword, str(session_id))
     data = data.replace(deployment_id_keyword, deployment_id)
+    to_replace = '"ThreadGroup.num_threads">2'
+    if rps == 1020.0 or rps == 840.0:
+        data = data.replace(to_replace, f'"ThreadGroup.num_threads">17')
     
     with open(output_path, "w") as f:
         f.write(data)
