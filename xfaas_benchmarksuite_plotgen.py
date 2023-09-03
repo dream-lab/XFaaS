@@ -171,14 +171,17 @@ def get_from_dynamo(workflow_deployment_id=None):
             res["Items"].append(json.loads(line))
     return res
 
-
+# NOTE - in this function the time comes in milliseconds we convert to seconds later while plotting itself
 def get_timings(dynamo_items, session_id):
     timings = dict(e2e_timings=[], interfunction_timings=defaultdict(list), func_exec_timings=defaultdict(list))
     sink_node = [node for node in xfaas_dag.nodes if xfaas_dag.out_degree(node) == 0][0]
 
     count = 0
-    logger.info(f"Dynamo Items - {len(dynamo_items['Items'])}")
-    for item in dynamo_items["Items"]:
+    logger.info(f"Dynamo Items Length - {len(dynamo_items['Items'])}")
+
+    # Sort the items w.r.t the invocation start time
+    sorted_dynamo_items = sorted(dynamo_items["Items"],key=lambda x: x["invocation_start_time_ms"])
+    for item in sorted_dynamo_items:
         # logger.info(f"Processing {item['workflow_invocation_id']}")
         
         # get e2e timings
@@ -229,30 +232,15 @@ def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions, timeline):
     ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
     x_val = [x for x in range(1, len(e2e_all_sessions)+1)]
     labels = [x for x in range(0, len(e2e_all_sessions) + 100, 100)]
-
-    # ax.set_title(
-    #         f"E2E timeline plot - {conf['wf_name']} - {conf['csp']} - {conf['duration']/60}mins - {conf['rps']}RPS",
-    #         fontdict=fontdict
-    # )
     
     ax.set_ylabel("E2E time (sec)", fontdict=fontdict)
-
     # plotting the exec time in seconds and not milliseconds
-    y_val = [y/1000 for y in e2e_all_sessions]
-
-    # NOTE - PLOT WITH INVOCATION ID
-    # ax.set_xlabel("Invocation Id", fontdict=fontdict)
-    # ax.plot(x_val, [y/1000 for y in e2e_all_sessions])
-    # ax.set_xticks(labels)
-    # ax.set_xticklabels([str(x) for x in labels], 
-    #                    fontdict=fontdict,
-    #                    rotation=90)
-
-
     # NOTE - PLOT WITH TIMELINE
     ax.set_xlabel("Timeline (sec)", fontdict=fontdict)
     ax.plot(timeline, [y/1000 for y in e2e_all_sessions])
     ax.xaxis.set_tick_params(which='major', labelsize=fontdict['size'])
+
+    yticks_ax1 = [y for y in range(0, 100, 20)]
 
 
     # Auto adjustment of yticklables (Do manually if needed)
@@ -266,26 +254,25 @@ def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions, timeline):
     # yticks.append(count*multiplier)
 
     # CUSTOM yticks
-    yticks = [0, 5, 10, 15, 20]
-    ytickslabels = [str(x) for x in yticks]
-    # ax.set_ylim(ymax=10)
-    ax.set_yticks(yticks)
-    ax.set_yticklabels(ytickslabels,
-                      fontdict=fontdict)
+    # yticks = list(range(0, 45, 5))
+    # ytickslabels = [str(x) for x in yticks]
+    # ax.set_ylim(ymin=0, ymax=max(yticks))
+    # ax.set_yticks(yticks)
+    # ax.set_yticklabels(ytickslabels,
+    #                   fontdict=fontdict)
     
     # Uncomment this for general purpose
-    # ax.set_yticks(yticks)
-    # ax.set_yticklabels([str(y) for y in yticks])
+    ax.set_yticks(yticks_ax1)
+    ax.set_yticklabels([str(y) for y in yticks_ax1])
 
-    ax.set_ylim(ymin=0)
+    ax.set_ylim(ymin=0, ymax=max(yticks_ax1))
     ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
     
 
-    # STEP FUNCTION OVERLAY - (START)
+    # Dynamism OVERLAY - (START) - move this to a separate function
     # NOTE - step function overlay
     # # Sawtooth step y 
     # step_y = [1,2,3,4,5,6,7,8,0]*3
-    # multiplier = 8
     # step_x = []
     # invoc_id = 0
     # for rps in step_y:
@@ -296,21 +283,26 @@ def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions, timeline):
     #     step_x.append(invoc_id)
 
     # Step up down config
-    step_y = [1,4,8,4,1]
-    invoc_id = 0
-    step_x = []
-    for rps in step_y:
-        invoc_id = invoc_id + 60
-        step_x.append(invoc_id)
+    # step_y = [1,4,8,4,1]
+    # invoc_id = 0
+    # step_x = []
+    # for rps in step_y:
+    #     invoc_id = invoc_id + 60
+    #     step_x.append(invoc_id)
 
-    logger.info(f"Step X - {step_x}")
-    ax2 = ax.twinx()
-    ax2.set_ylim(ymin=0)
-    ax2.set_ylabel("RPS", fontdict=fontdict)
-    ax2.set_yticks([y for y in range(0, 9)])
-    ax2.set_yticklabels([str(y) for y in range(0, 9)], fontdict=fontdict)
-    ax2.step([0] + step_x, [1] + step_y, linestyle='dashed', color='red')
-    # STEP FUNCTION OVERLAY - (END)
+    # Alibaba
+    # step_x = [1, 5, 12, 18, 38, 46, 52, 72, 75, 76, 79, 80, 87, 137, 142, 170, 196, 199, 200, 201, 202, 203, 208, 209, 218, 220, 229, 240]
+    # step_y = [1, 7, 10, 5, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1, 2, 3, 14, 17, 4, 2, 8, 1, 1, 1, 6, 1, 1, 1] 
+
+    # logger.info(f"Step X - {step_x}")
+    # ax2 = ax.twinx()
+    # ax2.set_ylim(ymin=0)
+    # ax2.set_ylabel("RPS", fontdict=fontdict)
+    # yticks_ax2 = [int(y/10) for y in yticks_ax1]
+    # ax2.set_yticks(yticks_ax2)
+    # ax2.set_yticklabels([str(y) for y in yticks_ax2], fontdict=fontdict)
+    # ax2.step([0] + step_x, [1] + step_y, linestyle='dashed', color='red')
+    # Dynamism OVERLAY - (END)
     
 
     # NOTE - code to add vlines (start)
@@ -330,7 +322,7 @@ def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions, timeline):
     # NOTE - code to add vlines (end)
 
     ax.grid(axis="y", which="major", linestyle="-", color="black")
-    ax.grid(axis="y", which="minor", linestyle="--", color="grey")
+    ax.grid(axis="y", which="minor", linestyle="-", color="grey")
     ax.set_axisbelow(True)
     # ax.margins(x=0)
     # ax.minorticks_on()
@@ -350,6 +342,7 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
     )
 
     # combine the session id timings for each function into a single list
+    # here the time is converted to seconds
     for sid, timings in sorted(timings_all_sessions.items()):
         for nId, node_exec_dist in sorted(timings["func_exec_timings"].items()):
             distribution_dict["functions"][nId] += [x/1000 for x in node_exec_dist]
@@ -390,7 +383,7 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         # ymax = 0.25
         ax.set_ylim(ymin=0)
         ax.grid(axis="y", which="major", linestyle="-", color="black")
-        ax.grid(axis="y", which="minor", linestyle="--", color="grey")
+        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
         ax.set_axisbelow(True)
 
         fig.savefig(plots_path / f"fn_exec_box_{wf_name}_{csp}_{dynamism}_{payload}.{format}", bbox_inches='tight')
@@ -430,7 +423,7 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
 
         ax.set_ylim(ymin=0)
         ax.grid(axis="y", which="major", linestyle="-", color="black")
-        ax.grid(axis="y", which="minor", linestyle="--", color="grey")
+        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
         ax.set_axisbelow(True)
 
         fig.savefig(plots_path / f"edge_exec_box_{wf_name}_{csp}_{dynamism}_{payload}.{format}", bbox_inches='tight')
@@ -440,11 +433,14 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
     def plot_interleaved():
         fig, ax = plt.subplots()
         fig.set_dpi(400)
-        fontdict = {'size': 12}
+        fontdict = {'size': 14}
 
-        ax.set_xlabel(f"{wf_name}", fontdict=fontdict)
         ax.set_ylabel("Time (sec)", fontdict=fontdict)
         ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
+
+        # CUSTOM yticks
+        yticks_ax1 = [0, 0.2, 0.4, 0.6, 0.8, 1]
+        yticks_ax2 = [round(3*y, 1) for y in yticks_ax1]
 
         interleaved_label_ids = []
         interleaved_data = []
@@ -457,6 +453,12 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
                 return "lightgreen"
             else:
                 return "lightblue"
+        
+        def get_label_color(id):
+            if "-" in id:
+                return "green"
+            else:
+                return "blue"     
             
         def get_data(id):
             if "-" in id:
@@ -494,22 +496,28 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
 
         logger.info(f"Interleaved Labels - {interleaved_label_ids}")
         interleaved_data = [get_data(id) for id in interleaved_label_ids]
-
+    
         # rectangular box plot
         bplot1 = ax.boxplot(interleaved_data,
                             vert=True,  # vertical box alignment
                             patch_artist=True,
+                            widths=0.32,
                             showfliers=False)  # fill with color
                             # labels=interfunction_labels)
         
         cumm_labels = []
-        ######## CUMMULATIVE TIME ADDITION #########
+        ######## CUMMULATIVE TIME ADDITION (START) #########
+        # NOTE - push this to an outer function for each graph
         # UNCOMMENT / COMMENT FROM HERE (START) 
         # Get the cummulative function timings
         ax2 = ax.twinx()
         ax2.set_ylabel("Cummulative Time (sec)", fontdict=fontdict)
         cumm_labels = ['Cumm. Func', 'Cumm. Edge', 'Cumm. E2E']
         cumm_func_time = get_cumm_time_func(time_map=distribution_dict["functions"], num_iters=len(e2e_all_sessions))
+        
+        # NOTE - customise these with respect to the workflow
+        ##### CUSTOM edge timing calculation (Start) #####
+        # Graph - 
         cumm_edge_time1 = get_cumm_time_edge(time_map=distribution_dict["edges"], 
                                             num_iters=len(e2e_all_sessions), 
                                             edge_set=['1-2', '1-3', '1-4'])
@@ -517,9 +525,24 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         cumm_edge_time2 = get_cumm_time_edge(time_map=distribution_dict["edges"], 
                                             num_iters=len(e2e_all_sessions), 
                                             edge_set=['2-5', '3-5', '4-5'])
-        cumm_edge_time = np.array([sum(x) for x in list(zip(cumm_edge_time1, cumm_edge_time2))])
         
+        cumm_edge_time = np.array([sum(x) for x in list(zip(cumm_edge_time1, cumm_edge_time2))])
+        ####### CUSTOM edge timing calculation (End) ####
+
+
         cumm_e2e_time = np.array([t/1000 for t in e2e_all_sessions])
+
+        # Write to file for later use
+        cumm_time_dir_path = out_path / f"cumm_time_dir"
+        if not os.path.exists(cumm_time_dir_path):
+            os.mkdir(cumm_time_dir_path)
+
+        logger.info(f"Writing the cummulative timings dictionary to {cumm_time_dir_path}")
+        with open(cumm_time_dir_path / f"cumm_time_dict.json", "w") as outfile:
+            cumm_time_dict = dict(cumm_e2e_time=list(cumm_e2e_time),
+                                  cumm_edge_time=list(cumm_edge_time),
+                                  cumm_func_time=list(cumm_func_time))
+            json.dump(cumm_time_dict, outfile, indent=2)
 
         bplot2 = ax2.boxplot([cumm_func_time, cumm_edge_time, cumm_e2e_time],
                              positions=[len(interleaved_data) + offset for offset in range(1,4)],
@@ -533,15 +556,13 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         for patch, color in zip(bplot2['boxes'], colors):
             patch.set_facecolor(color)
 
-        yticks_ax2 = [0, 0.1, 0.2, 0.3, 0.4]
         ax2.set_ylim(ymin=0, ymax=max(yticks_ax2))
         ax2.set_yticks(yticks_ax2)
         ax2.set_yticklabels([str(x) for x in yticks_ax2])
         ax2.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
         # UNCOMMENT / COMMENT FROM HERE (END)
-        ######## CUMMULATIVE TIME ADDITION #########
-
-
+        ######## CUMMULATIVE TIME ADDITION (END#########
+        
         # NOTE - modify this label to include the function and edge abbreviations
         interleaved_labels_modified = ['GGen', 'GGen-BFT', 'GGen-PR', 'GGen-MST', 'BFT', 'BFT-Agg', 'PR', 'PR-Agg', 'MST', 'MST-Agg', 'Agg'] + cumm_labels
         logger.info(f"Interleaved Labels - {interleaved_labels_modified}")
@@ -550,8 +571,7 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
                            fontdict=fontdict)
         
 
-        # CUSTOM yticks
-        yticks_ax1 = [0, 0.05, 0.1, 0.15, 0.2]
+
         ytickslabels = [str(x) for x in yticks_ax1]
         ax.set_ylim(ymin=0, ymax=max(yticks_ax1))
         ax.set_yticks(yticks_ax1)
@@ -559,15 +579,39 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
                            fontdict=fontdict)
 
         ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
-
+        ax.set_ylim(ymin=0)
         for idx, patch in enumerate(bplot1['boxes']):
             patch.set_facecolor(get_color(interleaved_label_ids[idx]))
 
+        # set the label colors
+        for idx, xtick in enumerate(ax.get_xticklabels()[0:len(interleaved_label_ids)]):
+            xtick.set_color(get_label_color(interleaved_label_ids[idx]))
+
+        ##### VLINES #####
+        # add a separator between the cumulative and the function timings
+        vlines_x_cumm_sep = [(ax.get_xticks()[len(interleaved_label_ids)-1] + ax.get_xticks()[len(interleaved_label_ids)])/2]
+        ax.vlines(x=vlines_x_cumm_sep, ymin=0, ymax=max(yticks_ax1), linestyles='solid', color='black')
+        
+        # add lighter vlines between the boxes themselves
+        _xloc = ax.get_xticks()[0: len(interleaved_label_ids)]
+        vlines_x_between = []
+        for idx in range(0, len(_xloc)-1):
+            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
+        ax.vlines(x=vlines_x_between, ymin=0, ymax=max(yticks_ax1), linestyles='solid', color='darkgrey')
+
+        # add lighter vlines between the cumm functions
+        _xloc = ax.get_xticks()[len(interleaved_label_ids):]
+        vlines_x_between_cumm = []
+        for idx in range(0, len(_xloc)-1):
+            vlines_x_between_cumm.append(_xloc[idx]/2 + _xloc[idx+1]/2)
+        ax.vlines(x=vlines_x_between_cumm, ymin=0, ymax=max(yticks_ax1), linestyles='solid', color='darkgrey')
+        ###### VLINES ####
+
         ax.grid(axis="y", which="major", linestyle="-", color="black")
-        ax.grid(axis="y", which="minor", linestyle="--", color="grey")
+        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
         ax.set_axisbelow(True)
         
-        fig.savefig(plots_path / f"interleaved_exec_box_{wf_name}_{csp}_{dynamism}_{payload}.{format}", bbox_inches='tight')
+        fig.savefig(plots_path / f"interleaved_exec_box_{wf_name}_{csp}_{dynamism}_{payload}_same_scaled.{format}", bbox_inches='tight')
         
 
     # conditional plotting 
@@ -611,11 +655,11 @@ def plotter(workflow_deployment_id, experiment_conf):
     # NOTE - that the e2e_timings all sessions are in milliseconds here 
     # The plotting part is where we do a /1000 for convert to seconds
     # plot e2e timeline
-    # plot_e2e_timeline(
-    #     e2e_all_sessions=e2e_all_sessions,
-    #     time_marker_sessions=time_marker_sessions,
-    #     timeline=timeline
-    # )
+    plot_e2e_timeline(
+        e2e_all_sessions=e2e_all_sessions,
+        time_marker_sessions=time_marker_sessions,
+        timeline=timeline
+    )
 
     # plot box plots
     plot_box_plots(
@@ -647,7 +691,7 @@ if __name__ == "__main__":
 
     out_path = user_dir / f"build/workflow/resources/{out_dir}"
     if not os.path.exists(out_path):
-        os.mkdir(out_path)
+        os.makedirs(out_path)
     
     plots_path = out_path / f"plots"
     if not os.path.exists(plots_path):
@@ -675,15 +719,15 @@ if __name__ == "__main__":
     dagfilepath = user_dir / "dag-original.json"
     xfaas_dag = DagLoader(dagfilepath).get_dag()
 
-    # logger.info("Getting from Queue and Adding to file")
+    logger.info("Getting from Queue and Adding to file")
     # items = get_from_queue_add_to_file()
     # logger.info("Pushing to DynamoDB")
     # add_items_to_dynamodb(items)
     
     logger.info("Plotting Timeline")
-    plotter(
-        workflow_deployment_id=workflow_deployment_id,
-        experiment_conf=experiment_conf
-    )
+    # plotter(
+    #     workflow_deployment_id=workflow_deployment_id,
+    #     experiment_conf=experiment_conf
+    # )
 
     # delete_temp(workflow_deployment_id=workflow_deployment_id)
