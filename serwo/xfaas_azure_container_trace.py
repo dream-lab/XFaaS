@@ -10,8 +10,13 @@ file_path = sys.argv[1]
 def get_azure_containers(file_path):
     god_dict = {}
     ans = []
+    mins = []
     with open(file_path) as f:
         lines = f.readlines()
+    liness = [json.loads(line) for line in lines]
+    sorted_dynamo_items = sorted(liness,key=lambda x: x["invocation_start_time_ms"])
+    min_start_time  = sorted_dynamo_items[0]["invocation_start_time_ms"]
+
     for line in lines:
         js = json.loads(line)
         functions = js['functions']
@@ -31,7 +36,9 @@ def get_azure_containers(file_path):
     for cid in god_dict:
         god_dict[cid].sort()
         ans.append(god_dict[cid][0])
-    return ans
+        mins.append((god_dict[cid][0]-int(min_start_time))/1000)
+    
+    return sorted(mins)
 
     
 
