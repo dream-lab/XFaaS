@@ -1,5 +1,9 @@
 {
   "connectionString": "DefaultEndpointsProtocol=https;AccountName=xfaaslogging;AccountKey=gtmYmyApGFzUN/6ZtRhqSCW6TeT8ScPmuSToqXBe/U8urzrfF+84y97LL5DvbVPLYFu4Ofz/87vT+AStOalmgg==;EndpointSuffix=core.windows.net",
+<<<<<<< HEAD
   "queue": "az-alibaba-text"
+=======
+  "queue": "big-data-az-3"
+>>>>>>> 06f42e459037eb661a16352f771d2826114f2b51
 
 }

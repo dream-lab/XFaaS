@@ -147,23 +147,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    xyvp = yield context.call_activity("TaskA", serwoObject)
-    fxtg = yield context.call_activity("TaskB", xyvp)
-    mavo = yield context.call_activity("TaskC", fxtg)
-    ohdw = yield context.call_activity("TaskD", mavo)
-    aitm = yield context.call_activity("TaskE", ohdw)
-    qlgo = []
-    oslt = context.call_activity("TaskF", aitm)
-    ctqe = context.call_activity("TaskG", aitm)
-    hdxh = context.call_activity("TaskH", aitm)
-    qlgo.append(oslt)
-    qlgo.append(ctqe)
-    qlgo.append(hdxh)
-    yzwx = yield context.task_all(qlgo)
-    fyoj = yield context.call_activity("TaskI", yzwx)
-    fyoj = insert_end_stats_in_metadata(fyoj)
-    oeco = yield context.call_activity("CollectLogsImageAz", fyoj)
-    return oeco
+    amek = yield context.call_activity("TaskA", serwoObject)
+    akvm = []
+    elpc = context.call_activity("TaskB", amek)
+    tynk = context.call_activity("TaskC", amek)
+    rxjd = context.call_activity("TaskD", amek)
+    akvm.append(elpc)
+    akvm.append(tynk)
+    akvm.append(rxjd)
+    jfil = yield context.task_all(akvm)
+    hxmm = yield context.call_activity("TaskE", jfil)
+    hxmm = insert_end_stats_in_metadata(hxmm)
+    sevz = yield context.call_activity("CollectLogsGraphAz", hxmm)
+    return sevz
 
 
 main = df.Orchestrator.create(orchestrator_function)
