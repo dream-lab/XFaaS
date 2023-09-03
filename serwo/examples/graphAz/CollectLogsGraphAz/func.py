@@ -5,7 +5,7 @@ import os, uuid
 
 
 connect_str = "DefaultEndpointsProtocol=https;AccountName=xfaaslogging;AccountKey=gtmYmyApGFzUN/6ZtRhqSCW6TeT8ScPmuSToqXBe/U8urzrfF+84y97LL5DvbVPLYFu4Ofz/87vT+AStOalmgg==;EndpointSuffix=core.windows.net"
-queue_name = "big-data-az-2"
+queue_name = "az-alibaba"
 
 
 queue_service = QueueService(connection_string=connect_str)

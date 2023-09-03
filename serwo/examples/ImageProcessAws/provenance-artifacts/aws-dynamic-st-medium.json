@@ -1,0 +1,79 @@
+{
+    "workflow_id": "bcbe32fe-8520-4941-9714-ec0f88cfa375",
+    "refactored_workflow_id": "bd3444ae-ee1b-4a50-9208-e76629db5759",
+    "deployment_id": "a3ce351f-9b7f-4d8c-8c67-2f6f93a56f99",
+    "experiment_conf": {
+        "stmedium1": {
+            "jmx_output_filename": "aws-imageProcessing-medium-sawtooth-1-8-session-stmedium1.jmx",
+            "csp": "aws",
+            "rps": 1,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium2": {
+            "jmx_output_filename": "aws-imageProcessing-medium-sawtooth-2-8-session-stmedium2.jmx",
+            "csp": "aws",
+            "rps": 2,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium3": {
+            "jmx_output_filename": "aws-imageProcessing-medium-sawtooth-3-8-session-stmedium3.jmx",
+            "csp": "aws",
+            "rps": 3,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium4": {
+            "jmx_output_filename": "aws-imageProcessing-medium-sawtooth-4-8-session-stmedium4.jmx",
+            "csp": "aws",
+            "rps": 4,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium5": {
+            "jmx_output_filename": "aws-imageProcessing-medium-sawtooth-5-8-session-stmedium5.jmx",
+            "csp": "aws",
+            "rps": 5,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium6": {
+            "jmx_output_filename": "aws-imageProcessing-medium-sawtooth-6-8-session-stmedium6.jmx",
+            "csp": "aws",
+            "rps": 6,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium7": {
+            "jmx_output_filename": "aws-imageProcessing-medium-sawtooth-7-8-session-stmedium7.jmx",
+            "csp": "aws",
+            "rps": 7,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium8": {
+            "jmx_output_filename": "aws-imageProcessing-medium-sawtooth-8-8-session-stmedium8.jmx",
+            "csp": "aws",
+            "rps": 8,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "sawtooth"
+        }
+    }
+}

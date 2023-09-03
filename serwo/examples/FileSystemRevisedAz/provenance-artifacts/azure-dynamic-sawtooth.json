@@ -1,0 +1,79 @@
+{
+    "workflow_id": "eecfff2a-d358-4158-b2b8-63019073b899",
+    "refactored_workflow_id": "528eb02d-0081-4d5c-a6fc-9cef26668cea",
+    "deployment_id": "71578400-d983-4d30-be29-cef4d533d4e0",
+    "experiment_conf": {
+        "stmedium1": {
+            "jmx_output_filename": "azure-fileProcessing-medium-sawtooth-1-8-session-stmedium1.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium2": {
+            "jmx_output_filename": "azure-fileProcessing-medium-sawtooth-2-8-session-stmedium2.jmx",
+            "csp": "azure",
+            "rps": 2,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium3": {
+            "jmx_output_filename": "azure-fileProcessing-medium-sawtooth-3-8-session-stmedium3.jmx",
+            "csp": "azure",
+            "rps": 3,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium4": {
+            "jmx_output_filename": "azure-fileProcessing-medium-sawtooth-4-8-session-stmedium4.jmx",
+            "csp": "azure",
+            "rps": 4,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium5": {
+            "jmx_output_filename": "azure-fileProcessing-medium-sawtooth-5-8-session-stmedium5.jmx",
+            "csp": "azure",
+            "rps": 5,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium6": {
+            "jmx_output_filename": "azure-fileProcessing-medium-sawtooth-6-8-session-stmedium6.jmx",
+            "csp": "azure",
+            "rps": 6,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium7": {
+            "jmx_output_filename": "azure-fileProcessing-medium-sawtooth-7-8-session-stmedium7.jmx",
+            "csp": "azure",
+            "rps": 7,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "sawtooth"
+        },
+        "stmedium8": {
+            "jmx_output_filename": "azure-fileProcessing-medium-sawtooth-8-8-session-stmedium8.jmx",
+            "csp": "azure",
+            "rps": 8,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "sawtooth"
+        }
+    }
+}

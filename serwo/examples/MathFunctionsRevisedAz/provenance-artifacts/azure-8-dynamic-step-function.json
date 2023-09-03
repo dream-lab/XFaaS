@@ -1,0 +1,52 @@
+{
+    "workflow_id": "782cbdaa-d852-41a2-b85e-9ad9e8ee964a",
+    "refactored_workflow_id": "7d868c02-e7df-4f7d-9986-a6044a59740d",
+    "deployment_id": "c7d252ac-50c6-4c47-84b6-86ab9cb4bbc0",
+    "experiment_conf": {
+        "step_functionmedium1": {
+            "jmx_output_filename": "azure-math-medium-step_function-1-60-session-step_functionmedium1.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium2": {
+            "jmx_output_filename": "azure-math-medium-step_function-4-60-session-step_functionmedium2.jmx",
+            "csp": "azure",
+            "rps": 4,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium3": {
+            "jmx_output_filename": "azure-math-medium-step_function-8-60-session-step_functionmedium3.jmx",
+            "csp": "azure",
+            "rps": 8,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium4": {
+            "jmx_output_filename": "azure-math-medium-step_function-4-60-session-step_functionmedium4.jmx",
+            "csp": "azure",
+            "rps": 4,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium5": {
+            "jmx_output_filename": "azure-math-medium-step_function-1-60-session-step_functionmedium5.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "step_function"
+        }
+    }
+}

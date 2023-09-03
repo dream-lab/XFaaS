@@ -1,0 +1,79 @@
+{
+    "workflow_id": "88946d80-b41a-4e33-a1e8-eefb46077333",
+    "refactored_workflow_id": "96d75783-d277-4959-ad26-2ae39fcce4e5",
+    "deployment_id": "7b4efad5-1c29-4535-92c9-c114ecd3e679",
+    "experiment_conf": {
+        "stmedium1": {
+            "jmx_output_filename": "aws-math-medium-sawtooth-1-8-session-stmedium1.jmx",
+            "csp": "aws",
+            "rps": 1,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "sawtooth"
+        },
+        "stmedium2": {
+            "jmx_output_filename": "aws-math-medium-sawtooth-2-8-session-stmedium2.jmx",
+            "csp": "aws",
+            "rps": 2,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "sawtooth"
+        },
+        "stmedium3": {
+            "jmx_output_filename": "aws-math-medium-sawtooth-3-8-session-stmedium3.jmx",
+            "csp": "aws",
+            "rps": 3,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "sawtooth"
+        },
+        "stmedium4": {
+            "jmx_output_filename": "aws-math-medium-sawtooth-4-8-session-stmedium4.jmx",
+            "csp": "aws",
+            "rps": 4,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "sawtooth"
+        },
+        "stmedium5": {
+            "jmx_output_filename": "aws-math-medium-sawtooth-5-8-session-stmedium5.jmx",
+            "csp": "aws",
+            "rps": 5,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "sawtooth"
+        },
+        "stmedium6": {
+            "jmx_output_filename": "aws-math-medium-sawtooth-6-8-session-stmedium6.jmx",
+            "csp": "aws",
+            "rps": 6,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "sawtooth"
+        },
+        "stmedium7": {
+            "jmx_output_filename": "aws-math-medium-sawtooth-7-8-session-stmedium7.jmx",
+            "csp": "aws",
+            "rps": 7,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "sawtooth"
+        },
+        "stmedium8": {
+            "jmx_output_filename": "aws-math-medium-sawtooth-8-8-session-stmedium8.jmx",
+            "csp": "aws",
+            "rps": 8,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "math",
+            "dynamism": "sawtooth"
+        }
+    }
+}
