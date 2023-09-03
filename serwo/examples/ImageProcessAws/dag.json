@@ -1,5 +1,5 @@
 {
-    "WorkflowName": "imageProcessing",
+    "WorkflowName": "imageProcessingMed8",
     "Nodes": [
       {
         "NodeId": "1",
