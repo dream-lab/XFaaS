@@ -210,6 +210,21 @@ def get_timings(dynamo_items, session_id):
 
     return timings
 
+def get_timings_real(dynamo_items):
+    timings = dict(e2e_timings=[], interfunction_timings=defaultdict(list), func_exec_timings=defaultdict(list))
+    sink_node = [node for node in xfaas_dag.nodes if xfaas_dag.out_degree(node) == 0][0]
+
+    count = 0
+    logger.info(f"Dynamo Items Length - {len(dynamo_items['Items'])}")
+
+    # Sort the items w.r.t the invocation start time
+    sorted_dynamo_items = sorted(dynamo_items["Items"],key=lambda x: x["invocation_start_time_ms"])
+    e2e_time = []
+    for item in sorted_dynamo_items:
+        e2e_time.append(int(item["functions"][sink_node]["end_delta"]))
+
+    return e2e_time
+
 # TODO - pass session_id along with th e
 def delete_from_dynamo(workflow_deployment_id):
     # for session_id in [100, 200, 300]:
@@ -240,8 +255,6 @@ def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions, timeline):
     ax.plot(timeline, [y/1000 for y in e2e_all_sessions])
     ax.xaxis.set_tick_params(which='major', labelsize=fontdict['size'])
 
-    yticks_ax1 = [y for y in range(0, 100, 20)]
-
 
     # Auto adjustment of yticklables (Do manually if needed)
     # ymax = max(y_val)
@@ -262,10 +275,11 @@ def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions, timeline):
     #                   fontdict=fontdict)
     
     # Uncomment this for general purpose
+    yticks_ax1 = [y for y in range(0, 1800 ,200)]
     ax.set_yticks(yticks_ax1)
     ax.set_yticklabels([str(y) for y in yticks_ax1])
 
-    ax.set_ylim(ymin=0, ymax=max(yticks_ax1))
+    # ax.set_ylim(ymin=0, ymax=max(yticks_ax1))
     ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
     
 
@@ -290,18 +304,23 @@ def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions, timeline):
     #     invoc_id = invoc_id + 60
     #     step_x.append(invoc_id)
 
+    # Static rips
+    # step_y = [8, 8]
+    # step_x = [0, 300]
+
     # Alibaba
-    # step_x = [1, 5, 12, 18, 38, 46, 52, 72, 75, 76, 79, 80, 87, 137, 142, 170, 196, 199, 200, 201, 202, 203, 208, 209, 218, 220, 229, 240]
-    # step_y = [1, 7, 10, 5, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1, 2, 3, 14, 17, 4, 2, 8, 1, 1, 1, 6, 1, 1, 1] 
+    step_x = [1, 5, 12, 18, 38, 46, 52, 72, 75, 76, 79, 80, 87, 137, 142, 170, 196, 199, 200, 201, 202, 203, 208, 209, 218, 220, 229, 240]
+    step_y = [1, 7, 10, 5, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1, 2, 3, 14, 17, 4, 2, 8, 1, 1, 1, 6, 1, 1, 1] 
 
     # logger.info(f"Step X - {step_x}")
-    # ax2 = ax.twinx()
-    # ax2.set_ylim(ymin=0)
-    # ax2.set_ylabel("RPS", fontdict=fontdict)
-    # yticks_ax2 = [int(y/10) for y in yticks_ax1]
-    # ax2.set_yticks(yticks_ax2)
-    # ax2.set_yticklabels([str(y) for y in yticks_ax2], fontdict=fontdict)
-    # ax2.step([0] + step_x, [1] + step_y, linestyle='dashed', color='red')
+    ax2 = ax.twinx()
+    ax2.set_ylim(ymin=0)
+    ax2.set_ylabel("RPS", fontdict=fontdict)
+    yticks_ax2 = [int(y/100) for y in yticks_ax1]
+    # ax2.set_yticks(tck.FixedLocator(locs=yticks_ax2))
+    ax2.set_yticks(yticks_ax2)
+    ax2.set_yticklabels([str(y) for y in yticks_ax2], fontdict=fontdict)
+    ax2.step(step_x, step_y, linestyle='dashed', color='red')
     # Dynamism OVERLAY - (END)
     
 
@@ -429,7 +448,6 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         fig.savefig(plots_path / f"edge_exec_box_{wf_name}_{csp}_{dynamism}_{payload}.{format}", bbox_inches='tight')
         # plt.show()
 
-
     def plot_interleaved():
         fig, ax = plt.subplots()
         fig.set_dpi(400)
@@ -477,14 +495,37 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
             return np.array([sum(x) for x in cumm_time])
         
         def get_cumm_time_edge(time_map, edge_set, num_iters):
+            s_time_textprocessing = [['1', '2', '12', '22'], ['1', '3', '13', '22'], ['1', '4', '14', '22'], ['1', '5', '15', '22'], ['1', '6', '16', '22'], ['1', '7', '17', '22'], ['1', '8', '18', '22'], ['1', '9', '19', '22'], ['1', '10', '20', '22']]
+            s_time_graph = [['1', '2', '5'], ['1', '3', '5'], ['1', '4', '5']]
+
             cumm_time = []
+            s_time = s_time_graph # Change this variable according to the workflow
             for idx in range(0, num_iters):
                 maxval = -1
-                for key in edge_set:
-                    if time_map[key][idx] > maxval:
-                        maxval = time_map[key][idx]
+                mx = []
+                for it in s_time:
+                    tme = 0
+                    for i in range(0,len(it)-1):
+                        edge = f'{it[i]}-{it[i+1]}'
+                        tme += time_map[edge][idx]
+                    mx.append(tme)
+                maxval = max(mx)
+                # for key in edge_set:
+                #     if time_map[key][idx] > maxval:
+                #         maxval = time_map[key][idx]
                 cumm_time.append(maxval)
             return cumm_time
+
+        # DEPRECATED
+        # def get_cumm_time_edge(time_map, edge_set, num_iters):
+        #     cumm_time = []
+        #     for idx in range(0, num_iters):
+        #         maxval = -1
+        #         for key in edge_set:
+        #             if time_map[key][idx] > maxval:
+        #                 maxval = time_map[key][idx]
+        #         cumm_time.append(maxval)
+        #     return cumm_time
 
         # create some sort of an ordered labels for the interleaved plot
         for u in xfaas_dag.nodes:
@@ -515,19 +556,29 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         cumm_labels = ['Cumm. Func', 'Cumm. Edge', 'Cumm. E2E']
         cumm_func_time = get_cumm_time_func(time_map=distribution_dict["functions"], num_iters=len(e2e_all_sessions))
         
-        # NOTE - customise these with respect to the workflow
-        ##### CUSTOM edge timing calculation (Start) #####
-        # Graph - 
+        ##### CUSTOM edge timing calculation (Start) ##### 
+        # NOTE - go to this below function and change the s_time
         cumm_edge_time1 = get_cumm_time_edge(time_map=distribution_dict["edges"], 
                                             num_iters=len(e2e_all_sessions), 
                                             edge_set=['1-2', '1-3', '1-4'])
         
-        cumm_edge_time2 = get_cumm_time_edge(time_map=distribution_dict["edges"], 
-                                            num_iters=len(e2e_all_sessions), 
-                                            edge_set=['2-5', '3-5', '4-5'])
-        
-        cumm_edge_time = np.array([sum(x) for x in list(zip(cumm_edge_time1, cumm_edge_time2))])
+        cumm_edge_time_data = np.array(cumm_edge_time1)
         ####### CUSTOM edge timing calculation (End) ####
+
+
+        # NOTE - Deprecated DO NOT USE
+        # ##### CUSTOM edge timing calculation (Start) ##### 
+        # # Graph - 
+        # cumm_edge_time1 = get_cumm_time_edge(time_map=distribution_dict["edges"], 
+        #                                     num_iters=len(e2e_all_sessions), 
+        #                                     edge_set=['1-2', '1-3', '1-4'])
+        
+        # # cumm_edge_time2 = get_cumm_time_edge(time_map=distribution_dict["edges"], 
+        # #                                     num_iters=len(e2e_all_sessions), 
+        # #                                     edge_set=['2-5', '3-5', '4-5'])
+        
+        # cumm_edge_time = np.array([sum(x) for x in list(zip(cumm_edge_time1, cumm_edge_time2))])
+        # ####### CUSTOM edge timing calculation (End) ####
 
 
         cumm_e2e_time = np.array([t/1000 for t in e2e_all_sessions])
@@ -540,11 +591,11 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         logger.info(f"Writing the cummulative timings dictionary to {cumm_time_dir_path}")
         with open(cumm_time_dir_path / f"cumm_time_dict.json", "w") as outfile:
             cumm_time_dict = dict(cumm_e2e_time=list(cumm_e2e_time),
-                                  cumm_edge_time=list(cumm_edge_time),
+                                  cumm_edge_time=list(cumm_edge_time_data),
                                   cumm_func_time=list(cumm_func_time))
             json.dump(cumm_time_dict, outfile, indent=2)
 
-        bplot2 = ax2.boxplot([cumm_func_time, cumm_edge_time, cumm_e2e_time],
+        bplot2 = ax2.boxplot([cumm_func_time, cumm_edge_time_data, cumm_e2e_time],
                              positions=[len(interleaved_data) + offset for offset in range(1,4)],
                              vert=True,
                              patch_artist=True,
@@ -564,7 +615,7 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         ######## CUMMULATIVE TIME ADDITION (END#########
         
         # NOTE - modify this label to include the function and edge abbreviations
-        interleaved_labels_modified = ['GGen', 'GGen-BFT', 'GGen-PR', 'GGen-MST', 'BFT', 'BFT-Agg', 'PR', 'PR-Agg', 'MST', 'MST-Agg', 'Agg'] + cumm_labels
+        interleaved_labels_modified = ['GGEN', 'GGEN-GBFT', 'GGEN-PGRK', 'GGEN-GMST', 'GBFT', 'GBFT-Agg', 'PGRK', 'PGRK-Agg', 'GMST', 'GMST-Agg', 'Agg'] + cumm_labels
         logger.info(f"Interleaved Labels - {interleaved_labels_modified}")
         ax.set_xticklabels(interleaved_labels_modified, 
                            rotation=90,
@@ -611,7 +662,7 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         ax.grid(axis="y", which="minor", linestyle="-", color="grey")
         ax.set_axisbelow(True)
         
-        fig.savefig(plots_path / f"interleaved_exec_box_{wf_name}_{csp}_{dynamism}_{payload}_same_scaled.{format}", bbox_inches='tight')
+        fig.savefig(plots_path / f"interleaved_exec_box_{wf_name}_{csp}_{dynamism}_{payload}_correction.{format}", bbox_inches='tight')
         
 
     # conditional plotting 
@@ -641,8 +692,10 @@ def plotter(workflow_deployment_id, experiment_conf):
     start_time = timestamps[0]
     # NOTE - this timeline is in seconds
     timeline = [(x-start_time)/1000 for x in timestamps]
+    # logger.info(f"Timeline - {timeline}")
 
     # create the session_id -> timings dict.
+
     for session_id, conf in experiment_conf.items():
         logger.info(f"Getting Timings For Session Id - {session_id}")
         timings = get_timings(dynamo_items=dynamo_items, session_id=session_id)
@@ -655,17 +708,17 @@ def plotter(workflow_deployment_id, experiment_conf):
     # NOTE - that the e2e_timings all sessions are in milliseconds here 
     # The plotting part is where we do a /1000 for convert to seconds
     # plot e2e timeline
-    plot_e2e_timeline(
-        e2e_all_sessions=e2e_all_sessions,
-        time_marker_sessions=time_marker_sessions,
-        timeline=timeline
-    )
+    # plot_e2e_timeline(
+    #     e2e_all_sessions=get_timings_real(dynamo_items=dynamo_items),
+    #     time_marker_sessions=time_marker_sessions,
+    #     timeline=timeline
+    # )
 
     # plot box plots
     plot_box_plots(
         xfaas_dag=xfaas_dag,
         timings_all_sessions=timings_all_sessions,
-        e2e_all_sessions=e2e_all_sessions
+        e2e_all_sessions=get_timings_real(dynamo_items=dynamo_items)
     )
 
     
@@ -719,15 +772,15 @@ if __name__ == "__main__":
     dagfilepath = user_dir / "dag-original.json"
     xfaas_dag = DagLoader(dagfilepath).get_dag()
 
-    logger.info("Getting from Queue and Adding to file")
+    # logger.info("Getting from Queue and Adding to file")
     # items = get_from_queue_add_to_file()
     # logger.info("Pushing to DynamoDB")
     # add_items_to_dynamodb(items)
     
     logger.info("Plotting Timeline")
-    # plotter(
-    #     workflow_deployment_id=workflow_deployment_id,
-    #     experiment_conf=experiment_conf
-    # )
+    plotter(
+        workflow_deployment_id=workflow_deployment_id,
+        experiment_conf=experiment_conf
+    )
 
     # delete_temp(workflow_deployment_id=workflow_deployment_id)

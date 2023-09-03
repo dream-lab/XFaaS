@@ -27,8 +27,5 @@ stashed/
 serwo/examples/graphAwsFourRps
 serwo/examples/graphAwsMedium
 build
-<<<<<<< HEAD
 *.jsonl
-=======
 log_files
->>>>>>> e2819624182752aae71a182e58e3b2f27aabd92b
