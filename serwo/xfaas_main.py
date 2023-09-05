@@ -29,19 +29,39 @@ def get_user_pinned_nodes():
     else:
         return None
 
-if __name__ == '__main__':
+
+def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
+    dag_definition_path = f"{user_wf_dir}/{dag_definition_file}"
     user_pinned_nodes = get_user_pinned_nodes()
-    xfaas_user_dag = xfaas_init.init(DAG_DEFINITION_PATH)
+    xfaas_user_dag = xfaas_init.init(dag_definition_path)
     # partition_config = xfaas_optimizer.optimize(xfaas_user_dag,
     #                                             user_pinned_nodes, benchmark_path)
 
     partition_config = [PartitionPoint("function_name", 2, CSP(csp), None, part_id, region)]
 
-    wf_id = xfaas_provenance.push_user_dag(DAG_DEFINITION_PATH)
-    refactored_wf_id = xfaas_provenance.push_refactored_workflow(DAG_DEFINITION_FILE, USER_DIR, wf_id,csp)
-    wf_deployment_id = xfaas_provenance.push_deployment_logs(DAG_DEFINITION_FILE,USER_DIR,wf_id,refactored_wf_id,csp)
-    xfaas_resource_generator.generate(USER_DIR, DAG_DEFINITION_PATH, partition_config,DAG_DEFINITION_FILE)
-    xfaas_provenance.generate_provenance_artifacts(USER_DIR,wf_id,refactored_wf_id,wf_deployment_id,csp,region,part_id)
+    wf_id = xfaas_provenance.push_user_dag(dag_definition_path)
+    refactored_wf_id = xfaas_provenance.push_refactored_workflow(dag_definition_file, user_wf_dir, wf_id,csp)
+    wf_deployment_id = xfaas_provenance.push_deployment_logs(dag_definition_file,user_wf_dir,wf_id,refactored_wf_id,csp)
+    xfaas_resource_generator.generate(user_wf_dir, dag_definition_path, partition_config,dag_definition_file)
+    xfaas_provenance.generate_provenance_artifacts(user_wf_dir,wf_id,refactored_wf_id,wf_deployment_id,csp,region,part_id)
+
+   
+
+if __name__ == '__main__':
+
+    run(USER_DIR, DAG_DEFINITION_FILE, BENCHMARK_FILE, csp,region)
+    # user_pinned_nodes = get_user_pinned_nodes()
+    # xfaas_user_dag = xfaas_init.init(DAG_DEFINITION_PATH)
+    # # partition_config = xfaas_optimizer.optimize(xfaas_user_dag,
+    # #                                             user_pinned_nodes, benchmark_path)
+
+    # partition_config = [PartitionPoint("function_name", 2, CSP(csp), None, part_id, region)]
+
+    # wf_id = xfaas_provenance.push_user_dag(DAG_DEFINITION_PATH)
+    # refactored_wf_id = xfaas_provenance.push_refactored_workflow(DAG_DEFINITION_FILE, USER_DIR, wf_id,csp)
+    # wf_deployment_id = xfaas_provenance.push_deployment_logs(DAG_DEFINITION_FILE,USER_DIR,wf_id,refactored_wf_id,csp)
+    # xfaas_resource_generator.generate(USER_DIR, DAG_DEFINITION_PATH, partition_config,DAG_DEFINITION_FILE)
+    # xfaas_provenance.generate_provenance_artifacts(USER_DIR,wf_id,refactored_wf_id,wf_deployment_id,csp,region,part_id)
 
 
 

@@ -1,5 +1,5 @@
 {
-    "WorkflowName": "graphSmallWar",
+    "WorkflowName": "graphDemo",
     "Nodes": [
       {
         "NodeId": "1",

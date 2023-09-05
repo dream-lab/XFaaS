@@ -1,0 +1,16 @@
+{
+    "workflow_id": "59965cf2-6af0-45aa-82b7-4b7de84bcadd",
+    "refactored_workflow_id": "e9a3728e-67d9-4060-b766-982fff3ef010",
+    "deployment_id": "4868577b-20ca-4a52-b718-feaf776d7094",
+    "experiment_conf": {
+        "staticsmall1": {
+            "jmx_output_filename": "aws-graph-small-static-1-20-session-staticsmall1.jmx",
+            "csp": "aws",
+            "rps": 1,
+            "duration": 20.0,
+            "payload_size": "small",
+            "wf_name": "graph",
+            "dynamism": "static"
+        }
+    }
+}
