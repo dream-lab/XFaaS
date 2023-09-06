@@ -215,19 +215,19 @@ if __name__ == "__main__":
     xfaas_dag = DagLoader(dagfilepath).get_dag()
 
     # AWS filepaths
-    # small_1rps_fp = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/graphAws/build/workflow/resources/graph-aws-static-small-1rps/graph_aws_static_small_dyndb_items.jsonl"
-    # medium_1rps_fp = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/graphAws/build/workflow/resources/graph-aws-static-medium-1rps/graph_aws_static_medium_dyndb_items.jsonl"
+    small_1rps_fp = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/graphAws/build/workflow/resources/graph-aws-static-small-1rps/graph_aws_static_small_dyndb_items.jsonl"
+    medium_1rps_fp = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/graphAws/build/workflow/resources/graph-aws-static-medium-1rps/graph_aws_static_medium_dyndb_items.jsonl"
 
     # Azure filepaths
-    small_1rps_fp = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/graphAz/build/workflow/resources/graph-azure-static-small-1rps/graph_azure_static_small_dyndb_items.jsonl"
-    medium_1rps_fp = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/graphAz/build/workflow/resources/graph-azure-static-medium-1rps/graph_azure_static_medium_dyndb_items.jsonl"
-    large_1rps_fp = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/graphAz/build/workflow/resources/graph-azure-static-large-1rps/graph_azure_static_large_dyndb_items.jsonl"
+    # small_1rps_fp = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/graphAz/build/workflow/resources/graph-azure-static-small-1rps/graph_azure_static_small_dyndb_items.jsonl"
+    # medium_1rps_fp = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/graphAz/build/workflow/resources/graph-azure-static-medium-1rps/graph_azure_static_medium_dyndb_items.jsonl"
+    # large_1rps_fp = "/Users/tuhinkhare/Work/IISc/DREAM-Lab/CCGrid-Artifact/XFaaS/serwo/examples/graphAz/build/workflow/resources/graph-azure-static-large-1rps/graph_azure_static_large_dyndb_items.jsonl"
 
     logger.info("Plotting Timeline")
 
     exec_time1, timeline1 = per_file_e2e_timings(small_1rps_fp)
     exec_time2, timeline2 = per_file_e2e_timings(medium_1rps_fp)
-    exec_time3, timeline3 = per_file_e2e_timings(large_1rps_fp)
+    # exec_time3, timeline3 = per_file_e2e_timings(large_1rps_fp)
     
     # logger.info("Time 1")
     # print(exec_time1, timeline1)
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     # Plotting code 
     fig, ax = plt.subplots()
     fig.set_dpi(400)
-    fontdict = {'size': 12}
+    fontdict = {'size': 20}
     ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
     ax.set_ylabel("E2E time (sec)", fontdict=fontdict)
     # NOTE - PLOT WITH TIMELINE
@@ -247,11 +247,11 @@ if __name__ == "__main__":
 
     
     # plot small
-    ax.plot(timeline1, exec_time1, linewidth=1, linestyle='-', color='green', label='Small')
+    ax.plot(timeline1, exec_time1, linewidth=1, linestyle='-', color='blue', label='Small')
     # plot medium
-    ax.plot(timeline2, exec_time2, linewidth=1, linestyle='-', color='blue', label='Medium')
+    ax.plot(timeline2, exec_time2, linewidth=1, linestyle='-', color='magenta', label='Medium')
     # plot large
-    ax.plot(timeline3, exec_time3, linewidth=1, linestyle='-', color='red', label='Large')
+    # ax.plot(timeline3, exec_time3, linewidth=1, linestyle='-', color='red', label='Large')
 
     ax.xaxis.set_tick_params(which='major', labelsize=fontdict['size'])
     ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
@@ -262,8 +262,10 @@ if __name__ == "__main__":
     ax.set_yticks(yticks)
     ax.set_yticklabels(yticklabels)
     ax.grid(axis="y", which="major", linestyle="-", color="black")
-    ax.grid(axis="y", which="minor", linestyle="-", color="grey")
+    ax.grid(axis="y", which="minor", linestyle="-", color="lightgrey")
+    ax.grid(axis="x", which="major", linestyle='-', color="black")
     ax.set_axisbelow(True)
-    ax.legend()
+    l = ax.legend(prop={'size': fontdict['size']})
+    l.get_frame().set_alpha(None)
 
-    plt.savefig(out_path / f"{out_file}", bbox_inches='tight')
+    plt.savefig(out_path / f"{out_file}.{format}", bbox_inches='tight')

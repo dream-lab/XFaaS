@@ -8,6 +8,7 @@ import networkx as nx
 import pathlib
 import pprint
 import argparse
+import statistics
 
 from typing import Any
 from collections import defaultdict
@@ -275,11 +276,11 @@ def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions, timeline):
     #                   fontdict=fontdict)
     
     # Uncomment this for general purpose
-    yticks_ax1 = [y for y in range(0, 1800 ,200)]
+    yticks_ax1 = [y for y in range(0, 3500, 500)]
     ax.set_yticks(yticks_ax1)
     ax.set_yticklabels([str(y) for y in yticks_ax1])
 
-    # ax.set_ylim(ymin=0, ymax=max(yticks_ax1))
+    ax.set_ylim(ymin=0, ymax=max(yticks_ax1))
     ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
     
 
@@ -305,22 +306,21 @@ def plot_e2e_timeline(e2e_all_sessions, time_marker_sessions, timeline):
     #     step_x.append(invoc_id)
 
     # Static rips
-    # step_y = [8, 8]
-    # step_x = [0, 300]
+    step_y = [8, 8]
+    step_x = [0, 300]
 
     # Alibaba
-    step_x = [1, 5, 12, 18, 38, 46, 52, 72, 75, 76, 79, 80, 87, 137, 142, 170, 196, 199, 200, 201, 202, 203, 208, 209, 218, 220, 229, 240]
-    step_y = [1, 7, 10, 5, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1, 2, 3, 14, 17, 4, 2, 8, 1, 1, 1, 6, 1, 1, 1] 
+    # step_x = [1, 5, 12, 18, 38, 46, 52, 72, 75, 76, 79, 80, 87, 137, 142, 170, 196, 199, 200, 201, 202, 203, 208, 209, 218, 220, 229, 240]
+    # step_y = [1, 7, 10, 5, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1, 2, 3, 14, 17, 4, 2, 8, 1, 1, 1, 6, 1, 1, 1] 
 
     # logger.info(f"Step X - {step_x}")
     ax2 = ax.twinx()
     ax2.set_ylim(ymin=0)
     ax2.set_ylabel("RPS", fontdict=fontdict)
-    yticks_ax2 = [int(y/100) for y in yticks_ax1]
-    # ax2.set_yticks(tck.FixedLocator(locs=yticks_ax2))
+    yticks_ax2 = [y for y in range(0, 14, 2)]
     ax2.set_yticks(yticks_ax2)
     ax2.set_yticklabels([str(y) for y in yticks_ax2], fontdict=fontdict)
-    ax2.step(step_x, step_y, linestyle='dashed', color='red')
+    ax2.step(step_x, step_y, linestyle='dashed', color='red', linewidth=3)
     # Dynamism OVERLAY - (END)
     
 
@@ -450,15 +450,21 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
 
     def plot_interleaved():
         fig, ax = plt.subplots()
-        fig.set_dpi(400)
-        fontdict = {'size': 14}
+        fig.set_dpi(450)
+        fig.set_figwidth(9)
+        fontdict = {'size': 55}
 
         ax.set_ylabel("Time (sec)", fontdict=fontdict)
         ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
 
         # CUSTOM yticks
-        yticks_ax1 = [0, 0.2, 0.4, 0.6, 0.8, 1]
-        yticks_ax2 = [round(3*y, 1) for y in yticks_ax1]
+        # Graph yticks - 
+        # yticks_ax1 = [0, 0.2, 0.4, 0.6, 0.8, 1]
+        # yticks_ax2 = [round(3*y, 1) for y in yticks_ax1]
+
+        # TextProcess yticks - 
+        yticks_ax1 = list(range(0, 500, 100))
+        yticks_ax2 = [y*2 for y in yticks_ax1]
 
         interleaved_label_ids = []
         interleaved_data = []
@@ -485,36 +491,94 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
                 return np.array(distribution_dict["functions"][id])
 
         #
-        def get_cumm_time_func(time_map, num_iters):
-            cumm_time = []
-            for idx in range(0, num_iters):
-                temp = []
-                for key in time_map.keys():
-                    temp.append(time_map[key][idx])
-                cumm_time.append(temp)
-            return np.array([sum(x) for x in cumm_time])
+        # def get_cumm_time_func(time_map, num_iters):
+        #     cumm_time = []
+        #     for idx in range(0, num_iters):
+        #         temp = []
+        #         for key in time_map.keys():
+        #             temp.append(time_map[key][idx])
+        #         cumm_time.append(temp)
+        #     return np.array([sum(x) for x in cumm_time])
         
-        def get_cumm_time_edge(time_map, edge_set, num_iters):
-            s_time_textprocessing = [['1', '2', '12', '22'], ['1', '3', '13', '22'], ['1', '4', '14', '22'], ['1', '5', '15', '22'], ['1', '6', '16', '22'], ['1', '7', '17', '22'], ['1', '8', '18', '22'], ['1', '9', '19', '22'], ['1', '10', '20', '22']]
-            s_time_graph = [['1', '2', '5'], ['1', '3', '5'], ['1', '4', '5']]
 
-            cumm_time = []
-            s_time = s_time_graph # Change this variable according to the workflow
-            for idx in range(0, num_iters):
-                maxval = -1
-                mx = []
-                for it in s_time:
-                    tme = 0
-                    for i in range(0,len(it)-1):
-                        edge = f'{it[i]}-{it[i+1]}'
-                        tme += time_map[edge][idx]
-                    mx.append(tme)
-                maxval = max(mx)
-                # for key in edge_set:
-                #     if time_map[key][idx] > maxval:
-                #         maxval = time_map[key][idx]
-                cumm_time.append(maxval)
-            return cumm_time
+        # Function to enumerate on all paths - 
+        def give_all_times(function_times, edge_times, num_iters):
+            # function_times = {"1": [1,4,5,6,7],
+            #                   "2": [2,3,4,5,6],
+            #                   "3": [1,2,3,4,5],
+            #                   "4": [1,2,3,4,5],
+            #                   "5": [1,2,3,4,5]}
+            # edge_times = {"1-2": [1,4,5,6,7],
+            #               "1-3": [1,2,3,4,5],
+            #               "1-4": [1,2,3,4,5],
+            #               "2-5": [1,2,3,4,5],
+            #             "3-5": [1,2,3,4,5],
+            #             "4-5": [1,2,3,4,5]}                  
+            source = [n for n, d in xfaas_dag.in_degree() if d == 0][0]
+            sink = [n for n, d in xfaas_dag.out_degree() if d == 0][0]
+            paths = list(nx.all_simple_paths(xfaas_dag, source, sink))
+            
+            ## cumm fn exec
+            cumm_function_exec = []
+            for i in range(num_iters):
+                temp = []
+                for path in paths:
+                    tm = 0
+                    for node in path:
+                        tm += function_times[node][i]
+                    temp.append(tm)
+                cumm_function_exec.append(max(temp))
+            
+
+            ## cumm comm time
+            cumm_comm_time = []
+            for i in range(num_iters):
+                temp = []
+                for path in paths:
+                    tm = 0
+                    for j in range(0,len(path)-1):
+                        tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
+                    temp.append(tm)
+                cumm_comm_time.append(max(temp))
+            
+            ## e2e
+            e2e_time = []
+            for i in range(num_iters):
+                temp = []
+                for path in paths:
+                    tm = 0
+                    
+                    for j in range(0,len(path)-1):
+                        tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
+                        tm += function_times[path[j]][i]
+                    tm += function_times[path[-1]][i]
+                    temp.append(tm)
+                e2e_time.append(max(temp))
+
+            return cumm_function_exec,cumm_comm_time,e2e_time
+        
+        # DEPRECATED
+        # def get_cumm_time_edge(time_map, edge_set, num_iters):
+        #     s_time_textprocessing = [['1', '2', '12', '22'], ['1', '3', '13', '22'], ['1', '4', '14', '22'], ['1', '5', '15', '22'], ['1', '6', '16', '22'], ['1', '7', '17', '22'], ['1', '8', '18', '22'], ['1', '9', '19', '22'], ['1', '10', '20', '22']]
+        #     s_time_graph = [['1', '2', '5'], ['1', '3', '5'], ['1', '4', '5']]
+
+        #     cumm_time = []
+        #     s_time = s_time_graph # Change this variable according to the workflow
+        #     for idx in range(0, num_iters):
+        #         maxval = -1
+        #         mx = []
+        #         for it in s_time:
+        #             tme = 0
+        #             for i in range(0,len(it)-1):
+        #                 edge = f'{it[i]}-{it[i+1]}'
+        #                 tme += time_map[edge][idx]
+        #             mx.append(tme)
+        #         maxval = max(mx)
+        #         # for key in edge_set:
+        #         #     if time_map[key][idx] > maxval:
+        #         #         maxval = time_map[key][idx]
+        #         cumm_time.append(maxval)
+        #     return cumm_time
 
         # DEPRECATED
         # def get_cumm_time_edge(time_map, edge_set, num_iters):
@@ -553,35 +617,17 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         # Get the cummulative function timings
         ax2 = ax.twinx()
         ax2.set_ylabel("Cummulative Time (sec)", fontdict=fontdict)
-        cumm_labels = ['Cumm. Func', 'Cumm. Edge', 'Cumm. E2E']
-        cumm_func_time = get_cumm_time_func(time_map=distribution_dict["functions"], num_iters=len(e2e_all_sessions))
+        cumm_labels = [r'$\sum Exec$', r'$\sum Comms$', r'$\sum E2E$']
+        # cumm_func_time = get_cumm_time_func(time_map=distribution_dict["functions"], num_iters=len(e2e_all_sessions))
+        cumm_compute_time, cumm_comms_time, cumm_e2e_time = give_all_times(distribution_dict["functions"],
+                                                                           distribution_dict["edges"],
+                                                                           num_iters=len(e2e_all_sessions))
         
         ##### CUSTOM edge timing calculation (Start) ##### 
         # NOTE - go to this below function and change the s_time
-        cumm_edge_time1 = get_cumm_time_edge(time_map=distribution_dict["edges"], 
-                                            num_iters=len(e2e_all_sessions), 
-                                            edge_set=['1-2', '1-3', '1-4'])
-        
-        cumm_edge_time_data = np.array(cumm_edge_time1)
+
         ####### CUSTOM edge timing calculation (End) ####
 
-
-        # NOTE - Deprecated DO NOT USE
-        # ##### CUSTOM edge timing calculation (Start) ##### 
-        # # Graph - 
-        # cumm_edge_time1 = get_cumm_time_edge(time_map=distribution_dict["edges"], 
-        #                                     num_iters=len(e2e_all_sessions), 
-        #                                     edge_set=['1-2', '1-3', '1-4'])
-        
-        # # cumm_edge_time2 = get_cumm_time_edge(time_map=distribution_dict["edges"], 
-        # #                                     num_iters=len(e2e_all_sessions), 
-        # #                                     edge_set=['2-5', '3-5', '4-5'])
-        
-        # cumm_edge_time = np.array([sum(x) for x in list(zip(cumm_edge_time1, cumm_edge_time2))])
-        # ####### CUSTOM edge timing calculation (End) ####
-
-
-        cumm_e2e_time = np.array([t/1000 for t in e2e_all_sessions])
 
         # Write to file for later use
         cumm_time_dir_path = out_path / f"cumm_time_dir"
@@ -589,13 +635,18 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
             os.mkdir(cumm_time_dir_path)
 
         logger.info(f"Writing the cummulative timings dictionary to {cumm_time_dir_path}")
+        logger.info("== Statistics Boxplots  == ")
+        logger.info(f"Median func - {statistics.median(list(cumm_compute_time))}")
+        logger.info(f"Median edge - {statistics.median(list(cumm_comms_time))}")
+        logger.info(f"Median e2e - {statistics.median(list(cumm_e2e_time))}")
+        logger.info("== Statistics Boxplots  == ")
         with open(cumm_time_dir_path / f"cumm_time_dict.json", "w") as outfile:
             cumm_time_dict = dict(cumm_e2e_time=list(cumm_e2e_time),
-                                  cumm_edge_time=list(cumm_edge_time_data),
-                                  cumm_func_time=list(cumm_func_time))
+                                  cumm_comms_time=list(cumm_comms_time),
+                                  cumm_func_time=list(cumm_compute_time))
             json.dump(cumm_time_dict, outfile, indent=2)
 
-        bplot2 = ax2.boxplot([cumm_func_time, cumm_edge_time_data, cumm_e2e_time],
+        bplot2 = ax2.boxplot([np.array(cumm_compute_time), np.array(cumm_comms_time), np.array(cumm_e2e_time)],
                              positions=[len(interleaved_data) + offset for offset in range(1,4)],
                              vert=True,
                              patch_artist=True,
@@ -615,11 +666,15 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         ######## CUMMULATIVE TIME ADDITION (END#########
         
         # NOTE - modify this label to include the function and edge abbreviations
-        interleaved_labels_modified = ['GGEN', 'GGEN-GBFT', 'GGEN-PGRK', 'GGEN-GMST', 'GBFT', 'GBFT-Agg', 'PGRK', 'PGRK-Agg', 'GMST', 'GMST-Agg', 'Agg'] + cumm_labels
+        # Graph - 
+        # interleaved_labels_modified = ['GGEN', 'GGEN-GBFT', 'GGEN-PGRK', 'GGEN-GMST', 'GBFT', 'GBFT-Agg', 'PGRK', 'PGRK-Agg', 'GMST', 'GMST-Agg', 'Agg'] + cumm_labels
+        
+        # Text Proc - 
+        interleaved_labels_modified = ['TRIG'] + ['TRIG-TGEN']*10 + ['TGEN', 'TGEN-ASRT']*10 + ['ASRT', 'ASRT-TAGG']*10 + ['TAGG', 'TAGG-MSRT', 'MSRT', 'MSRT-TSST', 'TSST', 'TSST-ENCR', 'ENCR'] + cumm_labels
         logger.info(f"Interleaved Labels - {interleaved_labels_modified}")
         ax.set_xticklabels(interleaved_labels_modified, 
                            rotation=90,
-                           fontdict=fontdict)
+                           fontdict={'size': fontdict['size']-15})
         
 
 
@@ -641,28 +696,28 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         ##### VLINES #####
         # add a separator between the cumulative and the function timings
         vlines_x_cumm_sep = [(ax.get_xticks()[len(interleaved_label_ids)-1] + ax.get_xticks()[len(interleaved_label_ids)])/2]
-        ax.vlines(x=vlines_x_cumm_sep, ymin=0, ymax=max(yticks_ax1), linestyles='solid', color='black')
+        ax.vlines(x=vlines_x_cumm_sep, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='black', linewidth=3)
         
         # add lighter vlines between the boxes themselves
         _xloc = ax.get_xticks()[0: len(interleaved_label_ids)]
         vlines_x_between = []
         for idx in range(0, len(_xloc)-1):
             vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
-        ax.vlines(x=vlines_x_between, ymin=0, ymax=max(yticks_ax1), linestyles='solid', color='darkgrey')
+        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
 
         # add lighter vlines between the cumm functions
         _xloc = ax.get_xticks()[len(interleaved_label_ids):]
         vlines_x_between_cumm = []
         for idx in range(0, len(_xloc)-1):
             vlines_x_between_cumm.append(_xloc[idx]/2 + _xloc[idx+1]/2)
-        ax.vlines(x=vlines_x_between_cumm, ymin=0, ymax=max(yticks_ax1), linestyles='solid', color='darkgrey')
+        ax.vlines(x=vlines_x_between_cumm, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey',linewidth=1.5)
         ###### VLINES ####
 
         ax.grid(axis="y", which="major", linestyle="-", color="black")
         ax.grid(axis="y", which="minor", linestyle="-", color="grey")
         ax.set_axisbelow(True)
         
-        fig.savefig(plots_path / f"interleaved_exec_box_{wf_name}_{csp}_{dynamism}_{payload}_correction.{format}", bbox_inches='tight')
+        fig.savefig(plots_path / f"interleaved_exec_box_{wf_name}_{csp}_{dynamism}_{payload}_final.{format}", bbox_inches='tight')
         
 
     # conditional plotting 

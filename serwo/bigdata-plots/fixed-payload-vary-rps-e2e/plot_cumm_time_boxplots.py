@@ -37,7 +37,7 @@ if __name__ == "__main__":
               with open(filepath, "r") as file:
                 cumm_time_dict = json.load(file)
                 data.append(np.array(cumm_time_dict["cumm_func_time"]))
-                data.append(np.array(cumm_time_dict["cumm_edge_time"]))
+                data.append(np.array(cumm_time_dict["cumm_comms_time"]))
                 data.append(np.array(cumm_time_dict["cumm_e2e_time"]))
 
         fig, ax = plt.subplots()
@@ -79,11 +79,13 @@ if __name__ == "__main__":
             vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
         ax.vlines(x=vlines_x_between, ymin=0, ymax=ymax, linestyles='solid', color='darkgrey')
         ax.vlines(x=[vlines_x_between[2], vlines_x_between[5]], ymin=ymin, ymax=ymax, linestyles='solid', color='black')
+
+        cumm_labels = [r'$\sum Exec$', r'$\sum Comms$', r'$\sum E2E$']
         legend_elements = [
-                            Patch(facecolor='blue', edgecolor='black', label='Func Exec'),
-                            Patch(facecolor='green', edgecolor='black', label='InterFunc Exec'),
-                            Patch(facecolor='red', edgecolor='black', label='E2E Exec')
+                            Patch(facecolor='blue', edgecolor='black', label=cumm_labels[0]),
+                            Patch(facecolor='green', edgecolor='black', label=cumm_labels[1]),
+                            Patch(facecolor='red', edgecolor='black', label=cumm_labels[2])
                         ]
         legend = ax.legend(handles=legend_elements, loc='upper left')
         legend.get_frame().set_alpha(None)
-        plt.savefig(f"{csp}-medium-rps-1-4-8.pdf", bbox_inches='tight')
+        plt.savefig(f"{csp}-medium-rps-1-4-8-correction.pdf", bbox_inches='tight')

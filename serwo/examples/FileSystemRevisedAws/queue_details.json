@@ -1,12 +1,5 @@
 {
-<<<<<<< HEAD
   "connectionString": "DefaultEndpointsProtocol=https;AccountName=xfaaslogging;AccountKey=gtmYmyApGFzUN/6ZtRhqSCW6TeT8ScPmuSToqXBe/U8urzrfF+84y97LL5DvbVPLYFu4Ofz/87vT+AStOalmgg==;EndpointSuffix=core.windows.net",
-  "queue": "aws-alibaba"
+  "queue": "big-data-aws"
 
 }
-=======
-    "connectionString": "DefaultEndpointsProtocol=https;AccountName=xfaaslogging;AccountKey=gtmYmyApGFzUN/6ZtRhqSCW6TeT8ScPmuSToqXBe/U8urzrfF+84y97LL5DvbVPLYFu4Ofz/87vT+AStOalmgg==;EndpointSuffix=core.windows.net",
-    "queue": "aws-alibaba"
-  
-  }
->>>>>>> 06f42e459037eb661a16352f771d2826114f2b51
