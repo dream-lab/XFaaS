@@ -30,6 +30,7 @@ def get_resources():
 def deploy_to_azure(storage, group, app, user_dir, region):
     # print(f'Creating User app in azure: {app}')
     command = f'az functionapp create --consumption-plan-location {region} --runtime {runtime} --runtime-version {runtime_version} --functions-version {functions_version} --name {app} --os-type {os_type} --storage-account {storage} -g {group}'
+    print(command)
     stream = os.popen(command)
     app_create_output = stream.read()
     # print(app_create_output)

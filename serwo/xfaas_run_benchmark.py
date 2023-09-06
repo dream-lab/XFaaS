@@ -198,7 +198,7 @@ def generate_azure_shell_script_and_scp(payload_size, wf_name, rps, duration,dyn
         f.write(code)
     os.system(f"scp {output_path} {azure_user_id}@{azure_server_ip}:shell_scripts/")
     os.system(f"ssh {azure_user_id}@{azure_server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
-    # os.system(f"ssh {azure_user_id}@{azure_server_ip} {shell_file_name}")
+    os.system(f"ssh {azure_user_id}@{azure_server_ip} ./shell_scripts/{shell_file_name}")
     
 
 def generate_aws_shell_script_and_scp(payload_size, wf_name, rps, duration,dynamism):
@@ -300,7 +300,7 @@ def deploy_workflow(user_wf_dir,dag_filename, region,csp):
 
 def plot_metrics(user_wf_dir, artificats_filename):
     # os.chdir('..')
-    command = f'python3 xfaas_benchmarksuite_plotgen_vk.py --user-dir {user_wf_dir} --artifacts-file {artificats_filename}.json  --interleaved True --format pdf --out-dir {artificats_filename}'
+    command = f'python3 xfaas_benchmarksuite_plotgen_vk.py --user-dir {user_wf_dir} --artifacts-file {artificats_filename}.json  --interleaved True --format pdf --out-dir {artificats_filename}-long'
     os.system(command)
 
     
@@ -319,9 +319,9 @@ if __name__ == "__main__":
     path_to_pem_file = args.path_to_pem
     dag_filename = args.dag_filename
     
-    print('==================DEPLOYING WF===========================')
-    deploy_workflow(wf_user_directory,dag_filename, region,csp)
-    time.sleep(20)
+    # print('==================DEPLOYING WF===========================')
+    # deploy_workflow(wf_user_directory,dag_filename, region,csp)
+    # time.sleep(20)
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,path_to_pem_file)
     time.sleep(20)

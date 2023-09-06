@@ -10,17 +10,13 @@ import uuid
 import psutil
 import azure.functions as az_func
 from .USER_FUNCTION_PLACEHOLDER import user_function as USER_FUNCTION_PLACEHOLDER_function
-from azure.storage.queue import QueueService, QueueMessageFormat
+
 import sys
 import objsize
 import random
 import string
 
-connect_str_provenance = "DefaultEndpointsProtocol=https;AccountName=serwoprovenance;AccountKey=BaGZeTpyeEnO+9yd29yApEjFyzY1b4nR+3bW+mz8sJsSlBs3P29Gg8JzN4I0Lga12oefKWHI4pk3+AStD8AooA==;EndpointSuffix=core.windows.net"
-queue_name_provenance = "serwo-provenance-queue"
-queue_service_provenance = QueueService(connection_string=connect_str_provenance)
-queue_service_provenance.encode_function = QueueMessageFormat.binary_base64encode
-queue_service_provenance.decode_function = QueueMessageFormat.binary_base64decode
+
 
 # connect_str = 'DefaultEndpointsProtocol=https;AccountName=serwoprovenance;AccountKey=BaGZeTpyeEnO+9yd29yApEjFyzY1b4nR+3bW+mz8sJsSlBs3P29Gg8JzN4I0Lga12oefKWHI4pk3+AStD8AooA==;EndpointSuffix=core.windows.net'
 # queue_name = 'serwo-provenance-queue'
@@ -42,14 +38,6 @@ def get_delta(start_time):
     curr_time = int(time.time() * 1000)
     return curr_time - start_time
 
-
-def push_metadata_to_provenance(metadata):
-    try:
-        queue_service_provenance.put_message(
-            queue_name_provenance, json.dumps(metadata).encode("utf-8")
-        )
-    except Exception as e:
-        logging.info(f"Exception in pushing metadata: {e}")
 
 
 # def push_metadata_to_provenance(metadata):
