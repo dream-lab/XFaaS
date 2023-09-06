@@ -14,25 +14,42 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument("--csp",dest='csp',type=str,help="CSP name")
 parser.add_argument("--region",dest='region',type=str,help="Region name")
-parser.add_argument("--part-id",dest='part_id',type=str,help="Partition ID")
 parser.add_argument("--max-rps",dest='max_rps',type=int,help="Max RPS")
 parser.add_argument("--duration",dest='duration',type=int,help="Duration(sec)")
 parser.add_argument("--payload-size",dest='payload_size',type=str,help="Payload size: Values: Small/Medium/Large")
 parser.add_argument("--dynamism",dest='dynamism',type=str,help="Dynamism: Values: staic/alibaba/step_function")
 parser.add_argument("--wf-name",dest='wf_name',type=str,help="Workflow name")
 parser.add_argument("--wf-user-directory",dest='wf_user_directory',type=str,help="Workflow user directory")
-parser.add_argument("--path-to-pem",dest='path_to_pem',type=str,help="Path to pem file")
-parser.add_argument("--provenance-artifact-filename",dest='provenance_artifact_filename',type=str,help="Provenance artifact filename")
+parser.add_argument("--path-to-client-config",dest='client_config_path',type=str,help="Path to client config file")
 parser.add_argument("--dag-file-name",dest='dag_filename',type=str,help="DAG FILE NAME")
 
 args = parser.parse_args()
-provenance_artifact_filename = args.provenance_artifact_filename
+provenance_artifact_filename = None
 deployment_id = ''
-azure_server_ip = '4.240.90.234'
-azure_user_id = 'azureuser'
+azure_server_ip = ''
+azure_user_id  = ''
+aws_server_ip = ''
+aws_user_id = ''
+aws_key_pem_path = ''
 
-aws_server_ip = '65.0.17.98'
-aws_user_id = 'ubuntu'
+def get_client_login_details(config_path):
+    global azure_server_ip, azure_user_id, aws_server_ip, aws_user_id, aws_key_pem_path
+    with open(config_path) as f:
+        data = json.load(f)
+    azure_server_ip = data['azure_server_ip']
+    azure_user_id = data['azure_user_id']
+    aws_server_ip = data['aws_server_ip']
+    aws_user_id = data['aws_user_id']
+
+    aws_key_pem_path = data['aws_key_path']
+    # azure_server_ip = '4.240.90.234'
+    # azure_user_id = 'azureuser'
+
+    # aws_server_ip = '65.0.17.98'
+    # aws_user_id = 'ubuntu'
+    # return azure_server_ip,azure_user_id,aws_server_ip,aws_user_id
+
+# azure_server_ip, azure_user_id, aws_server_ip, aws_user_id = get_client_login_details()
 
 azure_shell_script_commands = []
 aws_shell_script_commands = []
@@ -122,24 +139,24 @@ def template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload
     with open(output_path, "w") as f:
         f.write(data)
 
-def make_aws_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url, state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, path_to_pem_file):
+def make_aws_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url, state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, path_to_pem_file, wf_deployment_id):
     jmx_template_path, jmx_output_path,jmx_output_filename = get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism,session_id)
     template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload_size, jmx_template_path, jmx_output_path, session_id)
     send_jmx_file_to_aws_server(jmx_output_path,jmx_output_filename, path_to_pem_file)
-    dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region)
+    dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id)
 
 
-def make_azure_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url, dynamism, session_id, wf_user_directory, part_id, region):
+def make_azure_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id):
     jmx_template_path, jmx_output_path,jmx_output_filename = get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism,session_id)
     template_azure_jmx_file(rps, duration, execute_url, payload_size, jmx_template_path, jmx_output_path, session_id)
     send_jmx_file_to_azure_server(jmx_output_path,jmx_output_filename)
-    dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region)
+    dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id)
 
 
 
-def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region):
+def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region,wf_deployment_id):
    
-    provenance_artefacts_updated_path = f"{wf_user_directory}/provenance-artifacts/{provenance_artifact_filename}.json"
+    provenance_artefacts_updated_path = f"{wf_user_directory}/{wf_deployment_id}/provenance-artifacts/{provenance_artifact_filename}"
     with open(provenance_artefacts_updated_path) as f:
         provenance_artefacts = json.load(f)
     experiment_conf =  {
@@ -216,8 +233,8 @@ def generate_aws_shell_script_and_scp(payload_size, wf_name, rps, duration,dynam
     os.system(f"ssh -i {path_to_pem_file} {aws_user_id}@{aws_server_ip} ./shell_scripts/{shell_file_name}")
 
 
-def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,path_to_pem_file):
-    copy_provenance_artifacts(csp, region, part_id, wf_user_directory)
+def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,path_to_pem_file, wf_deployment_id):
+    copy_provenance_artifacts(csp, region, part_id, wf_user_directory, wf_deployment_id,max_rps)
     saw_tooth = [(8,1),(8,2),(8,3),(8,4),(8,5),(8,6),(8,7),(8,8)]
     dynamism_data = read_dynamism_file(dynamism)
     if csp == 'azure':
@@ -241,9 +258,9 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
             rps_fraction = d[1]
             ne_session_id = session_id + str(i)
             if "sawtooth" == dynamism or "alibaba"  == dynamism :
-                make_azure_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region )
+                make_azure_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region, wf_deployment_id )
             else:
-                make_azure_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region )
+                make_azure_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id)
             
             i += 1
         generate_azure_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction,dynamism)
@@ -270,33 +287,33 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
             rps_fraction = d[1]
             ne_session_id = session_id + str(i)
             if "sawtooth" == dynamism or "alibaba" == dynamism:
-                make_aws_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file)
+                make_aws_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file, wf_deployment_id)
             else:
-                make_aws_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file)
+                make_aws_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file, wf_deployment_id)
 
             
             i += 1
         generate_aws_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction,dynamism)
 
-def copy_provenance_artifacts(csp, region, part_id, wf_user_directory):
+def copy_provenance_artifacts(csp, region, part_id, wf_user_directory,wf_deployment_id,rps):
     ## make a directory provenance-artifacts in the user workflow directory
     ## copy the provenance artifacts from the build directory to the user workflow directory
     global deployment_id
-    os.makedirs(f"{wf_user_directory}/provenance-artifacts", exist_ok=True)
+    os.makedirs(f"{wf_user_directory}/{wf_deployment_id}/provenance-artifacts", exist_ok=True)
     provenance_artefacts_path = f"{wf_user_directory}/build/workflow/resources/provenance-artifacts-{csp}-{region}-{part_id}.json"
     with open(provenance_artefacts_path) as f:
         provenance_artifact = json.load(f)
     deployment_id = provenance_artifact['deployment_id']
 
-    provenance_artefacts_updated_path = f"{wf_user_directory}/provenance-artifacts/{provenance_artifact_filename}.json"
+    provenance_artefacts_updated_path = f"{wf_user_directory}/{wf_deployment_id}/provenance-artifacts/{provenance_artifact_filename}"
    
     shutil.copyfile(provenance_artefacts_path, provenance_artefacts_updated_path)
         
     
 def deploy_workflow(user_wf_dir,dag_filename, region,csp):
-    command = f'python3 serwo/xfaas_main.py {user_wf_dir} {dag_filename} dag-revised-benchmark.json {csp} {region} test'
-    os.system(command)
-    # xfaas_deployer(user_wf_dir, dag_filename ,'dag-benchmark-revised.json',region,csp)
+    
+    wf_id, refactored_wf_id, wf_deployment_id = xfaas_deployer(user_wf_dir, dag_filename ,'dag-benchmark-revised.json',csp,region)
+    return wf_id, refactored_wf_id, wf_deployment_id
 
 def plot_metrics(user_wf_dir, artificats_filename):
     # os.chdir('..')
@@ -306,26 +323,34 @@ def plot_metrics(user_wf_dir, artificats_filename):
     
 
 if __name__ == "__main__":
+    
     args = parser.parse_args()
     csp = args.csp
     region = args.region
-    part_id = args.part_id
+    part_id = "test"
     max_rps = args.max_rps
     duration = args.duration
     payload_size = args.payload_size
     dynamism = args.dynamism
     wf_name = args.wf_name
-    wf_user_directory = args.wf_user_directory
-    path_to_pem_file = args.path_to_pem
+    wf_user_directory = args.wf_user_directory+"/workflow-gen"
+    path_to_config_file = args.client_config_path
     dag_filename = args.dag_filename
+    provenance_artifact_filename = f"{csp}-{dynamism}-{payload_size}-{max_rps}rps.json"
+    get_client_login_details(path_to_config_file)
+    path_to_pem_file = aws_key_pem_path
+
+    ## do an ls in aws client
+
     
     # print('==================DEPLOYING WF===========================')
-    # deploy_workflow(wf_user_directory,dag_filename, region,csp)
+    # wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
     # time.sleep(20)
-    print('==================RUNNING WF===========================')
-    run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,path_to_pem_file)
+    # print('==================RUNNING WF===========================')
+    wf_deployment_id = "fb895579-69d6-4573-aff6-5f0f596914b9"
+    run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,path_to_pem_file,wf_deployment_id)
     time.sleep(20)
-    print('==================PLOTTING METRICS===========================')
-    plot_metrics(wf_user_directory,provenance_artifact_filename)
+    # print('==================PLOTTING METRICS===========================')
+    # plot_metrics(wf_user_directory,provenance_artifact_filename)
 
 

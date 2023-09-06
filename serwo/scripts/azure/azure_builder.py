@@ -180,7 +180,7 @@ def gen_requirements(user_fns_data):
     req_file = open(az_functions_path+'/requirements.txt', "w")
     libs = set()
     for fn in user_fns_data:
-        req_path = f'{xfaas_working_directory}/' + fn['Path'] + '/requirements.txt'
+        req_path = fn['Path'] + '/requirements.txt'
         if os.path.exists(req_path):
             content = open(req_path).readlines()
             for line in content:
@@ -266,7 +266,7 @@ def re_written_generator(user_fns_data):
     for fn in user_fns_data:
         fin_func_dir = az_functions_path+'/'+fn['NodeName']
 
-        fn_dir_pat = f'{xfaas_working_directory}/' + fn['Path']
+        fn_dir_pat = fn['Path']
         copy_all_dirs(fn_dir_pat,fin_func_dir)
 
         if os.path.exists(fn_dir_pat+'/dependencies'):

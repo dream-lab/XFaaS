@@ -1,0 +1,77 @@
+{
+    "WorkflowName": "graphNetherite",
+    "Nodes": [
+        {
+            "NodeId": "1",
+            "NodeName": "TaskA",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAz/workflow-gen/graphGen",
+            "EntryPoint": "graphGen.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        },
+        {
+            "NodeId": "2",
+            "NodeName": "TaskB",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAz/workflow-gen/graphBFT",
+            "EntryPoint": "graphBFT.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        },
+        {
+            "NodeId": "3",
+            "NodeName": "TaskC",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAz/workflow-gen/pagerank",
+            "EntryPoint": "pagerank.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        },
+        {
+            "NodeId": "4",
+            "NodeName": "TaskD",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAz/workflow-gen/graphMST",
+            "EntryPoint": "graphMST.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        },
+        {
+            "NodeId": "5",
+            "NodeName": "TaskE",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAz/workflow-gen/aggregate",
+            "EntryPoint": "aggregate.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        }
+    ],
+    "Edges": [
+        {
+            "TaskA": [
+                "TaskB"
+            ]
+        },
+        {
+            "TaskA": [
+                "TaskC"
+            ]
+        },
+        {
+            "TaskA": [
+                "TaskD"
+            ]
+        },
+        {
+            "TaskB": [
+                "TaskE"
+            ]
+        },
+        {
+            "TaskC": [
+                "TaskE"
+            ]
+        },
+        {
+            "TaskD": [
+                "TaskE"
+            ]
+        }
+    ]
+}

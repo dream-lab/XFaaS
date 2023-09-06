@@ -20,13 +20,10 @@
   "extensions": {
     "durableTask": {
         "maxConcurrentActivityFunctions": 1,
-        "maxConcurrentOrchestratorFunctions": 8,
-        "storageProvider": {
-          "PartitionCount": 12,
-          "type": "Netherite"
-        }
+        "maxConcurrentOrchestratorFunctions": 8
 
-    }
+    },
+    "partitionCount": 1
     
   }
 }

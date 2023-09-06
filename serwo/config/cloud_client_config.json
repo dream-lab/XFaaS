@@ -1,0 +1,8 @@
+{
+    "azure_server_ip": "4.240.90.234",
+    "azure_user_id" : "azureuser",
+    "aws_server_ip" : "65.0.17.98",
+    "aws_user_id": "ubuntu",
+    "aws_key_path": "/Users/varad.kulkarni/aws-key-pems/lambda-stress-test-client-key.cer"
+
+}

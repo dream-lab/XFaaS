@@ -1,0 +1,20 @@
+{
+    "workflow_id": "874cc475-8d03-48ee-94a7-3168b9a23f40",
+    "refactored_workflow_id": "214daef1-5b2d-4c2f-9b68-41d668b5f17c",
+    "deployment_id": "fb895579-69d6-4573-aff6-5f0f596914b9",
+    "queue_details": {
+        "queue_name": "sqymx",
+        "connection_string": "DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net;AccountName=xfaasgloballogger;AccountKey=J+c6RYphlZYQDAd9+EJ7o5kh0YL6KdvUHLhif69N+iQfd52hQPrgty8DMwN5pU7CrAIjfdkiYCVM+AStHItmpg==;BlobEndpoint=https://xfaasgloballogger.blob.core.windows.net/;FileEndpoint=https://xfaasgloballogger.file.core.windows.net/;QueueEndpoint=https://xfaasgloballogger.queue.core.windows.net/;TableEndpoint=https://xfaasgloballogger.table.core.windows.net/"
+    },
+    "experiment_conf": {
+        "staticlarge1": {
+            "jmx_output_filename": "azure-graph-large-static-1-600-session-staticlarge1.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 600.0,
+            "payload_size": "large",
+            "wf_name": "graph",
+            "dynamism": "static"
+        }
+    }
+}
