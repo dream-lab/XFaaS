@@ -8,11 +8,10 @@ import networkx as nx
 import pathlib
 import pprint
 import argparse
-
 from typing import Any
 from collections import defaultdict
 from matplotlib.lines import lineStyles
-from azure.storage.queue import QueueService, QueueMessageFormat
+from azure.storage.queue import QueueClient
 from serwo.python.src.utils.provenance.partiql_dynamo_wrapper import PartiQLWrapper
 from serwo.python.src.utils.classes.commons.logger import LoggerFactory
 
@@ -62,69 +61,70 @@ class DagLoader:
         return self.__dag
 
 
-def get_queue_size():
-    queue_service = QueueService(connection_string=connect_str)
-    queue_service.encode_function = QueueMessageFormat.binary_base64encode
-    queue_service.decode_function = QueueMessageFormat.binary_base64decode
-    metadata = queue_service.get_queue_metadata(queue_name)
-    count = metadata.approximate_message_count
-    return count
+# def get_queue_size():
+#     queue_service = QueueService(connection_string=connect_str)
+#     queue_service.encode_function = QueueMessageFormat.binary_base64encode
+#     queue_service.decode_function = QueueMessageFormat.binary_base64decode
+#     metadata = queue_service.get_queue_metadata(queue_name)
+#     count = metadata.approximate_message_count
+#     return count
 
 def create_dynamo_db_items():
-    queue_service = QueueService(connection_string=connect_str)
-    queue_service.encode_function = QueueMessageFormat.binary_base64encode
-    queue_service.decode_function = QueueMessageFormat.binary_base64decode
+    # queue_service = QueueService(connection_string=connect_str)
+    # queue_service.encode_function = QueueMessageFormat.binary_base64encode
+    # queue_service.decode_function = QueueMessageFormat.binary_base64decode
 
-    count = get_queue_size()
-    logger.info("Message count here: " + str(count))
-    get_count = count // 32 + 5
-    logger.info("rounds = " + str(get_count))
+    # count = get_queue_size()
+    # logger.info("Message count here: " + str(count))
+    # get_count = count // 32 + 5
+    # logger.info("rounds = " + str(get_count))
 
     dynamodb_item_list = []
+    queue = QueueClient.from_connection_string(conn_str=connect_str, queue_name=queue_name)
+    response = queue.receive_messages()
 
-    for i in range(get_count):
-        messages = queue_service.get_messages(
-            queue_name, num_messages=32, visibility_timeout=60
-        )
-        for message in messages:
-            if (
-                message.content.decode("utf-8")
-                != "json.dumps(fin_dict).encode('utf-8')"
-            ):
-                queue_item = json.loads(message.content.decode("utf-8"))
-                metadata = queue_item["metadata"]
+    # for i in range(get_count):
+    #     messages = queue_service.get_messages(
+    #         queue_name, num_messages=32, visibility_timeout=60
+    #     )
+    for message in response:
+        if (message.content!= "json.dumps(fin_dict).encode('utf-8')"):
+            print(message.content)
+            queue_item = json.loads(message.content)
+            print(queue_item)
+            metadata = queue_item["metadata"]
+            
+            # Filtering based on workflow deployment id during creation itself
+            if metadata["deployment_id"].strip() == workflow_deployment_id:
+
+                dynamo_item = {}
                 
-                # Filtering based on workflow deployment id during creation itself
-                if metadata["deployment_id"].strip() == workflow_deployment_id:
+                # invocation id is a combination of the instanceId-sessionId
+                invocation_id = f"{metadata['workflow_instance_id']}-{metadata['session_id']}"
 
-                    dynamo_item = {}
-                    
-                    # invocation id is a combination of the instanceId-sessionId
-                    invocation_id = f"{metadata['workflow_instance_id']}-{metadata['session_id']}"
+                # NOTE - the deployment id is now being propagated in the provenance via modified runner templates
+                # needed it for filtering on the experiment data
+                dynamo_item["workflow_deployment_id"] = metadata["deployment_id"]
+                # dynamo_item["workflow_invocation_id"] = str(
+                #     metadata["workflow_instance_id"]
+                # )
+                dynamo_item["workflow_invocation_id"] = invocation_id
+                dynamo_item["client_request_time_ms"] = str(
+                    metadata["request_timestamp"]
+                )
+                dynamo_item["invocation_start_time_ms"] = str(
+                    metadata["workflow_start_time"]
+                )
 
-                    # NOTE - the deployment id is now being propagated in the provenance via modified runner templates
-                    # needed it for filtering on the experiment data
-                    dynamo_item["workflow_deployment_id"] = metadata["deployment_id"]
-                    # dynamo_item["workflow_invocation_id"] = str(
-                    #     metadata["workflow_instance_id"]
-                    # )
-                    dynamo_item["workflow_invocation_id"] = invocation_id
-                    dynamo_item["client_request_time_ms"] = str(
-                        metadata["request_timestamp"]
-                    )
-                    dynamo_item["invocation_start_time_ms"] = str(
-                        metadata["workflow_start_time"]
-                    )
+                # add session id to dynamo db
+                dynamo_item["session_id"] = str(metadata["session_id"])
 
-                    # add session id to dynamo db
-                    dynamo_item["session_id"] = str(metadata["session_id"])
+                dynamo_item["functions"] = {}
+                for item in metadata["functions"]:
+                    for key in item.keys():
+                        dynamo_item["functions"][key] = item[key]
 
-                    dynamo_item["functions"] = {}
-                    for item in metadata["functions"]:
-                        for key in item.keys():
-                            dynamo_item["functions"][key] = item[key]
-
-                    dynamodb_item_list.append(dynamo_item)
+                dynamodb_item_list.append(dynamo_item)
 
     return dynamodb_item_list
 
@@ -439,8 +439,8 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
 
         # CUSTOM yticks
-        yticks_ax1 = [0, 0.2, 0.4, 0.6, 0.8, 1]
-        yticks_ax2 = [round(3*y, 1) for y in yticks_ax1]
+        # yticks_ax1 = [0, 0.2, 0.4, 0.6, 0.8, 1]
+        # yticks_ax2 = [round(3*y, 1) for y in yticks_ax1]
 
         interleaved_label_ids = []
         interleaved_data = []
@@ -478,14 +478,15 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
             return np.array([sum(x) for x in cumm_time])
         
         def get_cumm_time_edge(time_map, edge_set, num_iters):
-            s_time = [['1', '2', '12', '22'], ['1', '3', '13', '22'], ['1', '4', '14', '22'], ['1', '5', '15', '22'], ['1', '6', '16', '22'], ['1', '7', '17', '22'], ['1', '8', '18', '22'], ['1', '9', '19', '22'], ['1', '10', '20', '22']]
+            # s_time = [['1', '2', '12', '22'], ['1', '3', '13', '22'], ['1', '4', '14', '22'], ['1', '5', '15', '22'], ['1', '6', '16', '22'], ['1', '7', '17', '22'], ['1', '8', '18', '22'], ['1', '9', '19', '22'], ['1', '10', '20', '22']]
+            s_time = [['1','2','5'],['1','3','5'],['1','4','5']]
             cumm_time = []
             for idx in range(0, num_iters):
                 maxval = -1
                 mx = []
                 for it in s_time:
                     tme = 0
-                    for i in range(0,2):
+                    for i in range(0,len(it)-1):
                         edge = f'{it[i]}-{it[i+1]}'
                         tme += time_map[edge][idx]
                     mx.append(tme)
@@ -569,8 +570,8 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
             patch.set_facecolor(color)
 
         # ax2.set_ylim(ymin=0, ymax=max(yticks_ax2))
-        ax2.set_yticks(yticks_ax2)
-        ax2.set_yticklabels([str(x) for x in yticks_ax2])
+        # ax2.set_yticks(yticks_ax2)
+        # ax2.set_yticklabels([str(x) for x in yticks_ax2])
         ax2.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
         # UNCOMMENT / COMMENT FROM HERE (END)
         ######## CUMMULATIVE TIME ADDITION (END#########
@@ -585,11 +586,11 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         
 
 
-        ytickslabels = [str(x) for x in yticks_ax1]
+        # ytickslabels = [str(x) for x in yticks_ax1]
         # ax.set_ylim(ymin=0, ymax=max(yticks_ax1))
-        ax.set_yticks(yticks_ax1)
-        ax.set_yticklabels(ytickslabels,
-                           fontdict=fontdict)
+        # ax.set_yticks(yticks_ax1)
+        # ax.set_yticklabels(ytickslabels,
+        #                    fontdict=fontdict)
 
         ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
         ax.set_ylim(ymin=0)
@@ -603,6 +604,7 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         ##### VLINES #####
         # add a separator between the cumulative and the function timings
         vlines_x_cumm_sep = [(ax.get_xticks()[len(interleaved_label_ids)-1] + ax.get_xticks()[len(interleaved_label_ids)])/2]
+        yticks_ax1 = ax.get_yticks()
         ax.vlines(x=vlines_x_cumm_sep, ymin=0, ymax=max(yticks_ax1), linestyles='solid', color='black')
         
         # add lighter vlines between the boxes themselves
@@ -681,7 +683,65 @@ def plotter(workflow_deployment_id, experiment_conf):
         e2e_all_sessions=e2e_all_sessions
     )
 
+def give_all_times(function_times, edge_times, num_iters):
+    # function_times = {"1": [1,4,5,6,7],
+    #                   "2": [2,3,4,5,6],
+    #                   "3": [1,2,3,4,5],
+    #                   "4": [1,2,3,4,5],
+    #                   "5": [1,2,3,4,5]}
+    # edge_times = {"1-2": [1,4,5,6,7],
+    #               "1-3": [1,2,3,4,5],
+    #               "1-4": [1,2,3,4,5],
+    #               "2-5": [1,2,3,4,5],
+    #             "3-5": [1,2,3,4,5],
+    #             "4-5": [1,2,3,4,5]}                  
+    source = [n for n, d in xfaas_dag.in_degree() if d == 0][0]
+    sink = [n for n, d in xfaas_dag.out_degree() if d == 0][0]
+    paths = list(nx.all_simple_paths(xfaas_dag, source, sink))
     
+    ## cumm fn exec
+    cumm_function_exec = []
+    for i in range(num_iters):
+        temp = []
+        for path in paths:
+            tm = 0
+            for node in path:
+                tm += function_times[node][i]
+            temp.append(tm)
+        cumm_function_exec.append(max(temp))
+    
+
+    ## cumm comm time
+    cumm_comm_time = []
+    for i in range(num_iters):
+        temp = []
+        for path in paths:
+            tm = 0
+            for j in range(0,len(path)-1):
+                tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
+            temp.append(tm)
+        cumm_comm_time.append(max(temp))
+    
+    ## e2e
+    e2e_time = []
+    for i in range(num_iters):
+        temp = []
+        for path in paths:
+            tm = 0
+            
+            for j in range(0,len(path)-1):
+                tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
+                tm += function_times[path[j]][i]
+            tm += function_times[path[-1]][i]
+            temp.append(tm)
+        e2e_time.append(max(temp))
+
+    return cumm_function_exec,cumm_comm_time,e2e_time
+
+
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="ProgramName",
@@ -731,16 +791,24 @@ if __name__ == "__main__":
 
     dagfilepath = user_dir / "dag-original.json"
     xfaas_dag = DagLoader(dagfilepath).get_dag()
+    # give_all_times(5)
+    
 
-    logger.info("Getting from Queue and Adding to file")
+    ## enumerate all paths from source to sink
+    ## source is node with no incoming edges
+    ## sink is node with no outgoing edges
+    ## source should be a single node
+    ## sink should be a single node
+
+    # logger.info("Getting from Queue and Adding to file")
     items = get_from_queue_add_to_file()
     # logger.info("Pushing to DynamoDB")
     # add_items_to_dynamodb(items)
     
     # logger.info("Plotting Timeline")
-    # plotter(
-    #     workflow_deployment_id=workflow_deployment_id,
-    #     experiment_conf=experiment_conf
-    # )
+    plotter(
+        workflow_deployment_id=workflow_deployment_id,
+        experiment_conf=experiment_conf
+    )
 
     # delete_temp(workflow_deployment_id=workflow_deployment_id)

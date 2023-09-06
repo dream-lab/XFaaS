@@ -188,7 +188,7 @@ def gen_requirements(user_fns_data):
 
     libs.add('azure-functions')
     libs.add('azure-functions-durable')
-    libs.add('azure-storage-queue==2.1.0')
+    libs.add('azure-storage-queue')
     libs.add('psutil')
     libs.add ('objsize')
     for lib in libs:
