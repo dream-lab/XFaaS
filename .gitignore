@@ -20,7 +20,12 @@ generated_jmx_resources
 generated_shell_scripts
 temp-exp-harness-results/
 scratch/
+*_dyndb_items.json
+archive/
+analysis/
+stashed/
 serwo/examples/graphAwsFourRps
 serwo/examples/graphAwsMedium
 build
+*.jsonl
 log_files

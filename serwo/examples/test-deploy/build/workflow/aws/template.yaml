@@ -1,0 +1,113 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  stepfunctions-template
+  Sample SAM Template for stepfunctions-template
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Tracing: Active
+  Api:
+    TracingEnabled: True
+Outputs:
+  RefactoringTestArn:
+    Description: "Serwo CLI State machine ARN"
+    Value: !Ref RefactoringTest
+  RefactoringTestRoleArn:
+    Description: "IAM Role created for Serwo CLI State machine based on the specified SAM Policy Templates"
+    Value: !GetAtt RefactoringTestRole.Arn
+  ## Output API ##
+  ExecuteApi:
+    Description: "Execute API endpoint"
+    Value: !Sub "https://${ExecuteAPIForWF}.execute-api.${AWS::Region}.amazonaws.com/serwo"
+Resources:
+  RefactoringTest:
+    Type: AWS::Serverless::StateMachine # More info about State Machine Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-statemachine.html
+    Properties:
+      DefinitionUri: statemachine.asl.json
+      DefinitionSubstitutions:
+        TaskAArn: !GetAtt TaskA.Arn
+        PushToStorageQueueArn: !GetAtt PushToStorageQueue.Arn
+        TaskBArn: !GetAtt TaskB.Arn
+        
+
+      Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        - LambdaInvokePolicy:
+            FunctionName: !Ref TaskA
+        - LambdaInvokePolicy:
+            FunctionName: !Ref PushToStorageQueue
+        - LambdaInvokePolicy:
+            FunctionName: !Ref TaskB
+        
+
+  ##########################################################################
+#   REST API                                                             #
+##########################################################################
+  ExecuteAPIForWF:
+     Type: AWS::Serverless::Api
+     Properties:
+        StageName: serwo
+        DefinitionBody: # an OpenApi definition
+          'Fn::Transform':
+            Name: 'AWS::Include'
+            Parameters:
+              Location: api.yaml
+        OpenApiVersion: 3.0.3
+        EndpointConfiguration:
+            Type: REGIONAL
+
+##########################################################################
+#   Roles                                                               #
+##########################################################################
+  ExecuteApiRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - apigateway.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+      - PolicyName: AllowSFNExec
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action: "states:StartExecution"
+              Resource: !GetAtt RefactoringTest.Arn
+
+  TaskA:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/TaskA
+      Handler: standalone_func_runner.lambda_handler
+      Runtime: python3.8
+      MemorySize: 128
+      Timeout: 300
+      Architectures:
+        - x86_64
+  PushToStorageQueue:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/PushToStorageQueue
+      Handler: standalone_push_to_azure_q_runner.lambda_handler
+      Runtime: python3.8
+      MemorySize: 128
+      Timeout: 300
+      Architectures:
+        - x86_64
+  TaskB:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/TaskB
+      Handler: standalone_func_runner.lambda_handler
+      Runtime: python3.8
+      MemorySize: 256
+      Timeout: 300
+      Architectures:
+        - x86_64
+  

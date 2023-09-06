@@ -1,0 +1,17 @@
+[
+    {
+        "OutputKey": "ExecuteApi",
+        "OutputValue": "https://6m4d27g9na.execute-api.ap-south-1.amazonaws.com/serwo",
+        "Description": "Execute API endpoint"
+    },
+    {
+        "OutputKey": "graphSTDynamicRoleArn",
+        "OutputValue": "arn:aws:iam::235319806087:role/XFaaSApp-graphSTDynamic-graphSTDynamicRole-J26Y6GL8WYFF",
+        "Description": "IAM Role created for Serwo CLI State machine based on the specified SAM Policy Templates"
+    },
+    {
+        "OutputKey": "graphSTDynamicArn",
+        "OutputValue": "arn:aws:states:ap-south-1:235319806087:stateMachine:graphSTDynamic-7MmYEhCWx8Lh",
+        "Description": "Serwo CLI State machine ARN"
+    }
+]

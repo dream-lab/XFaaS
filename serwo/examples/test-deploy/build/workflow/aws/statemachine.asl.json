@@ -1,0 +1,50 @@
+{
+    "StartAt": "TaskA",
+    "States": {
+        "TaskA": {
+            "Type": "Task",
+            "Next": "TaskB",
+            "Resource": "${TaskAArn}",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 15,
+                    "MaxAttempts": 5,
+                    "BackoffRate": 1.5
+                }
+            ]
+        },
+        "TaskB": {
+            "Type": "Task",
+            "Next": "PushToStorageQueue",
+            "Resource": "${TaskBArn}",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 15,
+                    "MaxAttempts": 5,
+                    "BackoffRate": 1.5
+                }
+            ]
+        },
+        "PushToStorageQueue": {
+            "Type": "Task",
+            "Resource": "${PushToStorageQueueArn}",
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 15,
+                    "MaxAttempts": 5,
+                    "BackoffRate": 1.5
+                }
+            ],
+            "End": true
+        }
+    }
+}

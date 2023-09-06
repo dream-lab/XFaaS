@@ -1,0 +1,12 @@
+azure-storage-queue==2.1.0
+
+numpy
+
+pillow
+
+azure-functions-durable
+azure-storage-queue==2.1.0
+psutil
+onnxruntime
+
+azure-functions

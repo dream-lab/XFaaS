@@ -12,3 +12,4 @@ azure-mgmt-resource>=18.0.0
 azure-identity>=1.5.0
 azure-storage-blob
 azure-mgmt-storage
+pickle
