@@ -152,7 +152,7 @@ def add_collect_logs(dag_definition_path,user_wf_dir, xfaas_user_dag):
     return fin_dict
     
 def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
-    user_wf_dir += "/workflow-gen"
+    # user_wf_dir += "/workflow-gen"
     dag_definition_path = f"{user_wf_dir}/{dag_definition_file}"
     user_pinned_nodes = get_user_pinned_nodes()
     xfaas_user_dag = xfaas_init.init(dag_definition_path)

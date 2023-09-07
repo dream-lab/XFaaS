@@ -22,36 +22,24 @@ parser.add_argument("--wf-name",dest='wf_name',type=str,help="Workflow name")
 parser.add_argument("--wf-user-directory",dest='wf_user_directory',type=str,help="Workflow user directory")
 parser.add_argument("--path-to-client-config",dest='client_config_path',type=str,help="Path to client config file")
 parser.add_argument("--dag-file-name",dest='dag_filename',type=str,help="DAG FILE NAME")
-
+parser.add_argument("--teardown-flag",dest='teardown_flag',type=bool,help="Tear down application by default true")
+artifact_suffix = 'artifact.json'
 args = parser.parse_args()
 provenance_artifact_filename = None
 deployment_id = ''
-azure_server_ip = ''
-azure_user_id  = ''
-aws_server_ip = ''
-aws_user_id = ''
-aws_key_pem_path = ''
-
+server_ip = None
+server_user_id  = None
+server_pem_file_path = None
 def get_client_login_details(config_path):
-    global azure_server_ip, azure_user_id, aws_server_ip, aws_user_id, aws_key_pem_path
+    global server_ip, server_user_id, server_pem_file_path
     with open(config_path) as f:
         data = json.load(f)
-    azure_server_ip = data['azure_server_ip']
-    azure_user_id = data['azure_user_id']
-    aws_server_ip = data['aws_server_ip']
-    aws_user_id = data['aws_user_id']
+    server_ip = data['server_ip']
+    server_user_id = data['server_user_id']
+    if 'server_pem_file_path' in data:
+        server_pem_file_path = data['server_pem_file_path']
 
-    aws_key_pem_path = data['aws_key_path']
-    # azure_server_ip = '4.240.90.234'
-    # azure_user_id = 'azureuser'
-
-    # aws_server_ip = '65.0.17.98'
-    # aws_user_id = 'ubuntu'
-    # return azure_server_ip,azure_user_id,aws_server_ip,aws_user_id
-
-# azure_server_ip, azure_user_id, aws_server_ip, aws_user_id = get_client_login_details()
-
-azure_shell_script_commands = []
+shell_script_commands = []
 aws_shell_script_commands = []
 
 def read_dynamism_file(dynamism):
@@ -66,7 +54,7 @@ def read_dynamism_file(dynamism):
     return final_data
 
 
-def get_azure_app_url(csp,region,part_id,wf_user_directory):
+def get_azure_resources(csp,region,part_id,wf_user_directory):
     resources = read_resources(csp, region, part_id, wf_user_directory)
     app_name = resources['app_name']
     url = f"https://{app_name}.azurewebsites.net/api/orchestrators/Orchestrate"
@@ -139,24 +127,21 @@ def template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload
     with open(output_path, "w") as f:
         f.write(data)
 
-def make_aws_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url, state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, path_to_pem_file, wf_deployment_id):
+
+def make_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id,run_id):
     jmx_template_path, jmx_output_path,jmx_output_filename = get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism,session_id)
-    template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload_size, jmx_template_path, jmx_output_path, session_id)
-    send_jmx_file_to_aws_server(jmx_output_path,jmx_output_filename, path_to_pem_file)
-    dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id)
-
-
-def make_azure_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id):
-    jmx_template_path, jmx_output_path,jmx_output_filename = get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism,session_id)
-    template_azure_jmx_file(rps, duration, execute_url, payload_size, jmx_template_path, jmx_output_path, session_id)
-    send_jmx_file_to_azure_server(jmx_output_path,jmx_output_filename)
-    dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id)
+    if csp == 'azure':
+       template_azure_jmx_file(rps, duration, execute_url, payload_size, jmx_template_path, jmx_output_path, session_id)
+    else:
+        template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload_size, jmx_template_path, jmx_output_path, session_id)
+    send_jmx_file_to_server(jmx_output_path,jmx_output_filename)
+    dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id,run_id)
 
 
 
-def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region,wf_deployment_id):
+def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region,wf_deployment_id,run_id):
    
-    provenance_artefacts_updated_path = f"{wf_user_directory}/{wf_deployment_id}/provenance-artifacts/{provenance_artifact_filename}"
+    provenance_artefacts_updated_path = f"{wf_user_directory}/{wf_deployment_id}/{run_id}/{artifact_suffix}"
     with open(provenance_artefacts_updated_path) as f:
         provenance_artefacts = json.load(f)
     experiment_conf =  {
@@ -180,20 +165,19 @@ def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, 
         json.dump(provenance_artefacts, f,indent=4)
     
 
-def send_jmx_file_to_aws_server(jmx_output_path,jmx_output_filename, path_to_pem_file):
-    aws_server_jmx_files_dir = f"/home/{aws_user_id}/bigdata-jmx-files"
-    remote_copy_command = f"scp -i {path_to_pem_file} {jmx_output_path} {aws_user_id}@{aws_server_ip}:{aws_server_jmx_files_dir}"
-    os.system(remote_copy_command)
-    experiment_begin_command = f"/home/{aws_user_id}/apache-jmeter-5.5/bin/jmeter -n -t {aws_server_jmx_files_dir}/{jmx_output_filename}  -l {aws_server_jmx_files_dir}/{jmx_output_filename}.jtl"
-    aws_shell_script_commands.append(experiment_begin_command)
-    
+def send_jmx_file_to_server(jmx_output_path,jmx_output_filename):
+    server_jmx_files_dir = f"/home/{server_user_id}/jmx-files"
+    if server_pem_file_path is not None:
+        remote_copy_command = f"scp -i {server_pem_file_path} {jmx_output_path} {server_user_id}@{server_ip}:{server_jmx_files_dir}"
+        remote_mkdir_command = f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} mkdir -p /home/{server_user_id}/jmx-files"
+    else:
+        remote_mkdir_command = f"ssh {server_user_id}@{server_ip} mkdir -p /home/{server_user_id}/jmx-files"
+        remote_copy_command = f"scp {jmx_output_path} {server_user_id}@{server_ip}:{server_jmx_files_dir}"
 
-def send_jmx_file_to_azure_server(jmx_output_path,jmx_output_filename):
-    azure_server_jmx_files_dir = f"/home/{azure_user_id}/bigdata-jmx-files"
-    remote_copy_command = f"scp {jmx_output_path} {azure_user_id}@{azure_server_ip}:{azure_server_jmx_files_dir}"
+    os.system(remote_mkdir_command)
     os.system(remote_copy_command)
-    experiment_begin_command = f"/home/{azure_user_id}/apache-jmeter-5.4.3/bin/jmeter -n -t {azure_server_jmx_files_dir}/{jmx_output_filename}  -l {azure_server_jmx_files_dir}/{jmx_output_filename}.jtl"
-    azure_shell_script_commands.append(experiment_begin_command)
+    experiment_begin_command = f"/home/{server_user_id}/apache-jmeter-5.6.2/bin/jmeter -n -t {server_jmx_files_dir}/{jmx_output_filename}  -l {server_jmx_files_dir}/{jmx_output_filename}.jtl"
+    shell_script_commands.append(experiment_begin_command)
     
     
 
@@ -204,123 +188,116 @@ def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_i
     return jmx_template_path,jmx_output_path,jmx_output_filename
 
 
-def generate_azure_shell_script_and_scp(payload_size, wf_name, rps, duration,dynamism):
+def generate_shell_script_and_scp(payload_size, wf_name, rps, duration,dynamism):
     shell_file_name  = f"azure-{payload_size}-{wf_name}-{rps}-{duration}-{dynamism}.sh"
     output_path = pathlib.Path(__file__).parent / f"benchmark_resources/generated_shell_scripts/{shell_file_name}"
     code = "#!/bin/sh\n"
-    for command in azure_shell_script_commands:
+    for command in shell_script_commands:
         code += command + "\n"
         # code += "sleep 20\n"
     with open(output_path, "w") as f:
         f.write(code)
-    os.system(f"scp {output_path} {azure_user_id}@{azure_server_ip}:shell_scripts/")
-    os.system(f"ssh {azure_user_id}@{azure_server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
-    os.system(f"ssh {azure_user_id}@{azure_server_ip} ./shell_scripts/{shell_file_name}")
+    
+    if server_pem_file_path is not None:
+        # mkdir if not exists
+        os.system(f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} mkdir -p shell_scripts")
+        os.system(f"scp -i {server_pem_file_path} {output_path} {server_user_id}@{server_ip}:shell_scripts/")
+        os.system(f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
+        os.system(f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
+    else:
+        # mkdir if not exists
+        os.system(f"ssh {server_user_id}@{server_ip} mkdir -p shell_scripts")
+        os.system(f"scp {output_path} {server_user_id}@{server_ip}:shell_scripts/")
+        os.system(f"ssh {server_user_id}@{server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
+        os.system(f"ssh {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
     
 
-def generate_aws_shell_script_and_scp(payload_size, wf_name, rps, duration,dynamism):
-    shell_file_name  = f"aws-{payload_size}-{wf_name}-{rps}-{duration}-{dynamism}.sh"
-    output_path = pathlib.Path(__file__).parent / f"benchmark_resources/generated_shell_scripts/{shell_file_name}"
-    code = "#!/bin/sh\n"
-    for command in aws_shell_script_commands:
-        code += command + "\n"
-        # code += "sleep 20\n"
-    with open(output_path, "w") as f:
-        f.write(code)
-    os.system(f"scp -i {path_to_pem_file} {output_path} {aws_user_id}@{aws_server_ip}:shell_scripts/")
-    os.system(f"ssh -i {path_to_pem_file} {aws_user_id}@{aws_server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
+def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory, wf_deployment_id,run_id):
+
+    copy_provenance_artifacts(csp, region, part_id, wf_user_directory, wf_deployment_id,max_rps,run_id)
     
-    os.system(f"ssh -i {path_to_pem_file} {aws_user_id}@{aws_server_ip} ./shell_scripts/{shell_file_name}")
-
-
-def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,path_to_pem_file, wf_deployment_id):
-    copy_provenance_artifacts(csp, region, part_id, wf_user_directory, wf_deployment_id,max_rps)
-    saw_tooth = [(8,1),(8,2),(8,3),(8,4),(8,5),(8,6),(8,7),(8,8)]
     dynamism_data = read_dynamism_file(dynamism)
     if csp == 'azure':
-        execute_url = get_azure_app_url(csp,region,part_id,wf_user_directory)
-        
-        dynamism_updated = dynamism
-
-        if dynamism == 'sawtooth':
-            dynamism_updated = "st"
-        elif dynamism == 'alibaba':
-            dynamism_updated = "a"
-        elif dynamism == 'step-up':
-            dynamism_updated = "su"
-        elif dynamism == 'google':
-            dynamism_updated = "g"
-
-        session_id = dynamism_updated + payload_size
-        i = 1
-        for d in dynamism_data:
-            duration_fraction = d[0]
-            rps_fraction = d[1]
-            ne_session_id = session_id + str(i)
-            if "sawtooth" == dynamism or "alibaba"  == dynamism :
-                make_azure_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region, wf_deployment_id )
-            else:
-                make_azure_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id)
-            
-            i += 1
-        generate_azure_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction,dynamism)
-
-
+        execute_url = get_azure_resources(csp,region,part_id,wf_user_directory)
+        state_machine_arn = ''
     elif csp == 'aws':
-        dynamism_updated = dynamism
-
-        if dynamism == 'sawtooth':
-            dynamism_updated = "st"
-        elif dynamism == 'alibaba':
-            dynamism_updated = "a"
-        elif dynamism == 'step-up':
-            dynamism_updated = "su"
-        elif dynamism == 'google':
-            dynamism_updated = "g"
-
-        session_id = dynamism_updated + payload_size 
-
         execute_url, state_machine_arn = get_aws_resources(csp,region,part_id,wf_user_directory)
-        i =  1
-        for d in dynamism_data:
-            duration_fraction = d[0]
-            rps_fraction = d[1]
-            ne_session_id = session_id + str(i)
-            if "sawtooth" == dynamism or "alibaba" == dynamism:
-                make_aws_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file, wf_deployment_id)
-            else:
-                make_aws_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, path_to_pem_file, wf_deployment_id)
 
-            
-            i += 1
-        generate_aws_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction,dynamism)
 
-def copy_provenance_artifacts(csp, region, part_id, wf_user_directory,wf_deployment_id,rps):
-    ## make a directory provenance-artifacts in the user workflow directory
-    ## copy the provenance artifacts from the build directory to the user workflow directory
+    dynamism_updated = dynamism
+
+    if dynamism == 'sawtooth':
+        dynamism_updated = "st"
+    elif dynamism == 'alibaba':
+        dynamism_updated = "a"
+    elif dynamism == 'step-up':
+        dynamism_updated = "su"
+    elif dynamism == 'google':
+        dynamism_updated = "g"
+
+    session_id = dynamism_updated + payload_size
+    i = 1
+    for d in dynamism_data:
+        duration_fraction = d[0]
+        rps_fraction = d[1]
+        ne_session_id = session_id + str(i)
+        if "sawtooth" == dynamism or "alibaba"  == dynamism :
+            ## null state machine arn for azure
+            make_jmx_file(csp, rps_fraction * 60.0, duration_fraction, payload_size, wf_name, execute_url, state_machine_arn,dynamism, ne_session_id, wf_user_directory, part_id, region, wf_deployment_id,run_id )
+        else:
+            make_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url,state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id)
+        
+        i += 1
+    generate_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction,dynamism)
+
+
+def copy_provenance_artifacts(csp, region, part_id, wf_user_directory,wf_deployment_id,rps,run_id):
+    
     global deployment_id
-    os.makedirs(f"{wf_user_directory}/{wf_deployment_id}/provenance-artifacts", exist_ok=True)
+    
+    os.makedirs(f"{wf_user_directory}/{wf_deployment_id}/{run_id}", exist_ok=True)
     provenance_artefacts_path = f"{wf_user_directory}/build/workflow/resources/provenance-artifacts-{csp}-{region}-{part_id}.json"
     with open(provenance_artefacts_path) as f:
         provenance_artifact = json.load(f)
     deployment_id = provenance_artifact['deployment_id']
 
-    provenance_artefacts_updated_path = f"{wf_user_directory}/{wf_deployment_id}/provenance-artifacts/{provenance_artifact_filename}"
+    provenance_artefacts_updated_path = f"{wf_user_directory}/{wf_deployment_id}/{run_id}/{artifact_suffix}"
    
     shutil.copyfile(provenance_artefacts_path, provenance_artefacts_updated_path)
         
     
 def deploy_workflow(user_wf_dir,dag_filename, region,csp):
-    
     wf_id, refactored_wf_id, wf_deployment_id = xfaas_deployer(user_wf_dir, dag_filename ,'dag-benchmark-revised.json',csp,region)
     return wf_id, refactored_wf_id, wf_deployment_id
 
 def plot_metrics(user_wf_dir, artificats_filename):
-    # os.chdir('..')
     command = f'python3 xfaas_benchmarksuite_plotgen_vk.py --user-dir {user_wf_dir} --artifacts-file {artificats_filename}.json  --interleaved True --format pdf --out-dir {artificats_filename}-long'
     os.system(command)
 
-    
+
+def remote_teardown(wf_user_directory,csp,region,part_id):
+    if csp == 'aws':
+        pass
+    elif csp == 'azure':
+        resource_path = f"{wf_user_directory}/build/workflow/resources/{csp}-{region}-{part_id}.json"
+        with open(resource_path) as f:
+            resource = json.load(f)
+        resource_group_name = resource['group']
+        remove_resource_group_command = f"az group delete --name {resource_group_name} --yes"
+        os.system(remove_resource_group_command)
+
+
+def local_teardown(wf_user_directory):
+    remove_build_command = f"rm -rf {wf_user_directory}/build"
+    remove_collect_logs_command = f"rm -rf {wf_user_directory}/CollectLogs"
+    remove_refactored_dag_command = f"rm -rf {wf_user_directory}/refactored-dag.json"
+    remove_orchestrator_command = f"rm -rf {wf_user_directory}/orchestrator.py"
+
+    os.system(remove_build_command)
+    os.system(remove_collect_logs_command)
+    os.system(remove_refactored_dag_command)
+    os.system(remove_orchestrator_command)
+
 
 if __name__ == "__main__":
     
@@ -336,21 +313,29 @@ if __name__ == "__main__":
     wf_user_directory = args.wf_user_directory+"/workflow-gen"
     path_to_config_file = args.client_config_path
     dag_filename = args.dag_filename
+    teardown_flag = args.teardown_flag
     provenance_artifact_filename = f"{csp}-{dynamism}-{payload_size}-{max_rps}rps.json"
     get_client_login_details(path_to_config_file)
-    path_to_pem_file = aws_key_pem_path
-
-    ## do an ls in aws client
-
+    run_id = 'exp1'
     
-    # print('==================DEPLOYING WF===========================')
-    # wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
-    # time.sleep(20)
-    # print('==================RUNNING WF===========================')
-    wf_deployment_id = "fb895579-69d6-4573-aff6-5f0f596914b9"
-    run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,path_to_pem_file,wf_deployment_id)
+    print('==================DEPLOYING WF===========================')
+    wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
+    time.sleep(20)
+    wf_deployment_id = "e19994ec-4841-4bad-81ce-71fafdf206ca"
+    print('==================RUNNING WF===========================')
+    run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
     time.sleep(20)
     # print('==================PLOTTING METRICS===========================')
     # plot_metrics(wf_user_directory,provenance_artifact_filename)
 
+    # print('==================TEARING DOWN WF===========================')
 
+    if teardown_flag == True:
+        remote_teardown(wf_user_directory,csp,region,part_id)
+    local_teardown(wf_user_directory)
+
+
+
+
+
+#xfaasgraphNetherite544630
