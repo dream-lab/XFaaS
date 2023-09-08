@@ -1,6 +1,0 @@
-{
-    "server_ip": "ec2-65-0-17-98.ap-south-1.compute.amazonaws.com",
-    "server_user_id" : "ubuntu",
-    "server_pem_file_path":"/Users/varad.kulkarni/aws-key-pems/lambda-stress-test-client-key.cer"
-
-}

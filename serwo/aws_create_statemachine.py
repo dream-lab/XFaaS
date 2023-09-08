@@ -5,14 +5,14 @@ import pathlib
 import shutil
 import traceback
 from jinja2 import Environment, FileSystemLoader
-
+import json
 # Serwo imports
 import python.src.utils.generators.aws.sfn_yaml_generator as AWSSfnYamlGenerator
 import python.src.utils.generators.aws.sfn_asl_generator as AWSSfnAslBuilder
 from python.src.utils.classes.aws.user_dag import UserDag as AWSUserDag
 from python.src.utils.classes.aws.trigger_types import TriggerType
 from python.src.utils.classes.commons.logger import LoggerFactory
-
+import random
 logger = LoggerFactory.get_logger(__file__, log_level="INFO")
 
 
@@ -63,7 +63,9 @@ class AWS:
         # DAG related parameters
         self.__user_dag = AWSUserDag(self.__dag_definition_path)
         self.__sam_stackname = (
-            "XFaaSApp-" + self.__user_dag.get_user_dag_name()
+            ##random 3 digit number
+
+            "XFaaSApp-" + self.__user_dag.get_user_dag_name() + str(random.randint(100, 999))
         )  # TODO - add nonce here
 
         # TODO - convert this aws-clouformation-outputs -> self.__getname() + self.__region + self.__part_id
@@ -410,6 +412,13 @@ class AWS:
             --query "Stacks[0].Outputs" \
             --output json > {self.__outputs_filepath}'
         )
+
+        ## add sam stack name to ouput filepat
+        with open(self.__outputs_filepath, "r") as f:
+            data = json.load(f)
+        data.append({"OutputKey": "SAMStackName", "OutputValue": self.__sam_stackname, "Description": "SAM Stack Name"})
+        with open(self.__outputs_filepath, "w") as f:
+            json.dump(data, f, indent=4)
 
         return self.__outputs_filepath
 

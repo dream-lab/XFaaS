@@ -6,6 +6,7 @@ import os
 import shutil
 from xfaas_main import run as xfaas_deployer
 import time
+import build_wf as wf_builder
 
 parser = argparse.ArgumentParser(
     prog="ProgramName",
@@ -21,6 +22,7 @@ parser.add_argument("--dynamism",dest='dynamism',type=str,help="Dynamism: Values
 parser.add_argument("--wf-name",dest='wf_name',type=str,help="Workflow name")
 parser.add_argument("--wf-user-directory",dest='wf_user_directory',type=str,help="Workflow user directory")
 parser.add_argument("--path-to-client-config",dest='client_config_path',type=str,help="Path to client config file")
+parser.add_argument("--client-key",dest='client_key',type=str,help="Key of client to pick from client config file")
 parser.add_argument("--dag-file-name",dest='dag_filename',type=str,help="DAG FILE NAME")
 parser.add_argument("--teardown-flag",dest='teardown_flag',type=bool,help="Tear down application by default true")
 artifact_suffix = 'artifact.json'
@@ -34,6 +36,7 @@ def get_client_login_details(config_path):
     global server_ip, server_user_id, server_pem_file_path
     with open(config_path) as f:
         data = json.load(f)
+    data = data[args.client_key]
     server_ip = data['server_ip']
     server_user_id = data['server_user_id']
     if 'server_pem_file_path' in data:
@@ -265,6 +268,9 @@ def copy_provenance_artifacts(csp, region, part_id, wf_user_directory,wf_deploym
    
     shutil.copyfile(provenance_artefacts_path, provenance_artefacts_updated_path)
         
+
+def build_workflow(user_wf_dir):
+    wf_builder.build(user_wf_dir)
     
 def deploy_workflow(user_wf_dir,dag_filename, region,csp):
     wf_id, refactored_wf_id, wf_deployment_id = xfaas_deployer(user_wf_dir, dag_filename ,'dag-benchmark-revised.json',csp,region)
@@ -273,6 +279,7 @@ def deploy_workflow(user_wf_dir,dag_filename, region,csp):
 def plot_metrics(user_wf_dir, artificats_filename):
     command = f'python3 xfaas_benchmarksuite_plotgen_vk.py --user-dir {user_wf_dir} --artifacts-file {artificats_filename}.json  --interleaved True --format pdf --out-dir {artificats_filename}-long'
     os.system(command)
+
 
 
 def remote_teardown(wf_user_directory,csp,region,part_id):
@@ -285,6 +292,7 @@ def remote_teardown(wf_user_directory,csp,region,part_id):
         resource_group_name = resource['group']
         remove_resource_group_command = f"az group delete --name {resource_group_name} --yes"
         os.system(remove_resource_group_command)
+
 
 
 def local_teardown(wf_user_directory):
@@ -310,32 +318,34 @@ if __name__ == "__main__":
     payload_size = args.payload_size
     dynamism = args.dynamism
     wf_name = args.wf_name
-    wf_user_directory = args.wf_user_directory+"/workflow-gen"
+    wf_user_directory = args.wf_user_directory
     path_to_config_file = args.client_config_path
     dag_filename = args.dag_filename
     teardown_flag = args.teardown_flag
     provenance_artifact_filename = f"{csp}-{dynamism}-{payload_size}-{max_rps}rps.json"
     get_client_login_details(path_to_config_file)
     run_id = 'exp1'
+    print('==================BUILDING WF===========================')
+    build_workflow(wf_user_directory)
+    time.sleep(20)
     
+    wf_user_directory += "/workflow-gen"
     print('==================DEPLOYING WF===========================')
     wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
     time.sleep(20)
-    wf_deployment_id = "e19994ec-4841-4bad-81ce-71fafdf206ca"
+    # wf_deployment_id = "e19994ec-4841-4bad-81ce-71fafdf206ca"
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
     time.sleep(20)
-    # print('==================PLOTTING METRICS===========================')
-    # plot_metrics(wf_user_directory,provenance_artifact_filename)
+    # # print('==================PLOTTING METRICS===========================')
+    # # plot_metrics(wf_user_directory,provenance_artifact_filename)
 
-    # print('==================TEARING DOWN WF===========================')
+    # # print('==================TEARING DOWN WF===========================')
 
     if teardown_flag == True:
         remote_teardown(wf_user_directory,csp,region,part_id)
+    time.sleep(20)
     local_teardown(wf_user_directory)
 
 
 
-
-
-#xfaasgraphNetherite544630

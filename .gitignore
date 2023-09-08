@@ -29,3 +29,4 @@ serwo/examples/graphAwsMedium
 build
 *.jsonl
 log_files
+serwo/config
