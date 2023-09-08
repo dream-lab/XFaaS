@@ -13,6 +13,7 @@ from azure.storage.queue import QueueServiceClient
 from azure.storage.blob import BlobServiceClient
 
 queue_name = 'serwo-ingress'
+netherite_namespace = 'netheriteNamespace'
 
 
 def get_user_workflow_name(dag_definition_path):
@@ -20,7 +21,7 @@ def get_user_workflow_name(dag_definition_path):
     user_app_name = data['WorkflowName']
     return user_app_name
 
-def create_resources(resource_dir, out_file_path, region):
+def create_resources(resource_dir, out_file_path, region,is_netherite):
     credential = DefaultAzureCredential()
     subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
     resource_client = ResourceManagementClient(credential, subscription_id)
@@ -61,7 +62,26 @@ def create_resources(resource_dir, out_file_path, region):
         print(e)
 
     jsson = json.loads(json_str)
-    fin_dict = {'queue_name' : queue_name, 'connection_string' : jsson['connectionString'] , 'storage_account' : storage_account_name, 'group':resource_group_name}
+    if is_netherite:
+        ## create eventhubs namespace
+        try:
+            stream = os.popen(f'az eventhubs namespace create --name {netherite_namespace} --resource-group {resource_group_name} --location {region}')
+            json_str = stream.read()
+            stream.close()
+        except Exception as e:
+            print(e)
+
+        ## get connection string for eventhubs namespace
+        try:
+            stream = os.popen(f'az eventhubs namespace authorization-rule keys list --name RootManageSharedAccessKey --namespace-name {netherite_namespace} --resource-group {resource_group_name}')
+            json_str = stream.read()
+            stream.close()
+        except Exception as e:
+            print(e)
+        event_hubs_connection_string = json.loads(json_str)['primaryConnectionString']
+        fin_dict = {'queue_name' : queue_name, 'connection_string' : jsson['connectionString'] , 'storage_account' : storage_account_name, 'group':resource_group_name,'event_hub_namespace':netherite_namespace,'event_hubs_connection_string': event_hubs_connection_string}
+    else:
+        fin_dict = {'queue_name' : queue_name, 'connection_string' : jsson['connectionString'] , 'storage_account' : storage_account_name, 'group':resource_group_name}
 
     if not os.path.exists(resource_dir):
         os.makedirs(resource_dir)
@@ -69,11 +89,14 @@ def create_resources(resource_dir, out_file_path, region):
         json.dump(fin_dict, f)
 
 
-def generate(user_dir, dag_definition_path,region,part_id):
+def generate(user_dir, dag_definition_path,region,part_id, is_netherite):
     global resource_group_name, storage_account_name
 
     resource_dir = f"{user_dir}/build/workflow/resources"
-    out_file_path = f'{resource_dir}/azure-{region}-{part_id}.json'
+    if is_netherite:
+        out_file_path = f'{resource_dir}/azure_v2-{region}-{part_id}.json'
+    else:
+        out_file_path = f'{resource_dir}/azure-{region}-{part_id}.json'
 
     if os.path.exists(out_file_path):
         return
@@ -82,6 +105,6 @@ def generate(user_dir, dag_definition_path,region,part_id):
     xd = randint(10000, 99999)
     storage_account_name = f'serwoa{xd}'
     try:
-        create_resources(resource_dir,out_file_path,region)
+        create_resources(resource_dir,out_file_path,region,is_netherite)
     except Exception as e:
         print(f'Exception thrown: {e}')

@@ -23,7 +23,7 @@ part_id = ""
 
 
 def init_paths():
-    global user_dag_file_name, xfaas_working_directory, user_workflow_directory, resource_dir, build_dir, resources_json, az_functions_path, obj_dir_str, host_json_path, local_settings_path, function_json, serwo_object, starter_path, orchestrator_path, queue_trigger_path, runner_template_file_secondary, runner_template_temp_dir
+    global user_dag_file_name, xfaas_working_directory, user_workflow_directory, resource_dir, build_dir, resources_json, az_functions_path, obj_dir_str, host_json_path,host_json_path_netherite, local_settings_path, function_json, serwo_object, starter_path, orchestrator_path, queue_trigger_path, runner_template_file_secondary, runner_template_temp_dir
     # User and Azure Build Paths
     user_dag_file_name = DAG_DEFINITION_FILE
     xfaas_working_directory = pathlib.Path(__file__).parent.absolute().parent.absolute().parent
@@ -37,6 +37,7 @@ def init_paths():
     obj_dir_str = 'python/src/utils/classes/commons'
     json_templates_base = f'{xfaas_working_directory}/templates/azure/json-templates'
     host_json_path = json_templates_base + '/' + 'host.json'
+    host_json_path_netherite = json_templates_base + '/' + 'host-v2.json'
     local_settings_path = json_templates_base + '/' + 'local.settings.json'
     function_json = json_templates_base + '/' + 'function.json'
     serwo_object = f'{xfaas_working_directory}/python/src/utils/classes/commons/serwo_objects.py'
@@ -52,11 +53,15 @@ def init_paths():
 
 
 
-def build_working_dir(region,part_id):
+def build_working_dir(region,part_id,is_netherite):
 
     global az_functions_path,build_dir
     dummy, user_workflow_name = get_user_workflow_details()
-    build_dir += f"azure-{region}-{part_id}"
+
+    if is_netherite:
+        build_dir += f"azure_v2-{region}-{part_id}"
+    else:
+        build_dir += f"azure-{region}-{part_id}"
     az_functions_path=f"{build_dir}/{user_workflow_name}"
     if not os.path.exists(az_functions_path):
         os.makedirs(az_functions_path)
@@ -142,8 +147,11 @@ def template_queue_trigger(user_app_name):
         print("Error in flushing queue trigger function")
 
 
-def copy_meta_files(user_fns_data,ingress_queue_name,user_app_name):
-    shutil.copyfile(host_json_path,az_functions_path+'/host.json')
+def copy_meta_files(user_fns_data,ingress_queue_name,user_app_name,is_netherite):
+    if is_netherite:
+        shutil.copyfile(host_json_path_netherite,az_functions_path+'/host.json')
+    else:
+        shutil.copyfile(host_json_path,az_functions_path+'/host.json')
     shutil.copyfile(local_settings_path,az_functions_path+'/local.settings.json')
     for fn in user_fns_data:
         name = fn['NodeName']
@@ -304,9 +312,12 @@ def re_written_generator(user_fns_data):
         remove(f"{path}")
         remove(f"{runner_template_file_secondary}")
 
-def generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,region,part_id):
+def generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,region,part_id,is_netherite):
     global resources_json
-    resources_json += f"azure-{region}-{part_id}.json"
+    if is_netherite:
+        resources_json += f"azure_v2-{region}-{part_id}.json"
+    else:
+        resources_json += f"azure-{region}-{part_id}.json"
     xd = randint(100000, 999999)
     app_name = f'xfaas{user_app_name}{xd}'
     f = open(resources_json,'r')
@@ -321,17 +332,17 @@ def generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,regi
     return data['queue_name'],data['app_name']
 
 
-def build(user_dir, dag_definition_file, region, part_id,):
+def build(user_dir, dag_definition_file, region, part_id,is_netherite):
     global USER_DIR,DAG_DEFINITION_FILE
 
     USER_DIR = user_dir
     DAG_DEFINITION_FILE = dag_definition_file
     init_paths()
-    build_working_dir(region,part_id)
+    build_working_dir(region,part_id,is_netherite)
     user_fns_data, user_app_name = get_user_workflow_details()
-    ingress_queue_name, app_name = generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,region,part_id)
+    ingress_queue_name, app_name = generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,region,part_id,is_netherite)
     build_user_fn_dirs(user_fns_data)
-    copy_meta_files(user_fns_data,ingress_queue_name,app_name)
+    copy_meta_files(user_fns_data,ingress_queue_name,app_name,is_netherite)
     gen_requirements(user_fns_data)
     re_written_generator(user_fns_data)
 
@@ -341,5 +352,6 @@ if __name__ == '__main__':
     dag_definition_file = sys.argv[2]
     region = sys.argv[3]
     part_id = sys.argv[4]
+    is_netherite = sys.argv[5]
 
-    build(user_dir,dag_definition_file,region,part_id)
+    build(user_dir,dag_definition_file,region,part_id,is_netherite)

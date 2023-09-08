@@ -133,7 +133,7 @@ def template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload
 
 def make_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id,run_id):
     jmx_template_path, jmx_output_path,jmx_output_filename = get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism,session_id)
-    if csp == 'azure':
+    if 'azure' in csp:
        template_azure_jmx_file(rps, duration, execute_url, payload_size, jmx_template_path, jmx_output_path, session_id)
     else:
         template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload_size, jmx_template_path, jmx_output_path, session_id)
@@ -185,14 +185,14 @@ def send_jmx_file_to_server(jmx_output_path,jmx_output_filename):
     
 
 def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_id):
-    jmx_template_path = pathlib.Path(__file__).parent / f"benchmark_resources/workflows/{wf_name}/payload/{payload_size}/{csp}/jmx_template.jmx"
+    jmx_template_path = pathlib.Path(__file__).parent / f"benchmark_resources/workflows/{wf_name}/payload/{payload_size}/{csp.split('_')[0]}/jmx_template.jmx"
     jmx_output_filename = f"{csp}-{wf_name}-{payload_size}-{dynamism}-{int(rps/60)}-{int(duration)}-session-{session_id}.jmx"
     jmx_output_path  = pathlib.Path(__file__).parent / f"benchmark_resources/generated_jmx_resources/{jmx_output_filename}"
     return jmx_template_path,jmx_output_path,jmx_output_filename
 
 
-def generate_shell_script_and_scp(payload_size, wf_name, rps, duration,dynamism):
-    shell_file_name  = f"azure-{payload_size}-{wf_name}-{rps}-{duration}-{dynamism}.sh"
+def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynamism):
+    shell_file_name  = f"{csp}-{payload_size}-{wf_name}-{rps}-{duration}-{dynamism}.sh"
     output_path = pathlib.Path(__file__).parent / f"benchmark_resources/generated_shell_scripts/{shell_file_name}"
     code = "#!/bin/sh\n"
     for command in shell_script_commands:
@@ -220,7 +220,7 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
     copy_provenance_artifacts(csp, region, part_id, wf_user_directory, wf_deployment_id,max_rps,run_id)
     
     dynamism_data = read_dynamism_file(dynamism)
-    if csp == 'azure':
+    if 'azure' in csp:
         execute_url = get_azure_resources(csp,region,part_id,wf_user_directory)
         state_machine_arn = ''
     elif csp == 'aws':
@@ -251,7 +251,7 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
             make_jmx_file(csp, rps_fraction * max_rps * 60.0, duration*duration_fraction, payload_size, wf_name, execute_url,state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id)
         
         i += 1
-    generate_shell_script_and_scp(payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction,dynamism)
+    generate_shell_script_and_scp(csp,payload_size, wf_name, rps_fraction * max_rps, duration*duration_fraction,dynamism)
 
 
 def copy_provenance_artifacts(csp, region, part_id, wf_user_directory,wf_deployment_id,rps,run_id):
@@ -285,7 +285,7 @@ def plot_metrics(user_wf_dir, artificats_filename):
 def remote_teardown(wf_user_directory,csp,region,part_id):
     if csp == 'aws':
         pass
-    elif csp == 'azure':
+    elif 'azure' in csp:
         resource_path = f"{wf_user_directory}/build/workflow/resources/{csp}-{region}-{part_id}.json"
         with open(resource_path) as f:
             resource = json.load(f)
@@ -328,12 +328,16 @@ if __name__ == "__main__":
     print('==================BUILDING WF===========================')
     build_workflow(wf_user_directory)
     time.sleep(20)
-    
     wf_user_directory += "/workflow-gen"
+    
+    
+    
     print('==================DEPLOYING WF===========================')
     wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
     time.sleep(20)
-    # wf_deployment_id = "e19994ec-4841-4bad-81ce-71fafdf206ca"
+    
+    
+    
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
     time.sleep(20)
@@ -342,6 +346,7 @@ if __name__ == "__main__":
 
     # # print('==================TEARING DOWN WF===========================')
 
+    
     if teardown_flag == True:
         remote_teardown(wf_user_directory,csp,region,part_id)
     time.sleep(20)
