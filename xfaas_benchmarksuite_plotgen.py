@@ -368,86 +368,6 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
         for eId, edge_exec_dist in sorted(timings["interfunction_timings"].items()):
             distribution_dict["edges"][eId] += [x/1000 for x in edge_exec_dist]
 
-    # iterate over sorted keys on 'functions', 'edges' and plot boxes
-    def plot_func_exec_box():
-        fig, ax = plt.subplots()
-        fig.set_dpi(400)
-        fontdict = {'size': 12}
-
-        ax.set_xlabel("Function ID", fontdict=fontdict)
-        ax.set_ylabel("Exec Time (sec)", fontdict=fontdict)
-        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
-
-
-        function_labels = [str(l) for l in sorted([int(x) for x in distribution_dict["functions"]])]
-        logger.info(function_labels)
-        function_data = [np.array(distribution_dict["functions"][f"{x}"]) for x in function_labels]
-        
-        # rectangular box plot
-        bplot1 = ax.boxplot(function_data,
-                            vert=True,  # vertical box alignment
-                            patch_artist=True,  # fill with color
-                            labels=function_labels,
-                            showfliers=False)
-        
-        ax.set_xticklabels(function_labels, 
-                           fontdict=fontdict)    
-        ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
-
-        color_node = 'lightblue'
-        for patch in bplot1['boxes']:
-            patch.set_facecolor(color_node)
-
-        # NOTE - uncomment this for default
-        # ymax = 0.25
-        ax.set_ylim(ymin=0)
-        ax.grid(axis="y", which="major", linestyle="-", color="black")
-        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
-        ax.set_axisbelow(True)
-
-        fig.savefig(plots_path / f"fn_exec_box_{wf_name}_{csp}_{dynamism}_{payload}.{format}", bbox_inches='tight')
-
-        # plt.show()
-    
-    def plot_edge_exec_box():
-        fig, ax = plt.subplots()
-        fig.set_dpi(400)
-        fontdict = {'size': 12}
-
-        ax.set_xlabel("Edge ID", fontdict=fontdict)
-        ax.set_ylabel("Exec Time (sec)", fontdict=fontdict)
-        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
-        
-        # TODO - plot edge later
-        interfunction_labels = list([f"{u}-{v}" for u,v in xfaas_dag.edges])
-        logger.info(f"Interfunction Labels - {interfunction_labels}")
-        interfunction_data = [np.array(distribution_dict["edges"][f"{x}"]) for x in interfunction_labels]
-        
-        # rectangular box plot
-        bplot1 = ax.boxplot(interfunction_data,
-                            vert=True,  # vertical box alignment
-                            patch_artist=True,
-                            showfliers=False)  # fill with color
-                            # labels=interfunction_labels)
-        
-        ax.set_xticklabels(interfunction_labels, 
-                           rotation=90,
-                           fontdict=fontdict)
-        
-        ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
-
-        color_node = 'lightgreen'
-        for patch in bplot1['boxes']:
-            patch.set_facecolor(color_node)
-
-        ax.set_ylim(ymin=0)
-        ax.grid(axis="y", which="major", linestyle="-", color="black")
-        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
-        ax.set_axisbelow(True)
-
-        fig.savefig(plots_path / f"edge_exec_box_{wf_name}_{csp}_{dynamism}_{payload}.{format}", bbox_inches='tight')
-        # plt.show()
-
     def plot_interleaved():
         fig, ax = plt.subplots()
         fig.set_dpi(450)
@@ -489,16 +409,6 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
                 return np.array(distribution_dict["edges"][id])
             else:
                 return np.array(distribution_dict["functions"][id])
-
-        #
-        # def get_cumm_time_func(time_map, num_iters):
-        #     cumm_time = []
-        #     for idx in range(0, num_iters):
-        #         temp = []
-        #         for key in time_map.keys():
-        #             temp.append(time_map[key][idx])
-        #         cumm_time.append(temp)
-        #     return np.array([sum(x) for x in cumm_time])
         
 
         # Function to enumerate on all paths - 
@@ -556,40 +466,6 @@ def plot_box_plots(xfaas_dag, timings_all_sessions, e2e_all_sessions):
                 e2e_time.append(max(temp))
 
             return cumm_function_exec,cumm_comm_time,e2e_time
-        
-        # DEPRECATED
-        # def get_cumm_time_edge(time_map, edge_set, num_iters):
-        #     s_time_textprocessing = [['1', '2', '12', '22'], ['1', '3', '13', '22'], ['1', '4', '14', '22'], ['1', '5', '15', '22'], ['1', '6', '16', '22'], ['1', '7', '17', '22'], ['1', '8', '18', '22'], ['1', '9', '19', '22'], ['1', '10', '20', '22']]
-        #     s_time_graph = [['1', '2', '5'], ['1', '3', '5'], ['1', '4', '5']]
-
-        #     cumm_time = []
-        #     s_time = s_time_graph # Change this variable according to the workflow
-        #     for idx in range(0, num_iters):
-        #         maxval = -1
-        #         mx = []
-        #         for it in s_time:
-        #             tme = 0
-        #             for i in range(0,len(it)-1):
-        #                 edge = f'{it[i]}-{it[i+1]}'
-        #                 tme += time_map[edge][idx]
-        #             mx.append(tme)
-        #         maxval = max(mx)
-        #         # for key in edge_set:
-        #         #     if time_map[key][idx] > maxval:
-        #         #         maxval = time_map[key][idx]
-        #         cumm_time.append(maxval)
-        #     return cumm_time
-
-        # DEPRECATED
-        # def get_cumm_time_edge(time_map, edge_set, num_iters):
-        #     cumm_time = []
-        #     for idx in range(0, num_iters):
-        #         maxval = -1
-        #         for key in edge_set:
-        #             if time_map[key][idx] > maxval:
-        #                 maxval = time_map[key][idx]
-        #         cumm_time.append(maxval)
-        #     return cumm_time
 
         # create some sort of an ordered labels for the interleaved plot
         for u in xfaas_dag.nodes:
@@ -763,11 +639,11 @@ def plotter(workflow_deployment_id, experiment_conf):
     # NOTE - that the e2e_timings all sessions are in milliseconds here 
     # The plotting part is where we do a /1000 for convert to seconds
     # plot e2e timeline
-    # plot_e2e_timeline(
-    #     e2e_all_sessions=get_timings_real(dynamo_items=dynamo_items),
-    #     time_marker_sessions=time_marker_sessions,
-    #     timeline=timeline
-    # )
+    plot_e2e_timeline(
+        e2e_all_sessions=get_timings_real(dynamo_items=dynamo_items),
+        time_marker_sessions=time_marker_sessions,
+        timeline=timeline
+    )
 
     # plot box plots
     plot_box_plots(
