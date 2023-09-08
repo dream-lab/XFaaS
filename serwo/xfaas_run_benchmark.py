@@ -7,7 +7,7 @@ import shutil
 from xfaas_main import run as xfaas_deployer
 import time
 import build_wf as wf_builder
-
+from xfbench_plotter import XFBenchPlotter
 parser = argparse.ArgumentParser(
     prog="ProgramName",
     description="What the program does",
@@ -276,9 +276,13 @@ def deploy_workflow(user_wf_dir,dag_filename, region,csp):
     wf_id, refactored_wf_id, wf_deployment_id = xfaas_deployer(user_wf_dir, dag_filename ,'dag-benchmark-revised.json',csp,region)
     return wf_id, refactored_wf_id, wf_deployment_id
 
-def plot_metrics(user_wf_dir, artificats_filename):
-    command = f'python3 xfaas_benchmarksuite_plotgen_vk.py --user-dir {user_wf_dir} --artifacts-file {artificats_filename}.json  --interleaved True --format pdf --out-dir {artificats_filename}-long'
-    os.system(command)
+def plot_metrics(user_wf_dir, wf_deployment_id, run_id):
+    # command = f'python3 xfaas_benchmarksuite_plotgen_vk.py --user-dir {user_wf_dir} --artifacts-file {artificats_filename}.json  --interleaved True --format pdf --out-dir {artificats_filename}-long'
+    # os.system(command)
+    format = 'pdf'
+    plotter = XFBenchPlotter(user_wf_dir, wf_deployment_id, run_id,format)
+    plotter.plot_e2e_timeline(xticks=[0,10], yticks=[0,100],is_overlay=False)
+    plotter.plot_stagewise( yticks=[0,100,200])
 
 
 
@@ -325,32 +329,33 @@ if __name__ == "__main__":
     provenance_artifact_filename = f"{csp}-{dynamism}-{payload_size}-{max_rps}rps.json"
     get_client_login_details(path_to_config_file)
     run_id = 'exp1'
-    print('==================BUILDING WF===========================')
-    build_workflow(wf_user_directory)
-    time.sleep(20)
+    # print('==================BUILDING WF===========================')
+    # build_workflow(wf_user_directory)
+    # time.sleep(20)
     wf_user_directory += "/workflow-gen"
     
     
     
-    print('==================DEPLOYING WF===========================')
-    wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
-    time.sleep(20)
+    # print('==================DEPLOYING WF===========================')
+    # wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
+    # time.sleep(20)
     
     
     
-    print('==================RUNNING WF===========================')
-    run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
-    time.sleep(20)
-    # # print('==================PLOTTING METRICS===========================')
-    # # plot_metrics(wf_user_directory,provenance_artifact_filename)
+    # print('==================RUNNING WF===========================')
+    # run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
+    # time.sleep(20)
+    wf_deployment_id = "6a3170be-6c85-4c39-a83a-72b7b262eabb"
+    print('==================PLOTTING METRICS===========================')
+    plot_metrics(wf_user_directory,wf_deployment_id,run_id)
 
-    # # print('==================TEARING DOWN WF===========================')
+    # print('==================TEARING DOWN WF===========================')
 
     
-    if teardown_flag == True:
-        remote_teardown(wf_user_directory,csp,region,part_id)
-    time.sleep(20)
-    local_teardown(wf_user_directory)
+    # if teardown_flag == True:
+    #     remote_teardown(wf_user_directory,csp,region,part_id)
+    # time.sleep(20)
+    # local_teardown(wf_user_directory)
 
 
 

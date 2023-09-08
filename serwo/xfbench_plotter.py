@@ -13,8 +13,8 @@ import statistics
 from typing import Any
 from collections import defaultdict
 from matplotlib.lines import lineStyles
-from azure.storage.queue import QueueService, QueueMessageFormat
-from serwo.python.src.utils.classes.commons.logger import LoggerFactory
+from azure.storage.queue import QueueClient
+from python.src.utils.classes.commons.logger import LoggerFactory
 
 logger = LoggerFactory.get_logger(__file__, log_level="INFO")
 
@@ -24,20 +24,20 @@ class XFBenchPlotter:
     via fontdicts etc.
     These will be used by default - you can add your customizations via code to override this
     '''
-    plt.rcParams["text.usetex"] = True
-    plt.rcParams["font.family"] = "serif"
-    plt.rcParams["font.serif"] = ["Computer Modern"]
-    plt.rcParams['ytick.labelsize'] = 20
-    plt.rcParams['xtick.labelsize'] = 20
-    plt.rcParams['axes.titlesize'] = 20
-    plt.rcParams['axes.labelsize'] = 20
-    plt.rcParams['legend.fontsize'] = 20
+    # plt.rcParams["text.usetex"] = True
+    # plt.rcParams["font.family"] = "serif"
+    # plt.rcParams["font.serif"] = ["Computer Modern"]
+    # plt.rcParams['ytick.labelsize'] = 20
+    # plt.rcParams['xtick.labelsize'] = 20
+    # plt.rcParams['axes.titlesize'] = 20
+    # plt.rcParams['axes.labelsize'] = 20
+    # plt.rcParams['legend.fontsize'] = 20
     
     def __init__(self, workflow_directory: str, workflow_deployment_id: str, run_id: str, format: str):
         self.__workflow_directory = workflow_directory
         self.__workflow_deployment_id = workflow_deployment_id
         self.__run_id = run_id
-        self.__xfaas_dag = self.DagLoader(self.__workflow_directory / "dag.json")
+        self.__xfaas_dag = self.DagLoader(pathlib.Path(self.__workflow_directory) / "dag.json").get_dag()
         self.__format = format
 
         '''
@@ -67,8 +67,9 @@ class XFBenchPlotter:
         with open(self.__artifacts_filepath, "r") as file:
             config = json.load(file)
         
+        
         # TODO - create a function which generate the step_x and step_y from the exp_config
-        self.__exp_conf = config.get("experiment_config")
+        self.__exp_conf = config.get("experiment_conf")
         self.__queue_name = config.get("queue_details").get("queue_name")
         self.__conn_str = config.get("queue_details").get("connection_string")
         
@@ -79,7 +80,7 @@ class XFBenchPlotter:
         self.__exp_desc = dict(wf_name=temp_conf.get("wf_name"),
                                csp=temp_conf.get("csp"),
                                dynamism=temp_conf.get("dynamism"),
-                               payload=temp_conf.get("payload"))
+                               payload=temp_conf.get("payload_size"))
         
 
         self.__logfile = f"{self.__get_outfile_prefix()}_dyndb_items.jsonl"
@@ -137,60 +138,47 @@ class XFBenchPlotter:
         
     
     def __get_outfile_prefix(self):
-        prefix = f"{self.__exp_desc.get('wf_name')}_ \
-                {self.__exp_desc.get('csp')}_ \
-                {self.__exp_desc.get('dynamism')}_ \
-                {self.__exp_desc.get('payload')}"
+        
+        prefix = f"{self.__exp_desc.get('wf_name')}_{self.__exp_desc.get('csp')}_{self.__exp_desc.get('dynamism')}_{self.__exp_desc.get('payload')}"
         
         return prefix
 
 
     def __create_dynamo_db_items(self):
-        queue_service = QueueService(connection_string=self.__conn_str)
-        queue_service.encode_function = QueueMessageFormat.binary_base64encode
-        queue_service.decode_function = QueueMessageFormat.binary_base64decode
-        metadata = queue_service.get_queue_metadata(self.__queue_name)
-        count = metadata.approximate_message_count
-        logger.info(f"Message count in {self.__queue_name} queue {count}")
-        get_count = count // 32 + 5
-        logger.info("Rounds = " + str(get_count))
-
+        
         dynamodb_item_list = []
 
-        for i in range(get_count):
-            messages = queue_service.get_messages(
-                self.__queue_name, num_messages=32, visibility_timeout=60
-            )
-            for message in messages:
-                if (
-                    message.content.decode("utf-8")
-                    != "json.dumps(fin_dict).encode('utf-8')"
-                ):
-                    queue_item = json.loads(message.content.decode("utf-8"))
-                    metadata = queue_item["metadata"]
-                    
-                    # Filtering based on workflow deployment id during creation itself
-                    if metadata["deployment_id"].strip() == self.__workflow_deployment_id:
-                        dynamo_item = {}
-                        invocation_id = f"{metadata['workflow_instance_id']}-{metadata['session_id']}"
-                        dynamo_item["workflow_deployment_id"] = metadata["deployment_id"]
-                        dynamo_item["workflow_invocation_id"] = invocation_id
-                        dynamo_item["client_request_time_ms"] = str(
-                            metadata["request_timestamp"]
-                        )
-                        dynamo_item["invocation_start_time_ms"] = str(
-                            metadata["workflow_start_time"]
-                        )
+        queue = QueueClient.from_connection_string(conn_str=self.__conn_str, queue_name=self.__queue_name)
+        response = queue.receive_messages()
+        for message in response:
+            if (message.content!= "json.dumps(fin_dict).encode('utf-8')"):
+                print(message.content)
+                queue_item = json.loads(message.content)
+                print(queue_item)
+                metadata = queue_item["metadata"]
+                
+                # Filtering based on workflow deployment id during creation itself
+                if metadata["deployment_id"].strip() == self.__workflow_deployment_id:
+                    dynamo_item = {}
+                    invocation_id = f"{metadata['workflow_instance_id']}-{metadata['session_id']}"
+                    dynamo_item["workflow_deployment_id"] = metadata["deployment_id"]
+                    dynamo_item["workflow_invocation_id"] = invocation_id
+                    dynamo_item["client_request_time_ms"] = str(
+                        metadata["request_timestamp"]
+                    )
+                    dynamo_item["invocation_start_time_ms"] = str(
+                        metadata["workflow_start_time"]
+                    )
 
-                        # add session id to dynamo db
-                        dynamo_item["session_id"] = str(metadata["session_id"])
+                    # add session id to dynamo db
+                    dynamo_item["session_id"] = str(metadata["session_id"])
 
-                        dynamo_item["functions"] = {}
-                        for item in metadata["functions"]:
-                            for key in item.keys():
-                                dynamo_item["functions"][key] = item[key]
+                    dynamo_item["functions"] = {}
+                    for item in metadata["functions"]:
+                        for key in item.keys():
+                            dynamo_item["functions"][key] = item[key]
 
-                        dynamodb_item_list.append(dynamo_item)
+                    dynamodb_item_list.append(dynamo_item)
 
         return dynamodb_item_list
     
@@ -260,7 +248,7 @@ class XFBenchPlotter:
             v = split[1]
             logger.info(f"{self.__xfaas_dag.nodes[u]['Codename']} -> {self.__xfaas_dag.nodes[v]['Codename']} \
                         Mean Exec - {statistics.mean(edge_timings[e_id])} \
-                        Median Exec - {statistics.median(func_timings[e_id])}")
+                        Median Exec - {statistics.median(edge_timings[e_id])}")
 
         logger.info(":::::: Stagewise Stats ::::::")
 
@@ -315,7 +303,7 @@ class XFBenchPlotter:
     def plot_e2e_timeline(self, xticks: list, yticks: list, is_overlay: bool):
         logger.info(f"Plotting E2E timeline with rps_overlay={is_overlay}")
         logs = self.__get_provenance_logs()
-        timestamps = [item["client_request_time_ms"] for item in logs] # NOTE - the timeline is w.r.t client
+        timestamps = [int(item["client_request_time_ms"]) for item in logs] # NOTE - the timeline is w.r.t client
         timeline = [(t-timestamps[0])/1000 for t in timestamps] # timeline in seconds
         e2e_time = self.__get_e2e_time(log_items=logs)
 
@@ -355,6 +343,7 @@ class XFBenchPlotter:
         Setting grid parameters here
         '''
         ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
+        ax.set_xlim(xmin=0, xmax=max(ax.get_xticks()))
         ax.grid(axis="y", which="major", linestyle="-", color="black")
         ax.grid(axis="y", which="minor", linestyle="-", color="darkgrey")
         ax.set_axisbelow(True)
