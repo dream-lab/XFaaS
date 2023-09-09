@@ -27,11 +27,11 @@ class XFBenchPlotter:
     # plt.rcParams["text.usetex"] = True
     # plt.rcParams["font.family"] = "serif"
     # plt.rcParams["font.serif"] = ["Computer Modern"]
-    # plt.rcParams['ytick.labelsize'] = 20
-    # plt.rcParams['xtick.labelsize'] = 20
-    # plt.rcParams['axes.titlesize'] = 20
-    # plt.rcParams['axes.labelsize'] = 20
-    # plt.rcParams['legend.fontsize'] = 20
+    plt.rcParams['ytick.labelsize'] = 20
+    plt.rcParams['xtick.labelsize'] = 20
+    plt.rcParams['axes.titlesize'] = 20
+    plt.rcParams['axes.labelsize'] = 20
+    plt.rcParams['legend.fontsize'] = 20
     
     def __init__(self, workflow_directory: str, workflow_deployment_id: str, run_id: str, format: str):
         self.__workflow_directory = workflow_directory
@@ -297,6 +297,71 @@ class XFBenchPlotter:
         ax2.step(step_x, step_y, linestyle='dashed', color='red', linewidth=3)
         return ax
 
+
+    def __print_cumm_stats(self, cumm_compute_time, cumm_comms_time, cumm_e2e_time):
+        logger.info("== Cummulative timings Stats  == ")
+        logger.info(f"Mean compute time - {statistics.mean(list(cumm_compute_time))}   Median compute - {statistics.median(list(cumm_compute_time))}")
+        logger.info(f"Mean comms time - {statistics.mean(list(cumm_comms_time))}   Median comms time - {statistics.median(list(cumm_comms_time))}")
+        logger.info(f"Mean E2E time - {statistics.mean(list(cumm_e2e_time))}   Median E2E time - {statistics.median(list(cumm_e2e_time))}")
+        logger.info("== Cummulative timings Statss  == ")
+
+    def __get_cumm_time(self, function_times, edge_times, num_iters):
+            # function_times = {"1": [1,4,5,6,7],
+            #                   "2": [2,3,4,5,6],
+            #                   "3": [1,2,3,4,5],
+            #                   "4": [1,2,3,4,5],
+            #                   "5": [1,2,3,4,5]}
+            # edge_times = {"1-2": [1,4,5,6,7],
+            #               "1-3": [1,2,3,4,5],
+            #               "1-4": [1,2,3,4,5],
+            #               "2-5": [1,2,3,4,5],
+            #             "3-5": [1,2,3,4,5],
+            #             "4-5": [1,2,3,4,5]}                  
+            source = [n for n, d in self.__xfaas_dag.in_degree() if d == 0][0]
+            sink = [n for n, d in self.__xfaas_dag.out_degree() if d == 0][0]
+            paths = list(nx.all_simple_paths(self.__xfaas_dag, source, sink))
+            
+            ## cumm fn exec
+            cumm_function_exec = []
+            for i in range(num_iters):
+                temp = []
+                for path in paths:
+                    tm = 0
+                    for node in path:
+                        tm += function_times[node][i]
+                    temp.append(tm)
+                cumm_function_exec.append(max(temp))
+            
+
+            ## cumm comm time
+            cumm_comm_time = []
+            for i in range(num_iters):
+                temp = []
+                for path in paths:
+                    tm = 0
+                    for j in range(0,len(path)-1):
+                        tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
+                    temp.append(tm)
+                cumm_comm_time.append(max(temp))
+            
+            ## e2e
+            e2e_time = []
+            for i in range(num_iters):
+                temp = []
+                for path in paths:
+                    tm = 0
+                    
+                    for j in range(0,len(path)-1):
+                        tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
+                        tm += function_times[path[j]][i]
+                    tm += function_times[path[-1]][i]
+                    temp.append(tm)
+                e2e_time.append(max(temp))
+
+            return cumm_function_exec,cumm_comm_time,e2e_time
+
+
+
     '''
     Plot e2e timeline plot with and without overlay of rps
     '''
@@ -365,7 +430,7 @@ class XFBenchPlotter:
 
         fig, ax = plt.subplots()
         fig.set_dpi(450)
-        fig.set_figwidth(9)
+        fig.set_figwidth(8)
         ax.set_ylabel("Time (sec)") # NOTE - use ...,fontdict=fontdict for custom font
         ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
 
@@ -429,7 +494,7 @@ class XFBenchPlotter:
         bplot1 = ax.boxplot(interleaved_data,
                             vert=True,  # vertical box alignment
                             patch_artist=True,
-                            widths=0.32,
+                            widths=0.2,
                             showfliers=False)  # fill with color
                             # labels=interfunction_labels)
         
@@ -464,3 +529,52 @@ class XFBenchPlotter:
         
         fig.savefig(self.__plots_dir / f"stagewise_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
         
+
+    '''
+    Plot cummulative e2e plots
+    '''
+    def plot_cumm_e2e(self, yticks: list):
+        fig, ax = plt.subplots()
+        fig.set_dpi(400)
+        # fig.set_figwidth(9)
+        ax.set_ylabel("Time (sec)")
+        cumm_labels = [r'$\sum Exec$', r'$\sum Comms$', r'$\sum E2E$']
+
+        # NOTE - for custom size uncomment these with fontdict
+        # fontdict = {'size': 20} 
+        # ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
+
+        if not yticks == []:
+            ax.set_yticks(yticks)
+            ax.set_yticklabels([str(x) for x in yticks])
+        
+        ax.set_xticks([x for x in range(0, len(cumm_labels))])
+        ax.set_xticklabels(cumm_labels)
+
+        # Set ylim
+        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
+        
+        distribution_dict = self.__get_timings_dict()
+        # cumm_func_time = get_cumm_time_func(time_map=distribution_dict["functions"], num_iters=len(e2e_all_sessions))
+        cumm_compute_time, cumm_comms_time, cumm_e2e_time = self.__get_cumm_time(distribution_dict["functions"],
+                                                                                distribution_dict["edges"],
+                                                                                num_iters=len(self.__get_provenance_logs()))
+
+        bplot2 = ax.boxplot([np.array(cumm_compute_time), np.array(cumm_comms_time), np.array(cumm_e2e_time)],
+                             vert=True,
+                             widths=0.2,
+                             patch_artist=True,
+                             showfliers=False)
+        
+        
+        # color='pink'
+        colors = ['blue', 'green', 'brown']
+        for patch, color in zip(bplot2['boxes'], colors):
+            patch.set_facecolor(color)
+
+
+        self.__print_cumm_stats(cumm_compute_time=cumm_compute_time,
+                                cumm_comms_time=cumm_comms_time,
+                                cumm_e2e_time=cumm_e2e_time)
+        
+        fig.savefig(self.__plots_dir / f"cumm_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
