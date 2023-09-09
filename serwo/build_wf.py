@@ -44,7 +44,8 @@ def create_dag_file(data,wf_file_path):
     for item in nodes:
         cat_name = list(item.keys())[0]
         func_name = list(item.values())[0]
-        func_nodes = list(item.values())[1]
+        code = list(item.values())[1]
+        func_nodes = list(item.values())[2]
         print(list(item.values()))
 
         # Get relevant paths
@@ -75,7 +76,8 @@ def create_dag_file(data,wf_file_path):
                         "Path": f"{dst_path}",
                         "EntryPoint": f"{func_file}",
                         "CSP": "NA",
-                        "MemoryInMB": 128
+                        "MemoryInMB": 128,
+                        "Code": f"{code}"
                     }
             res.append(node)
         elif len(func_nodes) > 1:
@@ -86,7 +88,8 @@ def create_dag_file(data,wf_file_path):
                         "Path": f"{func_path}",
                         "EntryPoint": f"{func_file}",
                         "CSP": "NA",
-                        "MemoryInMB": 128
+                        "MemoryInMB": 128,
+                        "Code": f"{code}"
                     }
                 res.append(node)
                 idx = idx + 1

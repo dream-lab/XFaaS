@@ -12,7 +12,7 @@ def get_delta(start_time):
 
 func_id = 253
 
-app_name = 'xfaasgraph711353'
+app_name = 'xfaasgraph966504'
 
 
 async def main(msg: func.QueueMessage,starter: str) -> None:
