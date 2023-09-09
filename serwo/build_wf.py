@@ -44,8 +44,8 @@ def create_dag_file(data,wf_file_path):
     for item in nodes:
         cat_name = list(item.keys())[0]
         func_name = list(item.values())[0]
-        code = list(item.values())[1]
-        func_nodes = list(item.values())[2]
+        code = item['code']
+        func_nodes = item['nodes']
         print(list(item.values()))
 
         # Get relevant paths

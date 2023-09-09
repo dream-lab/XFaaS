@@ -309,10 +309,14 @@ def local_teardown(wf_user_directory):
     remove_refactored_dag_command = f"rm -rf {wf_user_directory}/refactored-dag.json"
     remove_orchestrator_command = f"rm -rf {wf_user_directory}/orchestrator.py"
 
-    os.system(remove_build_command)
-    os.system(remove_collect_logs_command)
-    os.system(remove_refactored_dag_command)
-    os.system(remove_orchestrator_command)
+    if os.path.exists(f"{wf_user_directory}/build"):
+        os.system(remove_build_command)
+    if os.path.exists(f"{wf_user_directory}/CollectLogs"):    
+        os.system(remove_collect_logs_command)
+    if os.path.exists(f"{wf_user_directory}/refactored-dag.json"):
+        os.system(remove_refactored_dag_command)
+    if os.path.exists(f"{wf_user_directory}/orchestrator.py"):
+        os.system(remove_orchestrator_command)
 
 
 if __name__ == "__main__":
