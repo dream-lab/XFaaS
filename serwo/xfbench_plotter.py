@@ -481,7 +481,7 @@ class XFBenchPlotter:
 
         if figwidth:
             fig.set_figwidth(figwidth)
-            
+
         ax.set_ylabel("Time (sec)") # NOTE - use ...,fontdict=fontdict for custom font
         ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
 
@@ -603,16 +603,6 @@ class XFBenchPlotter:
         # NOTE - for custom size uncomment these with fontdict
         # fontdict = {'size': 20} 
         # ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
-
-        if not yticks == []:
-            ax.set_yticks(yticks)
-            ax.set_yticklabels([str(x) for x in yticks])
-        
-        ax.set_xticks([x for x in range(0, len(cumm_labels))])
-        ax.set_xticklabels(cumm_labels)
-
-        # Set ylim
-        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
         
         distribution_dict = self.__get_timings_dict()
         # cumm_func_time = get_cumm_time_func(time_map=distribution_dict["functions"], num_iters=len(e2e_all_sessions))
@@ -626,11 +616,29 @@ class XFBenchPlotter:
                              patch_artist=True,
                              showfliers=False)
         
+        if not yticks == []:
+            ax.set_yticks(yticks)
+            ax.set_yticklabels([str(x) for x in yticks])
         
+        ax.set_xticks([x+1 for x in range(0, len(cumm_labels))])
+        ax.set_xticklabels(cumm_labels)
+
+        # Set ylim
+        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
         # color='pink'
         colors = ['blue', 'green', 'brown']
         for patch, color in zip(bplot2['boxes'], colors):
             patch.set_facecolor(color)
+
+        _xloc = ax.get_xticks()
+        vlines_x_between = []
+        for idx in range(0, len(_xloc)-1):
+            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
+        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
+
+        ax.grid(axis="y", which="major", linestyle="-", color="black")
+        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
+        ax.set_axisbelow(True)
 
 
         self.__print_cumm_stats(cumm_compute_time=cumm_compute_time,
