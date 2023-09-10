@@ -185,7 +185,7 @@ class XFBenchPlotter:
     '''
     def __get_from_queue_add_to_file(self):
         logger.info(f"Getting Items from Queue - {self.__queue_name}")
-        sorted_dynamo_items = sorted(self.__create_dynamo_db_items(), key=lambda x: x["client_request_time_ms"])
+        sorted_dynamo_items = sorted(self.__create_dynamo_db_items(), key=lambda x: int(x["client_request_time_ms"]))
         with open(self.__logs_dir / self.__logfile, "w") as file:
             for dynamo_item in sorted_dynamo_items:
                 dynamo_item_string = json.dumps(dynamo_item) + "\n"
@@ -286,7 +286,7 @@ class XFBenchPlotter:
             if rps > max_rps:
                 max_rps = rps
         
-        # print(step_x,step_y)
+        print(step_x,step_y)
         ax2 = ax.twinx()
         ax2.set_ylim(ymin=0)
         ax2.set_ylabel("RPS")
@@ -296,7 +296,7 @@ class XFBenchPlotter:
         ax2.set_yticks(yticks_ax2)
         # NOTE - use the fontdict=fontdict for custom fontsize
         ax2.set_yticklabels([str(y) for y in yticks_ax2]) 
-        ax2.step(step_x, step_y, linestyle='dashed', color='red', linewidth=3)
+        ax2.step(step_x, step_y, linestyle='dashed', color='red', linewidth=7)
         return ax
 
 
@@ -404,9 +404,9 @@ class XFBenchPlotter:
     def plot_e2e_timeline(self, xticks: list, yticks: list, is_overlay: bool):
         logger.info(f"Plotting E2E timeline with rps_overlay={is_overlay}")
         logs = self.__get_provenance_logs()
-        timestamps = [int(item["invocation_start_time_ms"]) for item in sorted(logs, key=lambda k: k["invocation_start_time_ms"])] # NOTE - the timeline is w.r.t client
+        timestamps = [int(item["invocation_start_time_ms"]) for item in sorted(logs, key=lambda k: int(k["invocation_start_time_ms"]))] # NOTE - the timeline is w.r.t client
         timeline = [(t-timestamps[0])/1000 for t in timestamps] # timeline in seconds
-        e2e_time = self.__get_e2e_time(log_items=sorted(logs, key=lambda k: k["invocation_start_time_ms"]))
+        e2e_time = self.__get_e2e_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
 
         logger.info(f"Entry Count in Timeline - {len(timeline)}, Expected Entry Count - {self.__get_expected_entry_count()}")
         
@@ -439,7 +439,8 @@ class XFBenchPlotter:
 
 
         if is_overlay:
-            ax = self.__add_rps_overlay(ax=ax, len_yticks=len(ax.get_yticks()))        
+            yticks_mod = [y for y in ax.get_yticks() if y >= 0]
+            ax = self.__add_rps_overlay(ax=ax, len_yticks=len(yticks_mod))        
 
         '''
         Setting grid parameters here
@@ -449,7 +450,7 @@ class XFBenchPlotter:
 
         # NOTE - plotting the container spawn times here
         if self.__exp_desc.get("csp") == "azure" or self.__exp_desc.get("csp") == "azure_v2":
-            container_spawn_times = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: k["invocation_start_time_ms"]))
+            container_spawn_times = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
             ax.plot(container_spawn_times, [ax.get_ylim()[1]/2 for i in range(0, len(container_spawn_times))], color='green', marker='o', markersize=8, linestyle='None')
             ax.vlines(x=container_spawn_times, ymin=0, ymax=ax.get_ylim()[1]/2, linestyles='dashed', color='darkgrey', linewidth=1)
 

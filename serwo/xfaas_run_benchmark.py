@@ -288,7 +288,7 @@ def plot_metrics(user_wf_dir, wf_deployment_id, run_id):
     # os.system(command)
     format = 'pdf'
     plotter = XFBenchPlotter(user_wf_dir, wf_deployment_id, run_id,format)
-    plotter.plot_e2e_timeline(xticks=[], yticks=[],is_overlay=False)
+    plotter.plot_e2e_timeline(xticks=[], yticks=[],is_overlay=True)
     plotter.plot_stagewise( yticks=[])
     plotter.plot_cumm_e2e(yticks=[])
 
