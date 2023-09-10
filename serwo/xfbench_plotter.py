@@ -294,7 +294,7 @@ class XFBenchPlotter:
         ax2.set_yticks(yticks_ax2)
         # NOTE - use the fontdict=fontdict for custom fontsize
         ax2.set_yticklabels([str(y) for y in yticks_ax2]) 
-        ax2.step(step_x, step_y, linestyle='dashed', color='red', linewidth=7)
+        ax2.step(step_x, step_y, linestyle='dashed', color='red', linewidth=3)
         return ax
 
 

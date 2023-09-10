@@ -342,7 +342,7 @@ if __name__ == "__main__":
     get_client_login_details(path_to_config_file)
     run_id = 'exp1'
     print('==================BUILDING WF===========================')
-    build_workflow(wf_user_directory)
+    # build_workflow(wf_user_directory)
     # time.sleep(20)
     wf_user_directory += "/workflow-gen"
     wf_deployment_id = "fd336dbd-7ccc-4feb-8749-f0e297e4e53b"
