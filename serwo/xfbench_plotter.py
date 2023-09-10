@@ -384,7 +384,7 @@ class XFBenchPlotter:
                         god_dict[cid].append((function_start_time,int(workflow_start_time)))
                     else:
                         god_dict[cid].append((function_start_time,int(workflow_start_time)))
-        print(god_dict)
+        
         for cid in god_dict:
             god_dict[cid].sort()
             ans.append(god_dict[cid][0])

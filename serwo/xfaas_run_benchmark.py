@@ -283,13 +283,16 @@ def deploy_workflow(user_wf_dir,dag_filename, region,csp):
     wf_id, refactored_wf_id, wf_deployment_id = xfaas_deployer(user_wf_dir, dag_filename ,'dag-benchmark-revised.json',csp,region)
     return wf_id, refactored_wf_id, wf_deployment_id
 
-def plot_metrics(user_wf_dir, wf_deployment_id, run_id):
+def plot_metrics(user_wf_dir, wf_deployment_id, run_id, wf_name):
     # command = f'python3 xfaas_benchmarksuite_plotgen_vk.py --user-dir {user_wf_dir} --artifacts-file {artificats_filename}.json  --interleaved True --format pdf --out-dir {artificats_filename}-long'
     # os.system(command)
     format = 'pdf'
     plotter = XFBenchPlotter(user_wf_dir, wf_deployment_id, run_id,format)
     plotter.plot_e2e_timeline(xticks=[], yticks=[],is_overlay=True)
-    plotter.plot_stagewise( yticks=[])
+    figwidth = 7
+    if wf_name == 'fileProcessing' or wf_name == 'math':
+        figwidth = 20   
+    plotter.plot_stagewise( yticks=[],figwidth=figwidth)
     plotter.plot_cumm_e2e(yticks=[])
 
 
@@ -360,7 +363,7 @@ if __name__ == "__main__":
     
     
     print('==================PLOTTING METRICS===========================')
-    plot_metrics(wf_user_directory,wf_deployment_id,run_id)
+    plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name)
 
     print('==================TEARING DOWN WF===========================')
     timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
