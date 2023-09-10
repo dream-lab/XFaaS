@@ -140,7 +140,7 @@ def make_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url,state_m
        template_azure_jmx_file(rps, duration, execute_url, payload_size, jmx_template_path, jmx_output_path, session_id)
     else:
         template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload_size, jmx_template_path, jmx_output_path, session_id)
-    send_jmx_file_to_server(jmx_output_path,jmx_output_filename)
+    send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration)
     dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id,run_id)
 
 
@@ -171,20 +171,23 @@ def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, 
         json.dump(provenance_artefacts, f,indent=4)
     
 
-def send_jmx_file_to_server(jmx_output_path,jmx_output_filename):
-    server_jmx_files_dir = f"/home/{server_user_id}/jmx-files"
-    if server_pem_file_path is not None:
-        remote_copy_command = f"scp -i {server_pem_file_path} {jmx_output_path} {server_user_id}@{server_ip}:{server_jmx_files_dir}"
-        remote_mkdir_command = f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} mkdir -p /home/{server_user_id}/jmx-files"
-    else:
-        remote_mkdir_command = f"ssh {server_user_id}@{server_ip} mkdir -p /home/{server_user_id}/jmx-files"
-        remote_copy_command = f"scp {jmx_output_path} {server_user_id}@{server_ip}:{server_jmx_files_dir}"
+def send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration):
+    if rps != 0:
+        server_jmx_files_dir = f"/home/{server_user_id}/jmx-files"
+        if server_pem_file_path is not None:
+            remote_copy_command = f"scp -i {server_pem_file_path} {jmx_output_path} {server_user_id}@{server_ip}:{server_jmx_files_dir}"
+            remote_mkdir_command = f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} mkdir -p /home/{server_user_id}/jmx-files"
+        else:
+            remote_mkdir_command = f"ssh {server_user_id}@{server_ip} mkdir -p /home/{server_user_id}/jmx-files"
+            remote_copy_command = f"scp {jmx_output_path} {server_user_id}@{server_ip}:{server_jmx_files_dir}"
 
-    os.system(remote_mkdir_command)
-    os.system(remote_copy_command)
-    experiment_begin_command = f"/home/{server_user_id}/apache-jmeter-5.6.2/bin/jmeter -n -t {server_jmx_files_dir}/{jmx_output_filename}  -l {server_jmx_files_dir}/{jmx_output_filename}.jtl"
-    shell_script_commands.append(experiment_begin_command)
-    
+        os.system(remote_mkdir_command)
+        os.system(remote_copy_command)
+        experiment_begin_command = f"/home/{server_user_id}/apache-jmeter-5.6.2/bin/jmeter -n -t {server_jmx_files_dir}/{jmx_output_filename}  -l {server_jmx_files_dir}/{jmx_output_filename}.jtl"
+        shell_script_commands.append(experiment_begin_command)
+    else:
+        cmd = f"sleep {int(duration)}"
+        shell_script_commands.append(cmd)
     
 
 def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_id):
@@ -351,7 +354,8 @@ if __name__ == "__main__":
     
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
-    time.sleep(180)
+    time.sleep(120)
+    
     
     print('==================PLOTTING METRICS===========================')
     plot_metrics(wf_user_directory,wf_deployment_id,run_id)

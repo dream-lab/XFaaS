@@ -145,40 +145,38 @@ class XFBenchPlotter:
 
 
     def __create_dynamo_db_items(self):
-        
+        print("Creating DynamoDB items")
         dynamodb_item_list = []
 
         queue = QueueClient.from_connection_string(conn_str=self.__conn_str, queue_name=self.__queue_name)
-        response = queue.receive_messages()
+        response = queue.receive_messages(visibility_timeout=3000)
+        print('Reading Queue')
         for message in response:
-            if (message.content!= "json.dumps(fin_dict).encode('utf-8')"):
-                print(message.content)
-                queue_item = json.loads(message.content)
-                print(queue_item)
-                metadata = queue_item["metadata"]
-                
-                # Filtering based on workflow deployment id during creation itself
-                if metadata["deployment_id"].strip() == self.__workflow_deployment_id:
-                    dynamo_item = {}
-                    invocation_id = f"{metadata['workflow_instance_id']}-{metadata['session_id']}"
-                    dynamo_item["workflow_deployment_id"] = metadata["deployment_id"]
-                    dynamo_item["workflow_invocation_id"] = invocation_id
-                    dynamo_item["client_request_time_ms"] = str(
-                        metadata["request_timestamp"]
-                    )
-                    dynamo_item["invocation_start_time_ms"] = str(
-                        metadata["workflow_start_time"]
-                    )
+            queue_item = json.loads(message.content)
+            metadata = queue_item["metadata"]
+            
+            # Filtering based on workflow deployment id during creation itself
+            if metadata["deployment_id"].strip() == self.__workflow_deployment_id:
+                dynamo_item = {}
+                invocation_id = f"{metadata['workflow_instance_id']}-{metadata['session_id']}"
+                dynamo_item["workflow_deployment_id"] = metadata["deployment_id"]
+                dynamo_item["workflow_invocation_id"] = invocation_id
+                dynamo_item["client_request_time_ms"] = str(
+                    metadata["request_timestamp"]
+                )
+                dynamo_item["invocation_start_time_ms"] = str(
+                    metadata["workflow_start_time"]
+                )
 
-                    # add session id to dynamo db
-                    dynamo_item["session_id"] = str(metadata["session_id"])
+                # add session id to dynamo db
+                dynamo_item["session_id"] = str(metadata["session_id"])
 
-                    dynamo_item["functions"] = {}
-                    for item in metadata["functions"]:
-                        for key in item.keys():
-                            dynamo_item["functions"][key] = item[key]
+                dynamo_item["functions"] = {}
+                for item in metadata["functions"]:
+                    for key in item.keys():
+                        dynamo_item["functions"][key] = item[key]
 
-                    dynamodb_item_list.append(dynamo_item)
+                dynamodb_item_list.append(dynamo_item)
 
         return dynamodb_item_list
     
@@ -268,23 +266,25 @@ class XFBenchPlotter:
         logger.info("Adding overlay for E2E timeline")
         step_x = []
         step_y = []
-
-        conf_items = sorted(self.__exp_conf).items()
+        print(self.__exp_conf)
+        conf_items = dict(sorted(self.__exp_conf.items()))
+        print(conf_items)
         
         # Calculate step_x and step_y
         max_rps = -1
         time = 0
-        step_x.append(time)
-        step_y.append(conf_items[0]["rps"])
-        for id, conf in conf_items:
-            time += conf["duration"]
-            rps = conf["rps"]
+        # step_x.append(time)
+        # step_y.append(conf_items[0]["rps"])
+        for conf in conf_items:
+            time += conf_items[conf]["duration"]
+            rps = conf_items[conf]["rps"]
             step_x.append(time)
             step_y.append(rps)
 
             if rps > max_rps:
                 max_rps = rps
         
+        # print(step_x,step_y)
         ax2 = ax.twinx()
         ax2.set_ylim(ymin=0)
         ax2.set_ylabel("RPS")
