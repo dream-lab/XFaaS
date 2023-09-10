@@ -352,9 +352,10 @@ if __name__ == "__main__":
     time.sleep(20)
     
     
+    
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
-    time.sleep(120)
+    time.sleep(300)
     
     
     print('==================PLOTTING METRICS===========================')

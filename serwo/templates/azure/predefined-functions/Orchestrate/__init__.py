@@ -147,19 +147,23 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    meac = yield context.call_activity("graphGen", serwoObject)
-    bexz = []
-    rkhu = context.call_activity("graphBft", meac)
-    bhig = context.call_activity("graphMst", meac)
-    xtiw = context.call_activity("pagerank", meac)
-    bexz.append(rkhu)
-    bexz.append(bhig)
-    bexz.append(xtiw)
-    tbns = yield context.task_all(bexz)
-    kqgb = yield context.call_activity("aggregate", tbns)
-    kqgb = insert_end_stats_in_metadata(kqgb)
-    pzuw = yield context.call_activity("CollectLogs", kqgb)
-    return pzuw
+    uhur = yield context.call_activity("fetch_data", serwoObject)
+    dlhu = yield context.call_activity("grayscale", uhur)
+    vqaa = yield context.call_activity("flip", dlhu)
+    nvkh = yield context.call_activity("rotate", vqaa)
+    rgpt = yield context.call_activity("resize", nvkh)
+    omeo = []
+    nzbc = context.call_activity("resnet", rgpt)
+    xmlo = context.call_activity("alexnet", rgpt)
+    gbhu = context.call_activity("mobilenet", rgpt)
+    omeo.append(nzbc)
+    omeo.append(xmlo)
+    omeo.append(gbhu)
+    wgzc = yield context.task_all(omeo)
+    phzm = yield context.call_activity("aggregator", wgzc)
+    phzm = insert_end_stats_in_metadata(phzm)
+    ulok = yield context.call_activity("CollectLogs", phzm)
+    return ulok
 
 
 main = df.Orchestrator.create(orchestrator_function)
