@@ -472,13 +472,16 @@ class XFBenchPlotter:
     '''
     Plot Stagewise
     '''
-    def plot_stagewise(self, yticks: list):
+    def plot_stagewise(self, yticks: list, figwidth=None):
         logger.info("Plotting Stagewise Boxplots")
         distribution_dict = self.__get_timings_dict()
 
         fig, ax = plt.subplots()
         fig.set_dpi(450)
-        fig.set_figwidth(7)
+
+        if figwidth:
+            fig.set_figwidth(figwidth)
+            
         ax.set_ylabel("Time (sec)") # NOTE - use ...,fontdict=fontdict for custom font
         ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
 
