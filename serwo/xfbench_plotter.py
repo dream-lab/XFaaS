@@ -268,30 +268,28 @@ class XFBenchPlotter:
         logger.info("Adding overlay for E2E timeline")
         step_x = []
         step_y = []
-        print(self.__exp_conf)
-        conf_items = dict(sorted(self.__exp_conf.items()))
-        print(conf_items)
+        # conf_items = dict(sorted(self.__exp_conf.items()))
+        conf_items = sorted(self.__exp_conf.items())
         
         # Calculate step_x and step_y
         max_rps = -1
         time = 0
-        # step_x.append(time)
-        # step_y.append(conf_items[0]["rps"])
-        for conf in conf_items:
-            time += conf_items[conf]["duration"]
-            rps = conf_items[conf]["rps"]
+        step_x.append(time)
+        step_y.append(conf_items[0][1]["rps"])
+        for key, conf in conf_items:
+            time += conf["duration"]
+            rps = conf["rps"]
             step_x.append(time)
             step_y.append(rps)
 
             if rps > max_rps:
                 max_rps = rps
         
-        print(step_x,step_y)
         ax2 = ax.twinx()
         ax2.set_ylim(ymin=0)
         ax2.set_ylabel("RPS")
 
-        slots = (max_rps)/(len_yticks)
+        slots = (max_rps)/(len_yticks-1)
         yticks_ax2 = [round(y,2) for y in np.arange(0, max_rps+slots, slots)]
         ax2.set_yticks(yticks_ax2)
         # NOTE - use the fontdict=fontdict for custom fontsize
@@ -452,7 +450,7 @@ class XFBenchPlotter:
         if self.__exp_desc.get("csp") == "azure" or self.__exp_desc.get("csp") == "azure_v2":
             container_spawn_times = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
             ax.plot(container_spawn_times, [ax.get_ylim()[1]/2 for i in range(0, len(container_spawn_times))], color='green', marker='o', markersize=8, linestyle='None')
-            ax.vlines(x=container_spawn_times, ymin=0, ymax=ax.get_ylim()[1]/2, linestyles='dashed', color='darkgrey', linewidth=1)
+            ax.vlines(x=container_spawn_times, ymin=0, ymax=ax.get_ylim()[1]/2, linestyles='dashed', color='darkgrey', linewidth=2)
 
         if self.__exp_desc.get("csp") == "aws":
            logger.info("TODO: Complete the aws container traces function")
