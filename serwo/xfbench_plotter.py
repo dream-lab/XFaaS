@@ -216,11 +216,13 @@ class XFBenchPlotter:
         logs = self.__get_provenance_logs()
         
         distribution_dict = dict(
+            client_overheads=[],
             functions=defaultdict(list),
             edges=defaultdict(list)
         )
 
         for log in logs:
+            distribution_dict["client_overheads"].append((int(log["invocation_start_time_ms"]) - int(log["client_request_time_ms"]))/1000)
             for u in [v for v in self.__xfaas_dag.nodes]:
                 exec_time = (log["functions"][u]["end_delta"] - log["functions"][u]["start_delta"])/1000 # seconds
                 distribution_dict["functions"][u].append(exec_time)
@@ -362,15 +364,49 @@ class XFBenchPlotter:
 
 
 
+    def __get_azure_containers(self, log_items: list):
+        god_dict = {}
+        ans = []
+        mins = []
+        sorted_dynamo_items = log_items
+        min_start_time  = sorted_dynamo_items[0]["invocation_start_time_ms"]
+
+        for item in sorted_dynamo_items:
+            functions = item['functions']
+            workflow_start_time = item['invocation_start_time_ms']
+            for function in functions:
+                if "cid"  in functions[function]:
+                    cid = functions[function]['cid']
+                    function_start_delta = functions[function]['start_delta']
+                    function_start_time = int(workflow_start_time) + function_start_delta
+                    if cid == '':
+                        continue
+                    if cid not in god_dict:
+                        god_dict[cid] = []
+                        god_dict[cid].append(function_start_time)
+                    else:
+                        god_dict[cid].append(function_start_time)
+        for cid in god_dict:
+            god_dict[cid].sort()
+            ans.append(god_dict[cid][0])
+            mins.append((god_dict[cid][0]-int(min_start_time))/1000)
+        
+        return sorted(mins)
+    
+    # TODO - populate the aws container traces function 
+    def __get_aws_containers():
+        pass
+
     '''
     Plot e2e timeline plot with and without overlay of rps
+    NOTE - the e2e timeline will be with respect to the invocation start time and not the client_request
     '''
     def plot_e2e_timeline(self, xticks: list, yticks: list, is_overlay: bool):
         logger.info(f"Plotting E2E timeline with rps_overlay={is_overlay}")
         logs = self.__get_provenance_logs()
-        timestamps = [int(item["client_request_time_ms"]) for item in logs] # NOTE - the timeline is w.r.t client
+        timestamps = [int(item["invocation_start_time_ms"]) for item in sorted(logs, key=lambda k: k["invocation_start_time_ms"])] # NOTE - the timeline is w.r.t client
         timeline = [(t-timestamps[0])/1000 for t in timestamps] # timeline in seconds
-        e2e_time = self.__get_e2e_time(log_items=logs)
+        e2e_time = self.__get_e2e_time(log_items=sorted(logs, key=lambda k: k["invocation_start_time_ms"]))
 
         logger.info(f"Entry Count in Timeline - {len(timeline)}, Expected Entry Count - {self.__get_expected_entry_count()}")
         
@@ -401,6 +437,7 @@ class XFBenchPlotter:
         
         ax.plot(timeline, e2e_time)
 
+
         if is_overlay:
             ax = self.__add_rps_overlay(ax=ax, len_yticks=len(ax.get_yticks()))        
 
@@ -408,7 +445,18 @@ class XFBenchPlotter:
         Setting grid parameters here
         '''
         ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
-        ax.set_xlim(xmin=0, xmax=max(ax.get_xticks()))
+        # ax.set_xlim(xmin=0, xmax=max(ax.get_xticks()))
+
+        # NOTE - plotting the container spawn times here
+        if self.__exp_desc.get("csp") == "azure" or self.__exp_desc.get("csp") == "azure_v2":
+            container_spawn_times = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: k["invocation_start_time_ms"]))
+            ax.plot(container_spawn_times, [ax.get_ylim()[1]/2 for i in range(0, len(container_spawn_times))], color='green', marker='o', markersize=8, linestyle='None')
+            ax.vlines(x=container_spawn_times, ymin=0, ymax=ax.get_ylim()[1]/2, linestyles='dashed', color='darkgrey', linewidth=1)
+
+        if self.__exp_desc.get("csp") == "aws":
+           logger.info("TODO: Complete the aws container traces function")
+           self.__get_aws_containers()
+
         ax.grid(axis="y", which="major", linestyle="-", color="black")
         ax.grid(axis="y", which="minor", linestyle="-", color="darkgrey")
         ax.set_axisbelow(True)
@@ -430,7 +478,7 @@ class XFBenchPlotter:
 
         fig, ax = plt.subplots()
         fig.set_dpi(450)
-        fig.set_figwidth(8)
+        fig.set_figwidth(7)
         ax.set_ylabel("Time (sec)") # NOTE - use ...,fontdict=fontdict for custom font
         ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
 
@@ -489,7 +537,7 @@ class XFBenchPlotter:
                 interleaved_label_ids += [f"{n1}-{n2}" for n1, n2 in edges]
                 visited.add(u)
 
-        interleaved_data = [get_data(id) for id in interleaved_label_ids]    
+        interleaved_data = [np.array(distribution_dict["client_overheads"])] + [get_data(id) for id in interleaved_label_ids]    
         # rectangular box plot
         bplot1 = ax.boxplot(interleaved_data,
                             vert=True,  # vertical box alignment
@@ -498,19 +546,28 @@ class XFBenchPlotter:
                             showfliers=False)  # fill with color
                             # labels=interfunction_labels)
         
-        interleaved_labels_modified = get_labels(interleaved_label_ids)
+        interleaved_labels_modified = ["INIT-OH"] + get_labels(interleaved_label_ids)
         logger.info(f"Interleaved Labels - {interleaved_labels_modified}")
         
         ax.set_xticklabels(interleaved_labels_modified, 
                            rotation=90)
         ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
 
+        interleaved_label_ids = ['init-oh'] + interleaved_label_ids
+
         for idx, patch in enumerate(bplot1['boxes']):
-            patch.set_facecolor(get_color(interleaved_label_ids[idx]))
+            # NOTE - set facecolor for the client overheads
+            if idx == 0:
+                patch.set_facecolor('red')
+            else:
+                patch.set_facecolor(get_color(interleaved_label_ids[idx]))
 
         # set the label colors
         for idx, xtick in enumerate(ax.get_xticklabels()[0:len(interleaved_label_ids)]):
-            xtick.set_color(get_label_color(interleaved_label_ids[idx]))
+            if idx == 0:
+                xtick.set_color('red')
+            else:
+                xtick.set_color(get_label_color(interleaved_label_ids[idx]))
 
         ##### VLINES #####        
         # add lighter vlines between the boxes themselves
