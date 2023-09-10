@@ -288,7 +288,7 @@ def plot_metrics(user_wf_dir, wf_deployment_id, run_id):
     # os.system(command)
     format = 'pdf'
     plotter = XFBenchPlotter(user_wf_dir, wf_deployment_id, run_id,format)
-    plotter.plot_e2e_timeline(xticks=[], yticks=[],is_overlay=False)
+    plotter.plot_e2e_timeline(xticks=[], yticks=[],is_overlay=True)
     plotter.plot_stagewise( yticks=[])
     plotter.plot_cumm_e2e(yticks=[])
 
@@ -342,6 +342,7 @@ if __name__ == "__main__":
     get_client_login_details(path_to_config_file)
     run_id = 'exp1'
     print('==================BUILDING WF===========================')
+
     build_workflow(wf_user_directory)
     
     wf_user_directory += "/workflow-gen"
