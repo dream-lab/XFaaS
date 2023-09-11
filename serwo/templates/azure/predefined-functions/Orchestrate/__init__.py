@@ -147,42 +147,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    ktqc = yield context.call_activity("Source", serwoObject)
-    hnqg = yield context.call_activity("GenerateList", ktqc)
-    xdcf = []
-    kflg = context.call_activity("GenerateMatrixA", ktqc)
-    bpkb = context.call_activity("GenerateMatrixB", ktqc)
-    xdcf.append(kflg)
-    xdcf.append(bpkb)
-    iiug = yield context.task_all(xdcf)
-    agwv = yield context.call_activity("Aggregator2", iiug)
-    uttl = []
-    plig = context.call_activity("MatrixMultiplication", agwv)
-    ntvi = context.call_activity("LinPack", agwv)
-    uttl.append(plig)
-    uttl.append(ntvi)
-    zesl = yield context.task_all(uttl)
-    hwet = yield context.call_activity("GenerateInteger", ktqc)
-    efhi = []
-    zqkk = context.call_activity("Sine", hwet)
-    dpks = context.call_activity("Cosine", hwet)
-    ugvm = context.call_activity("Factors", hwet)
-    efhi.append(zqkk)
-    efhi.append(dpks)
-    efhi.append(ugvm)
-    dqmu = yield context.task_all(efhi)
-    npjo = []
-    ruin = context.call_activity("FastFourierTransform", hnqg)
-    giad = context.call_activity("Aggregator3", zesl)
-    ipsm = context.call_activity("Aggregator1", dqmu)
-    npjo.append(ruin)
-    npjo.append(giad)
-    npjo.append(ipsm)
-    yfoz = yield context.task_all(npjo)
-    cftd = yield context.call_activity("Aggregator4", yfoz)
-    cftd = insert_end_stats_in_metadata(cftd)
-    dicx = yield context.call_activity("CollectLogs", cftd)
-    return dicx
+    pzlq = yield context.call_activity("graphGen", serwoObject)
+    ionv = []
+    hnkh = context.call_activity("graphBft", pzlq)
+    czwe = context.call_activity("graphMst", pzlq)
+    qpkc = context.call_activity("pagerank", pzlq)
+    ionv.append(hnkh)
+    ionv.append(czwe)
+    ionv.append(qpkc)
+    rnws = yield context.task_all(ionv)
+    xyjj = yield context.call_activity("aggregate", rnws)
+    xyjj = insert_end_stats_in_metadata(xyjj)
+    baof = yield context.call_activity("CollectLogs", xyjj)
+    return baof
 
 
 main = df.Orchestrator.create(orchestrator_function)

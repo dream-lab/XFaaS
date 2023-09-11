@@ -48,6 +48,20 @@ def get_client_login_details(config_path):
 shell_script_commands = []
 aws_shell_script_commands = []
 
+
+def get_aws_payload(payload):
+    payload = json.dumps(payload)
+    payload = payload.replace('"', '\&quot;')
+    payload = payload[1:-1]
+    return payload
+
+def get_azure_payload(payload):
+    payload = json.dumps(payload)
+    payload = payload.replace('"', '&quot;')
+    return payload
+
+
+
 def read_dynamism_file(dynamism):
     file_path = pathlib.Path(__file__).parent / f"benchmark_resources/dynamism/{dynamism}/config.csv"
     with open(file_path) as f:  
@@ -351,15 +365,14 @@ if __name__ == "__main__":
     wf_user_directory += "/workflow-gen"
     
     
-    
     print('==================DEPLOYING WF===========================')
     wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
-    time.sleep(20)
+    
     
     
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
-    time.sleep(300)
+    time.sleep(100)
     
     
     print('==================PLOTTING METRICS===========================')
@@ -373,9 +386,9 @@ if __name__ == "__main__":
     shutil.copytree(src, dst)
 
     
-    if teardown_flag == True:
-        remote_teardown(wf_user_directory,csp,region,part_id)
-    time.sleep(20)
+    # if teardown_flag == True:
+    #     remote_teardown(wf_user_directory,csp,region,part_id)
+    
     local_teardown(wf_user_directory)
 
 

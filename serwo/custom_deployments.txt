@@ -1,1 +1,5 @@
-3193a263-f5f2-4073-9cef-24e7cbf7c776,azure,centralindia,1,30,small,static
+f27174c4-abbd-4a7f-93ad-1e4b1a27bddf,aws,centralindia,1,300,small,static
+a597b48f-9830-45be-8385-5cbed65e91c5,aws,centralindia,1,300,medium,static
+f0b8610a-a87b-4703-abb7-43ecd66b2591,azure,centralindia,8,300,medium,step_function
+c89c2e35-576d-4533-963f-ec080b0f9a40,azure,centralindia,8,300,medium,sawtooth
+cd851163-f3de-4700-9ffa-99e6771d4015,azure,centralindia,17,300,medium,alibaba

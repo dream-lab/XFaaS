@@ -11,9 +11,10 @@ from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.storage import StorageManagementClient
 from azure.storage.queue import QueueServiceClient
 from azure.storage.blob import BlobServiceClient
-
+import string
+import random
 queue_name = 'serwo-ingress'
-netherite_namespace = 'netheriteNamespace'
+
 
 
 def get_user_workflow_name(dag_definition_path):
@@ -63,8 +64,10 @@ def create_resources(resource_dir, out_file_path, region,is_netherite):
 
     jsson = json.loads(json_str)
     if is_netherite:
+        netherite_namespace = randomString(6)
         ## create eventhubs namespace
         try:
+            
             stream = os.popen(f'az eventhubs namespace create --name {netherite_namespace} --resource-group {resource_group_name} --location {region}')
             json_str = stream.read()
             stream.close()
@@ -89,6 +92,12 @@ def create_resources(resource_dir, out_file_path, region,is_netherite):
         json.dump(fin_dict, f)
 
 
+def randomString(stringLength):
+    """Generate a random string of fixed length """
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(stringLength))
+
+
 def generate(user_dir, dag_definition_path,region,part_id, is_netherite):
     global resource_group_name, storage_account_name
 
@@ -101,7 +110,9 @@ def generate(user_dir, dag_definition_path,region,part_id, is_netherite):
     if os.path.exists(out_file_path):
         return
     user_app_name = get_user_workflow_name(dag_definition_path)
-    resource_group_name = f'{user_app_name}SerwoTest'
+    ##generate 4 length random string
+    st = randomString(4)
+    resource_group_name = f'{user_app_name}{st}SerwoTest'
     xd = randint(10000, 99999)
     storage_account_name = f'serwoa{xd}'
     try:

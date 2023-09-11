@@ -456,7 +456,8 @@ class XFBenchPlotter:
 
         if self.__exp_desc.get("csp") == "aws":
            logger.info("TODO: Complete the aws container traces function")
-           self.__get_aws_containers()
+           pass
+        #    self.__get_aws_containers()
 
         ax.grid(axis="y", which="major", linestyle="-", color="black")
         ax.grid(axis="y", which="minor", linestyle="-", color="darkgrey")
