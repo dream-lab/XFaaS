@@ -264,7 +264,7 @@ class XFBenchPlotter:
         return int(expected_count)
     
 
-    def __add_rps_overlay(self, ax: plt.Axes, len_yticks: int):
+    def __add_rps_overlay(self, ax: plt.Axes, len_yticks: int, rps_ticks=None):
         logger.info("Adding overlay for E2E timeline")
         step_x = []
         step_y = []
@@ -288,12 +288,17 @@ class XFBenchPlotter:
         ax2 = ax.twinx()
         ax2.set_ylim(ymin=0)
         ax2.set_ylabel("RPS")
+        
+        if not rps_ticks:
+            slots = (max_rps)/(len_yticks-1)
+            yticks_ax2 = [round(y,2) for y in np.arange(0, max_rps+slots, slots)]
+            ax2.set_yticks(yticks_ax2)
+            # NOTE - use the fontdict=fontdict for custom fontsize
+            ax2.set_yticklabels([str(y) for y in yticks_ax2]) 
+        else:
+            ax2.set_yticks(rps_ticks)
+            ax2.set_yticklabels([str(y) for y in rps_ticks])
 
-        slots = (max_rps)/(len_yticks-1)
-        yticks_ax2 = [round(y,2) for y in np.arange(0, max_rps+slots, slots)]
-        ax2.set_yticks(yticks_ax2)
-        # NOTE - use the fontdict=fontdict for custom fontsize
-        ax2.set_yticklabels([str(y) for y in yticks_ax2]) 
         ax2.step(step_x, step_y, linestyle='dashed', color='red', linewidth=3)
         return ax
 
