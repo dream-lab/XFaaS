@@ -373,7 +373,7 @@ class XFBenchPlotter:
         mins = []
         sorted_dynamo_items = log_items
         min_start_time  = sorted_dynamo_items[0]["invocation_start_time_ms"]
-
+        # print(sorted_dynamo_items)
         for item in sorted_dynamo_items:
             functions = item['functions']
             workflow_start_time = item['invocation_start_time_ms']
@@ -386,13 +386,14 @@ class XFBenchPlotter:
                         continue
                     if cid not in god_dict:
                         god_dict[cid] = []
-                        god_dict[cid].append(function_start_time)
+                        god_dict[cid].append((function_start_time,int(workflow_start_time)))
                     else:
-                        god_dict[cid].append(function_start_time)
+                        god_dict[cid].append((function_start_time,int(workflow_start_time)))
+        
         for cid in god_dict:
             god_dict[cid].sort()
             ans.append(god_dict[cid][0])
-            mins.append((god_dict[cid][0]-int(min_start_time))/1000)
+            mins.append((god_dict[cid][0][0]-int(min_start_time))/1000)
         
         return sorted(mins)
     
@@ -454,12 +455,14 @@ class XFBenchPlotter:
         # NOTE - plotting the container spawn times here
         if self.__exp_desc.get("csp") == "azure" or self.__exp_desc.get("csp") == "azure_v2":
             container_spawn_times = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
+
             ax.plot(container_spawn_times, [ax.get_ylim()[1]/2 for i in range(0, len(container_spawn_times))], color='green', marker='o', markersize=8, linestyle='None')
             ax.vlines(x=container_spawn_times, ymin=0, ymax=ax.get_ylim()[1]/2, linestyles='dashed', color='darkgrey', linewidth=2)
 
         if self.__exp_desc.get("csp") == "aws":
            logger.info("TODO: Complete the aws container traces function")
-           self.__get_aws_containers()
+           pass
+        #    self.__get_aws_containers()
 
         ax.grid(axis="y", which="major", linestyle="-", color="black")
         ax.grid(axis="y", which="minor", linestyle="-", color="darkgrey")

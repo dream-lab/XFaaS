@@ -48,6 +48,20 @@ def get_client_login_details(config_path):
 shell_script_commands = []
 aws_shell_script_commands = []
 
+
+def get_aws_payload(payload):
+    payload = json.dumps(payload)
+    payload = payload.replace('"', '\&quot;')
+    payload = payload[1:-1]
+    return payload
+
+def get_azure_payload(payload):
+    payload = json.dumps(payload)
+    payload = payload.replace('"', '&quot;')
+    return payload
+
+
+
 def read_dynamism_file(dynamism):
     file_path = pathlib.Path(__file__).parent / f"benchmark_resources/dynamism/{dynamism}/config.csv"
     with open(file_path) as f:  
@@ -283,13 +297,16 @@ def deploy_workflow(user_wf_dir,dag_filename, region,csp):
     wf_id, refactored_wf_id, wf_deployment_id = xfaas_deployer(user_wf_dir, dag_filename ,'dag-benchmark-revised.json',csp,region)
     return wf_id, refactored_wf_id, wf_deployment_id
 
-def plot_metrics(user_wf_dir, wf_deployment_id, run_id):
+def plot_metrics(user_wf_dir, wf_deployment_id, run_id, wf_name):
     # command = f'python3 xfaas_benchmarksuite_plotgen_vk.py --user-dir {user_wf_dir} --artifacts-file {artificats_filename}.json  --interleaved True --format pdf --out-dir {artificats_filename}-long'
     # os.system(command)
     format = 'pdf'
     plotter = XFBenchPlotter(user_wf_dir, wf_deployment_id, run_id,format)
     plotter.plot_e2e_timeline(xticks=[], yticks=[],is_overlay=True)
-    plotter.plot_stagewise( yticks=[])
+    figwidth = 7
+    if wf_name == 'fileProcessing' or wf_name == 'math':
+        figwidth = 20   
+    plotter.plot_stagewise( yticks=[],figwidth=figwidth)
     plotter.plot_cumm_e2e(yticks=[])
 
 
@@ -342,38 +359,37 @@ if __name__ == "__main__":
     get_client_login_details(path_to_config_file)
     run_id = 'exp1'
     print('==================BUILDING WF===========================')
-    # build_workflow(wf_user_directory)
-    # time.sleep(20)
+
+    build_workflow(wf_user_directory)
+    
     wf_user_directory += "/workflow-gen"
-    wf_deployment_id = "fd336dbd-7ccc-4feb-8749-f0e297e4e53b"
+    
+    
+    print('==================DEPLOYING WF===========================')
+    wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
     
     
     
-    # print('==================DEPLOYING WF===========================')
-    # wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
-    # time.sleep(20)
-    
-    
-    # print('==================RUNNING WF===========================')
-    # run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
-    # time.sleep(120)
+    print('==================RUNNING WF===========================')
+    run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
+    time.sleep(100)
     
     
     print('==================PLOTTING METRICS===========================')
-    plot_metrics(wf_user_directory,wf_deployment_id,run_id)
+    plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name)
 
-    # print('==================TEARING DOWN WF===========================')
-    # timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-    # exp_conf = f"{csp}-{region}-{max_rps}-{duration}-{payload_size}-{dynamism}-{timestamp}"
-    # src = f"{wf_user_directory}/{wf_deployment_id}"
-    # dst = f"{wf_user_directory}/{exp_conf}"
-    # shutil.copytree(src, dst)
+    print('==================TEARING DOWN WF===========================')
+    timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+    exp_conf = f"{csp}-{region}-{max_rps}-{duration}-{payload_size}-{dynamism}-{timestamp}"
+    src = f"{wf_user_directory}/{wf_deployment_id}"
+    dst = f"{wf_user_directory}/{exp_conf}"
+    shutil.copytree(src, dst)
 
     
     # if teardown_flag == True:
     #     remote_teardown(wf_user_directory,csp,region,part_id)
-    # time.sleep(20)
-    # local_teardown(wf_user_directory)
+    
+    local_teardown(wf_user_directory)
 
 
 
