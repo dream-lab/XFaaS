@@ -372,16 +372,12 @@ if __name__ == "__main__":
     
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
-    time.sleep(200)
+    time.sleep(100)
     
-    try:
-        print('==================PLOTTING METRICS===========================')
-        plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name)
-    except Exception as e:
-        print('==================PLOTTING METRICS FAILED===========================')
-        print(e)
-        pass
     
+    print('==================PLOTTING METRICS===========================')
+    plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name)
+
     print('==================TEARING DOWN WF===========================')
     timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
     exp_conf = f"{csp}-{region}-{max_rps}-{duration}-{payload_size}-{dynamism}-{timestamp}"

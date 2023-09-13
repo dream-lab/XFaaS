@@ -68,7 +68,11 @@ def create_dag_file(data,wf_file_path):
         if os.path.exists(samples_path):
             shutil.rmtree(samples_path)
 
-
+        memory = 128
+        if func_name == 'resnet':
+            memory = 512
+        if func_name == 'alexnet':
+            memory = 256
         if len(func_nodes) == 1:
             node = {
                         "NodeId": f"{idx}",
@@ -76,7 +80,7 @@ def create_dag_file(data,wf_file_path):
                         "Path": f"{dst_path}",
                         "EntryPoint": f"{func_file}",
                         "CSP": "NA",
-                        "MemoryInMB": 128,
+                        "MemoryInMB": memory,
                         "Code": f"{code}"
                     }
             res.append(node)
@@ -88,7 +92,7 @@ def create_dag_file(data,wf_file_path):
                         "Path": f"{func_path}",
                         "EntryPoint": f"{func_file}",
                         "CSP": "NA",
-                        "MemoryInMB": 128,
+                        "MemoryInMB": memory,
                         "Code": f"{code}"
                     }
                 res.append(node)
