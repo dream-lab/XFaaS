@@ -264,12 +264,11 @@ class XFBenchPlotter:
         return int(expected_count)
     
 
-    def __add_rps_overlay(self, ax: plt.Axes, len_yticks: int):
+    def __add_rps_overlay(self, ax: plt.Axes, len_yticks: int, rps_ticks=None):
         logger.info("Adding overlay for E2E timeline")
         step_x = []
         step_y = []
-        # conf_items = dict(sorted(self.__exp_conf.items()))
-        conf_items = sorted(self.__exp_conf.items())
+        conf_items = list(self.__exp_conf.items())
         
         # Calculate step_x and step_y
         max_rps = -1
@@ -288,12 +287,18 @@ class XFBenchPlotter:
         ax2 = ax.twinx()
         ax2.set_ylim(ymin=0)
         ax2.set_ylabel("RPS")
+        
+        if not rps_ticks:
+            slots = (max_rps)/(len_yticks-1)
+            yticks_ax2 = [round(y,2) for y in np.arange(0, max_rps+slots, slots)]
+            ax2.set_yticks(yticks_ax2)
+            # NOTE - use the fontdict=fontdict for custom fontsize
+            ax2.set_yticklabels([str(y) for y in yticks_ax2]) 
+        else:
+            ax2.set_yticks(rps_ticks)
+            ax2.set_yticklabels([str(y) for y in rps_ticks])
 
-        slots = (max_rps)/(len_yticks-1)
-        yticks_ax2 = [round(y,2) for y in np.arange(0, max_rps+slots, slots)]
-        ax2.set_yticks(yticks_ax2)
-        # NOTE - use the fontdict=fontdict for custom fontsize
-        ax2.set_yticklabels([str(y) for y in yticks_ax2]) 
+        logger.info(f"Step X - {step_x}:: Step Y - {step_y}")
         ax2.step(step_x, step_y, linestyle='dashed', color='red', linewidth=3)
         return ax
 
@@ -638,6 +643,7 @@ class XFBenchPlotter:
             vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
         ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
 
+        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
         ax.grid(axis="y", which="major", linestyle="-", color="black")
         ax.grid(axis="y", which="minor", linestyle="-", color="grey")
         ax.set_axisbelow(True)

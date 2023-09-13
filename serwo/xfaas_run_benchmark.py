@@ -383,15 +383,15 @@ if __name__ == "__main__":
         pass
     
     print('==================TEARING DOWN WF===========================')
-    timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+    # timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
     exp_conf = f"{csp}-{region}-{max_rps}-{duration}-{payload_size}-{dynamism}-{timestamp}"
     src = f"{wf_user_directory}/{wf_deployment_id}"
     dst = f"{wf_user_directory}/{exp_conf}"
     shutil.copytree(src, dst)
 
     
-    # if teardown_flag == True:
-    #     remote_teardown(wf_user_directory,csp,region,part_id)
+    if teardown_flag == True:
+        remote_teardown(wf_user_directory,csp,region,part_id)
     
     local_teardown(wf_user_directory)
 
