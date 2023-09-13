@@ -643,6 +643,7 @@ class XFBenchPlotter:
             vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
         ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
 
+        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
         ax.grid(axis="y", which="major", linestyle="-", color="black")
         ax.grid(axis="y", which="minor", linestyle="-", color="grey")
         ax.set_axisbelow(True)
