@@ -147,23 +147,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    onke = yield context.call_activity("fetch_data", serwoObject)
-    ovxv = yield context.call_activity("grayscale", onke)
-    rald = yield context.call_activity("flip", ovxv)
-    ukba = yield context.call_activity("rotate", rald)
-    kjkm = yield context.call_activity("resize", ukba)
-    saua = []
-    fcbe = context.call_activity("resnet", kjkm)
-    aqqu = context.call_activity("alexnet", kjkm)
-    yjub = context.call_activity("mobilenet", kjkm)
-    saua.append(fcbe)
-    saua.append(aqqu)
-    saua.append(yjub)
-    qgak = yield context.task_all(saua)
-    fjrg = yield context.call_activity("aggregator", qgak)
-    fjrg = insert_end_stats_in_metadata(fjrg)
-    pygh = yield context.call_activity("CollectLogs", fjrg)
-    return pygh
+    ntpg = yield context.call_activity("graphGen", serwoObject)
+    bcyz = []
+    piyf = context.call_activity("graphBft", ntpg)
+    cjqv = context.call_activity("graphMst", ntpg)
+    xctg = context.call_activity("pagerank", ntpg)
+    bcyz.append(piyf)
+    bcyz.append(cjqv)
+    bcyz.append(xctg)
+    byzg = yield context.task_all(bcyz)
+    llmv = yield context.call_activity("aggregate", byzg)
+    llmv = insert_end_stats_in_metadata(llmv)
+    bphy = yield context.call_activity("CollectLogs", llmv)
+    return bphy
 
 
 main = df.Orchestrator.create(orchestrator_function)
