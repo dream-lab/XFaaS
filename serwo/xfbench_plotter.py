@@ -268,8 +268,7 @@ class XFBenchPlotter:
         logger.info("Adding overlay for E2E timeline")
         step_x = []
         step_y = []
-        # conf_items = dict(sorted(self.__exp_conf.items()))
-        conf_items = sorted(self.__exp_conf.items())
+        conf_items = list(self.__exp_conf.items())
         
         # Calculate step_x and step_y
         max_rps = -1
@@ -299,6 +298,7 @@ class XFBenchPlotter:
             ax2.set_yticks(rps_ticks)
             ax2.set_yticklabels([str(y) for y in rps_ticks])
 
+        logger.info(f"Step X - {step_x}:: Step Y - {step_y}")
         ax2.step(step_x, step_y, linestyle='dashed', color='red', linewidth=3)
         return ax
 
