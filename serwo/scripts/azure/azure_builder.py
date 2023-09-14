@@ -243,9 +243,14 @@ def copy_all_dirs(fn_dir_path,fin_func_dir):
                 path = f'{fn_dir_path}/{dir}'
                 fr.f_and_r(path,f'{fin_func_dir}/func.py',str_find,str_replace)
 
-        if '.py' not in dir:
+        if '.py' not in dir and 'samples'!=dir:
             if not os.path.exists(fin_func_dir+'/'+dir):
-                shutil.copytree(fn_dir_path+'/'+dir,fin_func_dir+'/'+dir,False,None)
+                final_path = fn_dir_path+'/'+dir
+                ## if final_path is a directory
+                if os.path.isdir(final_path):
+                    shutil.copytree(final_path,fin_func_dir+'/'+dir,False,None)
+                else:
+                    shutil.copyfile(final_path,fin_func_dir+'/'+dir)
             in_dir = os.listdir(fin_func_dir+'/'+dir)
 
             obj_dir = fin_func_dir+'/'+dir+'/' + obj_dir_str
@@ -261,7 +266,7 @@ def copy_all_dirs(fn_dir_path,fin_func_dir):
                     fr.f_and_r(path,fin_func_dir+'/'+dir+'/'+f,str_find,str_replace)
 
 
-        else:
+        elif 'samples'!=dir:
             if 'fused' not in fn_dir_path:
                 shutil.copyfile(fn_dir_path+'/'+dir,fin_func_dir+'/'+dir)
                 str_find = 'from python.src.utils.classes.commons.serwo_objects import'
