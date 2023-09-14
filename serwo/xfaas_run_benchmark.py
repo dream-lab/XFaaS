@@ -308,6 +308,7 @@ def plot_metrics(user_wf_dir, wf_deployment_id, run_id, wf_name):
         figwidth = 20   
     plotter.plot_stagewise( yticks=[],figwidth=figwidth)
     plotter.plot_cumm_e2e(yticks=[])
+    plotter.plot_e2e_invocations_wnwo_containers(csp="azure", yticks=[])
 
 
 
@@ -358,38 +359,39 @@ if __name__ == "__main__":
     provenance_artifact_filename = f"{csp}-{dynamism}-{payload_size}-{max_rps}rps.json"
     get_client_login_details(path_to_config_file)
     run_id = 'exp1'
+    wf_deployment_id = "fd336dbd-7ccc-4feb-8749-f0e297e4e53b"
     print('==================BUILDING WF===========================')
 
-    build_workflow(wf_user_directory)
+    # build_workflow(wf_user_directory)
     
     wf_user_directory += "/workflow-gen"
     
     
     print('==================DEPLOYING WF===========================')
-    wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
+    # wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
     
     
     
     print('==================RUNNING WF===========================')
-    run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
-    time.sleep(100)
+    # run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
+    # time.sleep(100)
     
     
     print('==================PLOTTING METRICS===========================')
     plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name)
 
     print('==================TEARING DOWN WF===========================')
-    # timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-    exp_conf = f"{csp}-{region}-{max_rps}-{duration}-{payload_size}-{dynamism}-{timestamp}"
-    src = f"{wf_user_directory}/{wf_deployment_id}"
-    dst = f"{wf_user_directory}/{exp_conf}"
-    shutil.copytree(src, dst)
+    # # timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+    # exp_conf = f"{csp}-{region}-{max_rps}-{duration}-{payload_size}-{dynamism}-{timestamp}"
+    # src = f"{wf_user_directory}/{wf_deployment_id}"
+    # dst = f"{wf_user_directory}/{exp_conf}"
+    # shutil.copytree(src, dst)
 
     
-    if teardown_flag == True:
-        remote_teardown(wf_user_directory,csp,region,part_id)
+    # if teardown_flag == True:
+    #     remote_teardown(wf_user_directory,csp,region,part_id)
     
-    local_teardown(wf_user_directory)
+    # local_teardown(wf_user_directory)
 
 
 

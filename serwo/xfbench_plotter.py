@@ -368,6 +368,8 @@ class XFBenchPlotter:
 
 
     def __get_azure_containers(self, log_items: list):
+        # array for storing the workflow invocation ids
+        wf_invocation_ids = set() # TODO - check with VK.
         god_dict = {}
         ans = []
         mins = []
@@ -377,6 +379,10 @@ class XFBenchPlotter:
         for item in sorted_dynamo_items:
             functions = item['functions']
             workflow_start_time = item['invocation_start_time_ms']
+
+            # New addition - 
+            wf_invocation_id = item['workflow_invocation_id']
+
             for function in functions:
                 if "cid"  in functions[function]:
                     cid = functions[function]['cid']
@@ -386,16 +392,18 @@ class XFBenchPlotter:
                         continue
                     if cid not in god_dict:
                         god_dict[cid] = []
-                        god_dict[cid].append((function_start_time,int(workflow_start_time)))
+                        god_dict[cid].append((function_start_time,int(workflow_start_time), wf_invocation_id))
                     else:
-                        god_dict[cid].append((function_start_time,int(workflow_start_time)))
+                        god_dict[cid].append((function_start_time,int(workflow_start_time), wf_invocation_id))     
+
         
         for cid in god_dict:
             god_dict[cid].sort()
             ans.append(god_dict[cid][0])
             mins.append((god_dict[cid][0][0]-int(min_start_time))/1000)
+            wf_invocation_ids.add(god_dict[cid][1][2])
         
-        return sorted(mins)
+        return sorted(mins), wf_invocation_ids
     
     # TODO - populate the aws container traces function 
     def __get_aws_containers():
@@ -454,7 +462,7 @@ class XFBenchPlotter:
 
         # NOTE - plotting the container spawn times here
         if self.__exp_desc.get("csp") == "azure" or self.__exp_desc.get("csp") == "azure_v2":
-            container_spawn_times = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
+            container_spawn_times, _ = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
 
             ax.plot(container_spawn_times, [ax.get_ylim()[1]/2 for i in range(0, len(container_spawn_times))], color='green', marker='o', markersize=8, linestyle='None')
             ax.vlines(x=container_spawn_times, ymin=0, ymax=ax.get_ylim()[1]/2, linestyles='dashed', color='darkgrey', linewidth=2)
@@ -654,3 +662,73 @@ class XFBenchPlotter:
                                 cumm_e2e_time=cumm_e2e_time)
         
         fig.savefig(self.__plots_dir / f"cumm_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
+
+    '''
+    Box plot containng the e2e times for invocations which start the containers
+    vs the e2e times for invocations that do not start the container
+    '''
+    def plot_e2e_invocations_wnwo_containers(self, csp: str, yticks: list):
+        logger.info(f"Plotting e2e boxplots for invocations wnwo containers")
+        logs = self.__get_provenance_logs()
+        
+        if csp == 'azure':
+            # NOTE - this returns a "set" of ids
+            _ , container_wf_invocations_ids = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
+        if csp == 'aws':
+            #TODO - structure aws container fetching similar to azure
+            # _, container_wf_invocation_ids = self.__get_aws_containers()
+            pass
+
+        logger.info(f"Invocation Ids with conatiner spawn :: CSP {csp} - {container_wf_invocations_ids}")
+        
+        sink_node = [node for node in self.__xfaas_dag.nodes if self.__xfaas_dag.out_degree(node) == 0][0]
+        e2e_wo_containers = []
+        e2e_w_containers = []
+        
+        # Formed data for plots
+        for log in logs:
+            if log["workflow_invocation_id"] in container_wf_invocations_ids:
+                e2e_w_containers.append(int(log["functions"][sink_node]["end_delta"])/1000)
+            else:
+                e2e_wo_containers.append(int(log["functions"][sink_node]["end_delta"])/1000)
+
+        print(len(e2e_w_containers))
+        print(len(logs))
+        fig, ax = plt.subplots()
+        fig.set_dpi(400)
+        ax.set_ylabel("Time (sec)")
+        labels = ['E2E w/o\nContainer Spawn', 'E2E w\nContainer Spawn']
+
+        bplot2 = ax.boxplot([np.array(e2e_wo_containers), np.array(e2e_w_containers)],
+                             vert=True,
+                             widths=0.1,
+                             patch_artist=True,
+                             showfliers=False)
+        
+        if not yticks == []:
+            ax.set_yticks(yticks)
+            ax.set_yticklabels([str(x) for x in yticks])
+        
+        ax.set_xticks([x+1 for x in range(0, len(labels))])
+        ax.set_xticklabels(labels)
+
+        # Set ylim
+        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
+        # color='pink'
+        colors = ['lightblue', 'blue']
+        for patch, color in zip(bplot2['boxes'], colors):
+            patch.set_facecolor(color)
+
+        _xloc = ax.get_xticks()
+        vlines_x_between = []
+        for idx in range(0, len(_xloc)-1):
+            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
+        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
+
+        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
+        ax.grid(axis="y", which="major", linestyle="-", color="black")
+        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
+        ax.set_axisbelow(True)
+
+
+        fig.savefig(self.__plots_dir / f"e2e_wnwo_container_contrast_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
