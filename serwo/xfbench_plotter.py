@@ -218,10 +218,13 @@ class XFBenchPlotter:
         distribution_dict = dict(
             client_overheads=[],
             functions=defaultdict(list),
-            edges=defaultdict(list)
+            edges=defaultdict(list),
+            wf_invocation_id = []
         )
 
         for log in logs:
+            wf_invocation_id = log["workflow_invocation_id"]
+            distribution_dict["wf_invocation_id"].append(wf_invocation_id)
             distribution_dict["client_overheads"].append((int(log["invocation_start_time_ms"]) - int(log["client_request_time_ms"]))/1000)
             for u in [v for v in self.__xfaas_dag.nodes]:
                 exec_time = (log["functions"][u]["end_delta"] - log["functions"][u]["start_delta"])/1000 # seconds
@@ -230,6 +233,58 @@ class XFBenchPlotter:
                 edge_key = f"{v1}-{v2}"
                 comm_time = (log["functions"][v2]["start_delta"] - log["functions"][v1]["end_delta"])/1000 # seconds
                 distribution_dict["edges"][edge_key].append(comm_time)
+        
+        return distribution_dict
+
+    def __get_timings_dict_with_containers(self,container_ids):
+        logger.info("Getting timing distribution dictionary")
+        logs = self.__get_provenance_logs()
+        
+        distribution_dict = dict(
+            client_overheads=[],
+            functions=defaultdict(list),
+            edges=defaultdict(list),
+            wf_invocation_id = []
+        )
+
+        for log in logs:
+            wf_invocation_id = log["workflow_invocation_id"]
+            if wf_invocation_id in container_ids:
+                distribution_dict["wf_invocation_id"].append(wf_invocation_id)
+                distribution_dict["client_overheads"].append((int(log["invocation_start_time_ms"]) - int(log["client_request_time_ms"]))/1000)
+                for u in [v for v in self.__xfaas_dag.nodes]:
+                    exec_time = (log["functions"][u]["end_delta"] - log["functions"][u]["start_delta"])/1000 # seconds
+                    distribution_dict["functions"][u].append(exec_time)
+                for v1,v2 in [e for e in self.__xfaas_dag.edges]:
+                    edge_key = f"{v1}-{v2}"
+                    comm_time = (log["functions"][v2]["start_delta"] - log["functions"][v1]["end_delta"])/1000 # seconds
+                    distribution_dict["edges"][edge_key].append(comm_time)
+        
+        return distribution_dict
+
+    def __get_timings_dict_without_containers(self,container_ids):
+        logger.info("Getting timing distribution dictionary")
+        logs = self.__get_provenance_logs()
+        
+        distribution_dict = dict(
+            client_overheads=[],
+            functions=defaultdict(list),
+            edges=defaultdict(list),
+            wf_invocation_id = []
+        )
+
+        for log in logs:
+            wf_invocation_id = log["workflow_invocation_id"]
+            if wf_invocation_id not in container_ids:
+                distribution_dict["wf_invocation_id"].append(wf_invocation_id)
+                distribution_dict["client_overheads"].append((int(log["invocation_start_time_ms"]) - int(log["client_request_time_ms"]))/1000)
+                for u in [v for v in self.__xfaas_dag.nodes]:
+                    exec_time = (log["functions"][u]["end_delta"] - log["functions"][u]["start_delta"])/1000 # seconds
+                    distribution_dict["functions"][u].append(exec_time)
+                for v1,v2 in [e for e in self.__xfaas_dag.edges]:
+                    edge_key = f"{v1}-{v2}"
+                    comm_time = (log["functions"][v2]["start_delta"] - log["functions"][v1]["end_delta"])/1000 # seconds
+                    distribution_dict["edges"][edge_key].append(comm_time)
         
         return distribution_dict
     
@@ -311,17 +366,7 @@ class XFBenchPlotter:
         logger.info("== Cummulative timings Statss  == ")
 
     def __get_cumm_time(self, function_times, edge_times, num_iters):
-            # function_times = {"1": [1,4,5,6,7],
-            #                   "2": [2,3,4,5,6],
-            #                   "3": [1,2,3,4,5],
-            #                   "4": [1,2,3,4,5],
-            #                   "5": [1,2,3,4,5]}
-            # edge_times = {"1-2": [1,4,5,6,7],
-            #               "1-3": [1,2,3,4,5],
-            #               "1-4": [1,2,3,4,5],
-            #               "2-5": [1,2,3,4,5],
-            #             "3-5": [1,2,3,4,5],
-            #             "4-5": [1,2,3,4,5]}                  
+                           
             source = [n for n, d in self.__xfaas_dag.in_degree() if d == 0][0]
             sink = [n for n, d in self.__xfaas_dag.out_degree() if d == 0][0]
             paths = list(nx.all_simple_paths(self.__xfaas_dag, source, sink))
@@ -365,9 +410,102 @@ class XFBenchPlotter:
 
             return cumm_function_exec,cumm_comm_time,e2e_time
 
+    def __get__filtered_cumm_time(self, function_times, edge_times, num_iters,wf_invocation_ids,container_invocation_ids,include_continer):
+                           
+            source = [n for n, d in self.__xfaas_dag.in_degree() if d == 0][0]
+            sink = [n for n, d in self.__xfaas_dag.out_degree() if d == 0][0]
+            paths = list(nx.all_simple_paths(self.__xfaas_dag, source, sink))
+            
+            if include_continer == True:
+            ## cumm fn exec
+                cumm_function_exec = []
+                for i in range(num_iters):
+                    temp = []
+                    for path in paths:
+                        tm = 0
+                        for node in path:
+                            tm += function_times[node][i]
+                        temp.append(tm)
+                    if wf_invocation_ids[i] in container_invocation_ids:
+                        cumm_function_exec.append(max(temp))
+                
+
+                ## cumm comm time
+                cumm_comm_time = []
+                for i in range(num_iters):
+                    temp = []
+                    for path in paths:
+                        tm = 0
+                        for j in range(0,len(path)-1):
+                            tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
+                        temp.append(tm)
+                    if wf_invocation_ids[i] in container_invocation_ids:
+                        cumm_comm_time.append(max(temp))
+                
+                ## e2e
+                e2e_time = []
+                for i in range(num_iters):
+                    temp = []
+                    for path in paths:
+                        tm = 0
+                        
+                        for j in range(0,len(path)-1):
+                            tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
+                            tm += function_times[path[j]][i]
+                        tm += function_times[path[-1]][i]
+                        temp.append(tm)
+                    if wf_invocation_ids[i] in container_invocation_ids:
+                        e2e_time.append(max(temp))
+            else:
+                ## cumm fn exec
+                cumm_function_exec = []
+                for i in range(num_iters):
+                    temp = []
+                    for path in paths:
+                        tm = 0
+                        for node in path:
+                            tm += function_times[node][i]
+                        temp.append(tm)
+                    if wf_invocation_ids[i] not in container_invocation_ids:
+                        cumm_function_exec.append(max(temp))
+                
+
+                ## cumm comm time
+                cumm_comm_time = []
+                for i in range(num_iters):
+                    temp = []
+                    for path in paths:
+                        tm = 0
+                        for j in range(0,len(path)-1):
+                            tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
+                        temp.append(tm)
+                    if wf_invocation_ids[i] not in container_invocation_ids:
+                        cumm_comm_time.append(max(temp))
+                
+                ## e2e
+                e2e_time = []
+                for i in range(num_iters):
+                    temp = []
+                    for path in paths:
+                        tm = 0
+                        
+                        for j in range(0,len(path)-1):
+                            tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
+                            tm += function_times[path[j]][i]
+                        tm += function_times[path[-1]][i]
+                        temp.append(tm)
+                    if wf_invocation_ids[i] not in container_invocation_ids:
+                        e2e_time.append(max(temp))
+
+
+
+            return cumm_function_exec,cumm_comm_time,e2e_time
+
 
 
     def __get_azure_containers(self, log_items: list):
+        # array for storing the workflow invocation ids
+        wf_invocation_ids = set() # TODO - check with VK.
         god_dict = {}
         ans = []
         mins = []
@@ -377,6 +515,10 @@ class XFBenchPlotter:
         for item in sorted_dynamo_items:
             functions = item['functions']
             workflow_start_time = item['invocation_start_time_ms']
+
+            # New addition - 
+            wf_invocation_id = item['workflow_invocation_id']
+
             for function in functions:
                 if "cid"  in functions[function]:
                     cid = functions[function]['cid']
@@ -386,16 +528,19 @@ class XFBenchPlotter:
                         continue
                     if cid not in god_dict:
                         god_dict[cid] = []
-                        god_dict[cid].append((function_start_time,int(workflow_start_time)))
+                        god_dict[cid].append((function_start_time,int(workflow_start_time), wf_invocation_id,function))
                     else:
-                        god_dict[cid].append((function_start_time,int(workflow_start_time)))
+                        god_dict[cid].append((function_start_time,int(workflow_start_time), wf_invocation_id,function))     
+
         
         for cid in god_dict:
             god_dict[cid].sort()
             ans.append(god_dict[cid][0])
-            mins.append((god_dict[cid][0][0]-int(min_start_time))/1000)
+            # mins.append((god_dict[cid][0][0]-int(min_start_time))/1000)
+            mins.append(god_dict[cid][0][1])
+            wf_invocation_ids.add(god_dict[cid][0][2])
         
-        return sorted(mins)
+        return sorted(mins), wf_invocation_ids
     
     # TODO - populate the aws container traces function 
     def __get_aws_containers():
@@ -454,7 +599,7 @@ class XFBenchPlotter:
 
         # NOTE - plotting the container spawn times here
         if self.__exp_desc.get("csp") == "azure" or self.__exp_desc.get("csp") == "azure_v2":
-            container_spawn_times = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
+            container_spawn_times, _ = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
 
             ax.plot(container_spawn_times, [ax.get_ylim()[1]/2 for i in range(0, len(container_spawn_times))], color='green', marker='o', markersize=8, linestyle='None')
             ax.vlines(x=container_spawn_times, ymin=0, ymax=ax.get_ylim()[1]/2, linestyles='dashed', color='darkgrey', linewidth=2)
@@ -654,3 +799,459 @@ class XFBenchPlotter:
                                 cumm_e2e_time=cumm_e2e_time)
         
         fig.savefig(self.__plots_dir / f"cumm_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
+
+    '''
+    Box plot containng the e2e times for invocations which start the containers
+    vs the e2e times for invocations that do not start the container
+    '''
+    def plot_e2e_invocations_wnwo_containers(self, csp: str, yticks: list):
+        logger.info(f"Plotting e2e boxplots for invocations wnwo containers")
+        logs = self.__get_provenance_logs()
+        
+        if csp == 'azure':
+            # NOTE - this returns a "set" of ids
+            _ , container_wf_invocations_ids = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
+        if csp == 'aws':
+            #TODO - structure aws container fetching similar to azure
+            # _, container_wf_invocation_ids = self.__get_aws_containers()
+            pass
+
+        logger.info(f"Invocation Ids with conatiner spawn :: CSP {csp} - {container_wf_invocations_ids}")
+        
+        sink_node = [node for node in self.__xfaas_dag.nodes if self.__xfaas_dag.out_degree(node) == 0][0]
+        e2e_wo_containers = []
+        e2e_w_containers = []
+        
+        # Formed data for plots
+        for log in logs:
+            if log["workflow_invocation_id"] in container_wf_invocations_ids:
+                e2e_w_containers.append(int(log["functions"][sink_node]["end_delta"])/1000)
+            else:
+                e2e_wo_containers.append(int(log["functions"][sink_node]["end_delta"])/1000)
+
+        print(len(e2e_w_containers))
+        print(len(e2e_wo_containers))
+        print(len(logs))
+        fig, ax = plt.subplots()
+        fig.set_dpi(400)
+        ax.set_ylabel("Time (sec)")
+        labels = ['E2E w/o\nContainer Spawn', 'E2E w\nContainer Spawn']
+
+        bplot2 = ax.boxplot([np.array(e2e_wo_containers), np.array(e2e_w_containers)],
+                             vert=True,
+                             widths=0.1,
+                             patch_artist=True,
+                             showfliers=False)
+        
+        if not yticks == []:
+            ax.set_yticks(yticks)
+            ax.set_yticklabels([str(x) for x in yticks])
+        
+        ax.set_xticks([x+1 for x in range(0, len(labels))])
+        ax.set_xticklabels(labels)
+
+        # Set ylim
+        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
+        # color='pink'
+        colors = ['lightblue', 'blue']
+        for patch, color in zip(bplot2['boxes'], colors):
+            patch.set_facecolor(color)
+
+        _xloc = ax.get_xticks()
+        vlines_x_between = []
+        for idx in range(0, len(_xloc)-1):
+            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
+        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
+
+        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
+        ax.grid(axis="y", which="major", linestyle="-", color="black")
+        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
+        ax.set_axisbelow(True)
+
+
+        fig.savefig(self.__plots_dir / f"e2e_wnwo_container_contrast_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
+
+
+    
+    '''
+    Plot cummulative e2e plots for with and wo continaers
+    '''
+    def plot_cumm_e2e_container(self, csp,yticks: list):
+        logs = self.__get_provenance_logs()
+        fig, ax = plt.subplots()
+        fig.set_dpi(400)
+        # fig.set_figwidth(9)
+        ax.set_ylabel("Time (sec)")
+        cumm_labels = [r'$\sum Exec$', r'$\sum Comms$', r'$\sum E2E$']
+
+        # NOTE - for custom size uncomment these with fontdict
+        # fontdict = {'size': 20} 
+        # ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
+        
+        distribution_dict = self.__get_timings_dict()
+       
+        # cumm_func_time = get_cumm_time_func(time_map=distribution_dict["functions"], num_iters=len(e2e_all_sessions))
+
+        if csp == 'azure':
+            # NOTE - this returns a "set" of ids
+            _ , container_wf_invocations_ids = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
+        if csp == 'aws':
+            #TODO - structure aws container fetching similar to azure
+            # _, container_wf_invocation_ids = self.__get_aws_containers()
+            pass
+
+        
+        logger.info(f"Invocation Ids with conatiner spawn :: CSP {csp} - {container_wf_invocations_ids}")
+        
+        sink_node = [node for node in self.__xfaas_dag.nodes if self.__xfaas_dag.out_degree(node) == 0][0]
+
+       
+        cumm_compute_time, cumm_comms_time, cumm_e2e_time = self.__get__filtered_cumm_time(distribution_dict["functions"],
+                                                                                distribution_dict["edges"],
+                                                                                num_iters=len(self.__get_provenance_logs()),
+                                                                                wf_invocation_ids= distribution_dict["wf_invocation_id"],
+                                                                                container_invocation_ids= container_wf_invocations_ids,
+                                                                                include_continer=False)
+
+        print(len(cumm_comms_time))
+        bplot2 = ax.boxplot([np.array(cumm_compute_time), np.array(cumm_comms_time), np.array(cumm_e2e_time)],
+                             vert=True,
+                             widths=0.2,
+                             patch_artist=True,
+                             showfliers=False)
+        
+        if not yticks == []:
+            ax.set_yticks(yticks)
+            ax.set_yticklabels([str(x) for x in yticks])
+        
+        ax.set_xticks([x+1 for x in range(0, len(cumm_labels))])
+        ax.set_xticklabels(cumm_labels)
+
+        # Set ylim
+        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
+        # color='pink'
+        colors = ['blue', 'green', 'brown']
+        for patch, color in zip(bplot2['boxes'], colors):
+            patch.set_facecolor(color)
+
+        _xloc = ax.get_xticks()
+        vlines_x_between = []
+        for idx in range(0, len(_xloc)-1):
+            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
+        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
+
+        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
+        ax.grid(axis="y", which="major", linestyle="-", color="black")
+        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
+        ax.set_axisbelow(True)
+
+
+        self.__print_cumm_stats(cumm_compute_time=cumm_compute_time,
+                                cumm_comms_time=cumm_comms_time,
+                                cumm_e2e_time=cumm_e2e_time)
+        
+        fig.savefig(self.__plots_dir / f"cumm_wo_containers_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
+
+
+
+        fig, ax = plt.subplots()
+        fig.set_dpi(400)
+        # fig.set_figwidth(9)
+        ax.set_ylabel("Time (sec)")
+        cumm_labels = [r'$\sum Exec$', r'$\sum Comms$', r'$\sum E2E$']
+
+
+        cumm_compute_time, cumm_comms_time, cumm_e2e_time = self.__get__filtered_cumm_time(distribution_dict["functions"],
+                                                                                distribution_dict["edges"],
+                                                                                num_iters=len(self.__get_provenance_logs()),
+                                                                                wf_invocation_ids= distribution_dict["wf_invocation_id"],
+                                                                                container_invocation_ids= container_wf_invocations_ids,
+                                                                                include_continer=True)
+
+        print(len(cumm_comms_time))
+        bplot2 = ax.boxplot([np.array(cumm_compute_time), np.array(cumm_comms_time), np.array(cumm_e2e_time)],
+                             vert=True,
+                             widths=0.2,
+                             patch_artist=True,
+                             showfliers=False)
+        
+        if not yticks == []:
+            ax.set_yticks(yticks)
+            ax.set_yticklabels([str(x) for x in yticks])
+        
+        ax.set_xticks([x+1 for x in range(0, len(cumm_labels))])
+        ax.set_xticklabels(cumm_labels)
+
+        # Set ylim
+        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
+        # color='pink'
+        colors = ['blue', 'green', 'brown']
+        for patch, color in zip(bplot2['boxes'], colors):
+            patch.set_facecolor(color)
+
+        _xloc = ax.get_xticks()
+        vlines_x_between = []
+        for idx in range(0, len(_xloc)-1):
+            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
+        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
+
+        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
+        ax.grid(axis="y", which="major", linestyle="-", color="black")
+        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
+        ax.set_axisbelow(True)
+
+
+        self.__print_cumm_stats(cumm_compute_time=cumm_compute_time,
+                                cumm_comms_time=cumm_comms_time,
+                                cumm_e2e_time=cumm_e2e_time)
+        
+        fig.savefig(self.__plots_dir / f"cumm_w_containers_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
+
+    '''
+    Plot Stagewise
+    '''
+    def plot_stagewise_containers(self,csp, yticks: list, figwidth=None):
+        logs = self.__get_provenance_logs()
+        if csp == 'azure':
+        # NOTE - this returns a "set" of ids
+            _ , container_wf_invocations_ids = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
+        if csp == 'aws':
+            #TODO - structure aws container fetching similar to azure
+            # _, container_wf_invocation_ids = self.__get_aws_containers()
+            pass
+        logger.info("Plotting Stagewise Boxplots")
+        distribution_dict = self.__get_timings_dict_with_containers(container_wf_invocations_ids)
+
+        fig, ax = plt.subplots()
+        fig.set_dpi(450)
+
+        if figwidth:
+            fig.set_figwidth(figwidth)
+
+        ax.set_ylabel("Time (sec)") # NOTE - use ...,fontdict=fontdict for custom font
+        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
+
+        if not yticks == []:
+            ax.set_yticks(yticks)
+            ax.set_yticklabels([str(y) for y in yticks])
+        
+        # NOTE for custom tick params uncomment this
+        # ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size']) 
+        # ax.xaxis.set_tick_params(which='major', labelsize=fontdict['size'])
+
+        # TextProcess yticks - 
+
+        interleaved_label_ids = []
+        interleaved_data = []
+        visited = set()
+        def get_edges(n):
+            return [(u,v) for u,v in self.__xfaas_dag.edges if u == n]
+        
+        def get_color(id):
+            if "-" in id:
+                return "lightgreen"
+            else:
+                return "lightblue"
+        
+        def get_label_color(id):
+            if "-" in id:
+                return "green"
+            else:
+                return "blue"     
+            
+        def get_data(id):
+            if "-" in id:
+                return np.array(distribution_dict["edges"][id])
+            else:
+                return np.array(distribution_dict["functions"][id])
+            
+        def get_labels(label_ids):
+            labels = []
+            for label in label_ids:
+                if "-" in label:
+                    split = label.split("-")
+                    node1 = split[0]
+                    node2 = split[1]
+                    labels.append(f"{self.__xfaas_dag.nodes[node1]['Codename']}-{self.__xfaas_dag.nodes[node2]['Codename']}")
+                else:
+                    labels.append(self.__xfaas_dag.nodes[label]['Codename'])
+            return labels
+
+
+        # create some sort of an ordered labels for the interleaved plot
+        for u in self.__xfaas_dag.nodes:
+            if u not in visited:
+                interleaved_label_ids.append(u)
+                edges = get_edges(u)
+                interleaved_label_ids += [f"{n1}-{n2}" for n1, n2 in edges]
+                visited.add(u)
+
+        interleaved_data = [np.array(distribution_dict["client_overheads"])] + [get_data(id) for id in interleaved_label_ids]    
+        # rectangular box plot
+        bplot1 = ax.boxplot(interleaved_data,
+                            vert=True,  # vertical box alignment
+                            patch_artist=True,
+                            widths=0.2,
+                            showfliers=False)  # fill with color
+                            # labels=interfunction_labels)
+        
+        interleaved_labels_modified = ["INIT-OH"] + get_labels(interleaved_label_ids)
+        logger.info(f"Interleaved Labels - {interleaved_labels_modified}")
+        
+        ax.set_xticklabels(interleaved_labels_modified, 
+                           rotation=90)
+        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
+
+        interleaved_label_ids = ['init-oh'] + interleaved_label_ids
+
+        for idx, patch in enumerate(bplot1['boxes']):
+            # NOTE - set facecolor for the client overheads
+            if idx == 0:
+                patch.set_facecolor('red')
+            else:
+                patch.set_facecolor(get_color(interleaved_label_ids[idx]))
+
+        # set the label colors
+        for idx, xtick in enumerate(ax.get_xticklabels()[0:len(interleaved_label_ids)]):
+            if idx == 0:
+                xtick.set_color('red')
+            else:
+                xtick.set_color(get_label_color(interleaved_label_ids[idx]))
+
+        ##### VLINES #####        
+        # add lighter vlines between the boxes themselves
+        _xloc = ax.get_xticks()[0: len(interleaved_label_ids)]
+        vlines_x_between = []
+        for idx in range(0, len(_xloc)-1):
+            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
+        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
+        ###### VLINES ####
+
+        ax.grid(axis="y", which="major", linestyle="-", color="black")
+        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
+        ax.set_axisbelow(True)
+
+        self.__print_stats_stagewise(distribution_dict)
+        
+        fig.savefig(self.__plots_dir / f"stagewise_w_containers_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
+
+
+
+
+
+
+        logger.info("Plotting Stagewise Boxplots")
+        distribution_dict = self.__get_timings_dict_without_containers(container_wf_invocations_ids)
+
+        fig, ax = plt.subplots()
+        fig.set_dpi(450)
+
+        if figwidth:
+            fig.set_figwidth(figwidth)
+
+        ax.set_ylabel("Time (sec)") # NOTE - use ...,fontdict=fontdict for custom font
+        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
+
+        if not yticks == []:
+            ax.set_yticks(yticks)
+            ax.set_yticklabels([str(y) for y in yticks])
+        
+        # NOTE for custom tick params uncomment this
+        # ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size']) 
+        # ax.xaxis.set_tick_params(which='major', labelsize=fontdict['size'])
+
+        # TextProcess yticks - 
+
+        interleaved_label_ids = []
+        interleaved_data = []
+        visited = set()
+        def get_edges(n):
+            return [(u,v) for u,v in self.__xfaas_dag.edges if u == n]
+        
+        def get_color(id):
+            if "-" in id:
+                return "lightgreen"
+            else:
+                return "lightblue"
+        
+        def get_label_color(id):
+            if "-" in id:
+                return "green"
+            else:
+                return "blue"     
+            
+        def get_data(id):
+            if "-" in id:
+                return np.array(distribution_dict["edges"][id])
+            else:
+                return np.array(distribution_dict["functions"][id])
+            
+        def get_labels(label_ids):
+            labels = []
+            for label in label_ids:
+                if "-" in label:
+                    split = label.split("-")
+                    node1 = split[0]
+                    node2 = split[1]
+                    labels.append(f"{self.__xfaas_dag.nodes[node1]['Codename']}-{self.__xfaas_dag.nodes[node2]['Codename']}")
+                else:
+                    labels.append(self.__xfaas_dag.nodes[label]['Codename'])
+            return labels
+
+
+        # create some sort of an ordered labels for the interleaved plot
+        for u in self.__xfaas_dag.nodes:
+            if u not in visited:
+                interleaved_label_ids.append(u)
+                edges = get_edges(u)
+                interleaved_label_ids += [f"{n1}-{n2}" for n1, n2 in edges]
+                visited.add(u)
+
+        interleaved_data = [np.array(distribution_dict["client_overheads"])] + [get_data(id) for id in interleaved_label_ids]    
+        # rectangular box plot
+        bplot1 = ax.boxplot(interleaved_data,
+                            vert=True,  # vertical box alignment
+                            patch_artist=True,
+                            widths=0.2,
+                            showfliers=False)  # fill with color
+                            # labels=interfunction_labels)
+        
+        interleaved_labels_modified = ["INIT-OH"] + get_labels(interleaved_label_ids)
+        logger.info(f"Interleaved Labels - {interleaved_labels_modified}")
+        
+        ax.set_xticklabels(interleaved_labels_modified, 
+                           rotation=90)
+        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
+
+        interleaved_label_ids = ['init-oh'] + interleaved_label_ids
+
+        for idx, patch in enumerate(bplot1['boxes']):
+            # NOTE - set facecolor for the client overheads
+            if idx == 0:
+                patch.set_facecolor('red')
+            else:
+                patch.set_facecolor(get_color(interleaved_label_ids[idx]))
+
+        # set the label colors
+        for idx, xtick in enumerate(ax.get_xticklabels()[0:len(interleaved_label_ids)]):
+            if idx == 0:
+                xtick.set_color('red')
+            else:
+                xtick.set_color(get_label_color(interleaved_label_ids[idx]))
+
+        ##### VLINES #####        
+        # add lighter vlines between the boxes themselves
+        _xloc = ax.get_xticks()[0: len(interleaved_label_ids)]
+        vlines_x_between = []
+        for idx in range(0, len(_xloc)-1):
+            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
+        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
+        ###### VLINES ####
+
+        ax.grid(axis="y", which="major", linestyle="-", color="black")
+        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
+        ax.set_axisbelow(True)
+
+        self.__print_stats_stagewise(distribution_dict)
+        
+        fig.savefig(self.__plots_dir / f"stagewise_wo_containers_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')

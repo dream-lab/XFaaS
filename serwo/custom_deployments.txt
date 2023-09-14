@@ -1,2 +1,1 @@
-b2ff4532-553e-47e9-89e7-762f38bad610,aws,ap-south-1,1,300,small,static
-6b12bfc1-8fab-45d8-8e7c-eaef64de471a,aws,ap-south-1,1,300,medium,static
+81dd3382-0546-4f5a-b5a1-282b1801dccd,azure,centralindia,1,300,small,static

@@ -30,9 +30,17 @@ def plot_metrics(user_wf_dir, wf_deployment_id, run_id):
     format = 'pdf'
     plotter = XFBenchPlotter(user_wf_dir, wf_deployment_id, run_id,format)
     plotter.plot_e2e_timeline(xticks=[], yticks=[],is_overlay=True)
-    plotter.plot_stagewise( yticks=[],figwidth=6)
+    plotter.plot_stagewise( yticks=[0,0.5,1,1.5,2],figwidth=6)
+    plotter.plot_e2e_invocations_wnwo_containers(csp="azure", yticks=[])
+    plotter.plot_cumm_e2e(yticks=[0,15,30,45,60])
+    plotter.plot_cumm_e2e_container('azure',yticks=[0,15,30,45,60])
+    plotter.plot_stagewise_containers('azure',figwidth=6,yticks=[0,0.5,1,1.5,2])
     
-
+'''
+c1d356e2-4b2f-409f-b95b-3408a1699ce2,azure,centralindia,1,300,large,static
+fd3e4e53-fc09-4c7a-a21f-ec2b16a088e8,azure,centralindia,1,300,medium,static
+81dd3382-0546-4f5a-b5a1-282b1801dccd,azure,centralindia,1,300,small,static
+'''
 
 run_id = 'exp1'
 
