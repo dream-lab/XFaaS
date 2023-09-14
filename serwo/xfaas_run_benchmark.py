@@ -26,7 +26,7 @@ parser.add_argument("--wf-user-directory",dest='wf_user_directory',type=str,help
 parser.add_argument("--path-to-client-config",dest='client_config_path',type=str,help="Path to client config file")
 parser.add_argument("--client-key",dest='client_key',type=str,help="Key of client to pick from client config file")
 parser.add_argument("--dag-file-name",dest='dag_filename',type=str,help="DAG FILE NAME")
-parser.add_argument("--teardown-flag",dest='teardown_flag',type=bool,help="Tear down application by default true")
+parser.add_argument("--teardown-flag",dest='teardown_flag',type=str,help="Tear down application by default true")
 artifact_suffix = 'artifact.json'
 args = parser.parse_args()
 provenance_artifact_filename = None
@@ -115,7 +115,6 @@ def template_azure_jmx_file(rps, duration, execute_url, payload_size, input_jmx,
     # data = data.replace(payload_size_keyword, payload_size)
     data = data.replace(session_id_keyword, str(session_id))
     data = data.replace(deployment_id_keyword, deployment_id)
-    print(azure_payload_keyword,get_azure_payload(payload))
     data = data.replace(azure_payload_keyword, get_azure_payload(payload))
     to_replace = '"ThreadGroup.num_threads">2'
     if rps == 1020.0 or rps == 840.0:
@@ -253,7 +252,6 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
 
     copy_provenance_artifacts(csp, region, part_id, wf_user_directory, wf_deployment_id,max_rps,run_id)
     payload = load_payload(wf_user_directory,payload_size)
-    print(payload)
     dynamism_data = read_dynamism_file(dynamism, duration, max_rps)
     if 'azure' in csp:
         execute_url = get_azure_resources(csp,region,part_id,wf_user_directory)
@@ -401,6 +399,8 @@ if __name__ == "__main__":
     dst = f"{wf_user_directory}/{exp_conf}"
     shutil.copytree(src, dst)
 
+    
+    teardown_flag = bool(int(teardown_flag))
     
     if teardown_flag == True:
         remote_teardown(wf_user_directory,csp,region,part_id)
