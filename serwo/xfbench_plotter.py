@@ -693,6 +693,7 @@ class XFBenchPlotter:
                 e2e_wo_containers.append(int(log["functions"][sink_node]["end_delta"])/1000)
 
         print(len(e2e_w_containers))
+        print(len(e2e_wo_containers))
         print(len(logs))
         fig, ax = plt.subplots()
         fig.set_dpi(400)
