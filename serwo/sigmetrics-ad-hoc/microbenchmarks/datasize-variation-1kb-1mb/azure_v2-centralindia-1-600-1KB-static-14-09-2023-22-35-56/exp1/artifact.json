@@ -1,0 +1,56 @@
+{
+    "workflow_id": "18315ba7-21b9-4ec4-9ddc-ce16d233b03c",
+    "refactored_workflow_id": "e68af823-33f7-4fb2-b676-1db4f7489b46",
+    "deployment_id": "5865aa13-c5c0-4b61-99f5-97a469c331da",
+    "queue_details": {
+        "queue_name": "zwzly",
+        "connection_string": "DefaultEndpointsProtocol=https;EndpointSuffix=core.windows.net;AccountName=xfaasgloballogger;AccountKey=J+c6RYphlZYQDAd9+EJ7o5kh0YL6KdvUHLhif69N+iQfd52hQPrgty8DMwN5pU7CrAIjfdkiYCVM+AStHItmpg==;BlobEndpoint=https://xfaasgloballogger.blob.core.windows.net/;FileEndpoint=https://xfaasgloballogger.file.core.windows.net/;QueueEndpoint=https://xfaasgloballogger.queue.core.windows.net/;TableEndpoint=https://xfaasgloballogger.table.core.windows.net/"
+    },
+    "experiment_conf": {
+        "static1KB1": {
+            "jmx_output_filename": "azure_v2-comm_stress-1KB-static-1-120-session-static1KB1.jmx",
+            "csp": "azure_v2",
+            "rps": 1,
+            "duration": 120.0,
+            "payload_size": "1KB",
+            "wf_name": "comm_stress",
+            "dynamism": "static"
+        },
+        "static1KB2": {
+            "jmx_output_filename": "azure_v2-comm_stress-4KB-static-1-120-session-static1KB2.jmx",
+            "csp": "azure_v2",
+            "rps": 1,
+            "duration": 120.0,
+            "payload_size": "4KB",
+            "wf_name": "comm_stress",
+            "dynamism": "static"
+        },
+        "static1KB3": {
+            "jmx_output_filename": "azure_v2-comm_stress-16KB-static-1-120-session-static1KB3.jmx",
+            "csp": "azure_v2",
+            "rps": 1,
+            "duration": 120.0,
+            "payload_size": "16KB",
+            "wf_name": "comm_stress",
+            "dynamism": "static"
+        },
+        "static1KB4": {
+            "jmx_output_filename": "azure_v2-comm_stress-256KB-static-1-120-session-static1KB4.jmx",
+            "csp": "azure_v2",
+            "rps": 1,
+            "duration": 120.0,
+            "payload_size": "256KB",
+            "wf_name": "comm_stress",
+            "dynamism": "static"
+        },
+        "static1KB5": {
+            "jmx_output_filename": "azure_v2-comm_stress-1024KB-static-1-120-session-static1KB5.jmx",
+            "csp": "azure_v2",
+            "rps": 1,
+            "duration": 120.0,
+            "payload_size": "1024KB",
+            "wf_name": "comm_stress",
+            "dynamism": "static"
+        }
+    }
+}
