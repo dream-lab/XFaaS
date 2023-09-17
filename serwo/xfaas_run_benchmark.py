@@ -68,7 +68,8 @@ def read_dynamism_file(dynamism,duration, max_rps):
     data = [x.strip() for x in data]
     final_data = []
     for d in data:
-        vals = [float(x) for x in d.split(",") if x != ""]
+        vals = [float(x) for x in d.split(",") if x != "" ]
+        
         final_data.append((vals[0],vals[1]))
     return final_data
 
@@ -251,7 +252,7 @@ def load_payload(wf_user_directory,payload_size):
 def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory, wf_deployment_id,run_id):
 
     copy_provenance_artifacts(csp, region, part_id, wf_user_directory, wf_deployment_id,max_rps,run_id)
-    payload = load_payload(wf_user_directory,payload_size)
+    
     dynamism_data = read_dynamism_file(dynamism, duration, max_rps)
     if 'azure' in csp:
         execute_url = get_azure_resources(csp,region,part_id,wf_user_directory)
@@ -271,12 +272,15 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
     elif dynamism == 'google':
         dynamism_updated = "g"
 
+    payload = load_payload(wf_user_directory,payload_size)
+
     session_id = dynamism_updated + payload_size
     i = 1
     for d in dynamism_data:
         duration = d[0]
         rps = d[1]
         ne_session_id = session_id + str(i)
+        
         make_jmx_file(csp, rps * 60.0, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id,payload)
         i += 1
     generate_shell_script_and_scp(csp,payload_size, wf_name,   max_rps, duration,dynamism)
@@ -380,8 +384,7 @@ if __name__ == "__main__":
     print('==================DEPLOYING WF===========================')
     wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
     
-    
-    
+    time.sleep(60)
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
     time.sleep(100)

@@ -208,6 +208,11 @@ class XFBenchPlotter:
             e2e_time.append(int(item["functions"][sink_node]["end_delta"])/1000) # e2e time in seconds
         return e2e_time
 
+    def __get_edge_time(self, log_items,src,sink):
+        edge_times = []
+        for item in log_items:
+            edge_times.append(int(item["functions"][sink]["start_delta"] - item["functions"][src]["end_delta"])/1000)
+        return edge_times
     '''
     Gives a dictionary of function and edge timings in seconds
     '''
@@ -512,6 +517,7 @@ class XFBenchPlotter:
         sorted_dynamo_items = log_items
         min_start_time  = sorted_dynamo_items[0]["invocation_start_time_ms"]
         # print(sorted_dynamo_items)
+        function_map = set()
         for item in sorted_dynamo_items:
             functions = item['functions']
             workflow_start_time = item['invocation_start_time_ms']
@@ -528,17 +534,26 @@ class XFBenchPlotter:
                         continue
                     if cid not in god_dict:
                         god_dict[cid] = []
+                        
                         god_dict[cid].append((function_start_time,int(workflow_start_time), wf_invocation_id,function))
                     else:
-                        god_dict[cid].append((function_start_time,int(workflow_start_time), wf_invocation_id,function))     
+                        god_dict[cid].append((function_start_time,int(workflow_start_time), wf_invocation_id,function))  
+                    
+                           
 
         
+        functions = []
         for cid in god_dict:
             god_dict[cid].sort()
             ans.append(god_dict[cid][0])
             # mins.append((god_dict[cid][0][0]-int(min_start_time))/1000)
-            mins.append(god_dict[cid][0][1])
+            mins.append((god_dict[cid][0][1]-int(min_start_time))/1000)
             wf_invocation_ids.add(god_dict[cid][0][2])
+            if (god_dict[cid][0][1]-int(min_start_time))/1000 >=145 and (god_dict[cid][0][1]-int(min_start_time))/1000 <= 155:
+                print("Function Id: ", god_dict[cid][0][3])
+            functions.append(god_dict[cid][0][3])
+        print(sorted(mins))
+        print("Function Ids that start containers: ", functions)
         
         return sorted(mins), wf_invocation_ids
     
@@ -557,6 +572,15 @@ class XFBenchPlotter:
         timeline = [(t-timestamps[0])/1000 for t in timestamps] # timeline in seconds
         e2e_time = self.__get_e2e_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
 
+        ##temporary hack for graph
+        # edge_1 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "1",sink = "2")
+        # edge_2 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "1",sink = "3")
+        # edge_3 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "1",sink = "4")
+        # edge_4 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "2",sink = "5")
+        # edge_5 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "3",sink = "5")
+        # edge_6 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "4",sink = "5")
+
+        # print(edge_1,edge_2,edge_3,edge_4,edge_5,edge_6)
         logger.info(f"Entry Count in Timeline - {len(timeline)}, Expected Entry Count - {self.__get_expected_entry_count()}")
         
         # fontdict = {'size': 12} # NOTE - custom fontdict 
@@ -584,7 +608,14 @@ class XFBenchPlotter:
             ax.set_xticks(xticks)
             ax.set_xticklabels(str(x) for x in xticks)
         
+        # print(e2e_time[145:165])
         ax.plot(timeline, e2e_time)
+        # ax.plot(timeline, edge_1,color = 'purple')
+        # ax.plot(timeline, edge_2,color = 'orange')
+        # ax.plot(timeline, edge_3,color = 'magenta')
+        # ax.plot(timeline, edge_4,color = 'green')
+        # ax.plot(timeline, edge_5,color = 'red')
+        # ax.plot(timeline, edge_6,color = 'black')
 
 
         if is_overlay:

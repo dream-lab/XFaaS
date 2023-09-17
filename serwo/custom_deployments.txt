@@ -1,1 +1,1 @@
-81dd3382-0546-4f5a-b5a1-282b1801dccd,azure,centralindia,1,300,small,static
+eb52ab82-6897-44ce-bd19-99f9731b25c6,azure,centralindia,1,300,small,static
