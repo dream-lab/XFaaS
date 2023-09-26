@@ -26,13 +26,16 @@ def Source(xfaas_object):
         print("\n\n\n\n",xfaas_object)
         body = xfaas_object.get_body()
         if 'seed' in body and 'iters' in body:
+            ub = body['upper_bound']
             returnbody = body
         else:
             seed = random.randrange(10000)
             iters = random.randrange(10000)
+            ub = body['upper_bound']
             returnbody = {
                 'seed': seed,
-                'iters': iters
+                'iters': iters,
+                'upper_bound': ub
             }
         return SerWOObject(body=returnbody)
     except Exception as e:
@@ -270,7 +273,9 @@ def matGen_handlerA(body):
 
     # Generating the size of the matrix
     np.random.seed(body['seed'])
-    size = np.random.randint(72)
+    ub = body['upper_bound']
+    # size = np.random.randint(ub)
+    size = 72
 
     #Generating a matrix by resetting the seed
     randomNo = random.randint(0,10000)
@@ -310,7 +315,9 @@ def matGen_handlerB(body):
 
     # Generating the size of the matrix
     np.random.seed(body['seed'])
-    size = np.random.randint(72)
+    ub = body['upper_bound']
+    # size = np.random.randint(ub)
+    size = 72
 
     #Generating a matrix by resetting the seed
     randomNo = random.randint(0,10000)
@@ -418,57 +425,102 @@ def build_serwo_list_object(event):
     return list_obj
 
 
-body = {"seed":10, "iters": 1}
+body = {"seed":10, "iters": 1, "upper_bound": 170}
 
 req = SerWOObject(body=body)
 
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Source/inputs/input.json'
+path = '/home/nikhil/work/xfaas-workloads/functions/math/source/samples/large/input/input.json'
 write_req_to_file(req, path)
 req = build_req_from_file(path)
 r1 = Source(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/source/samples/large/output/output.json'
+write_req_to_file(r1, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/GenerateList/inputs/input.json'
+
+path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_list/samples/large/input/input.json'
 write_req_to_file(r1, path)
 req = build_req_from_file(path)
 r_list = GenerateList(r1)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_list/samples/large/output/output.json'
+write_req_to_file(r_list, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/GenerateInt/inputs/input.json'
+# r0 = r_list.get_body()
+# j1 = json.dumps(r0)
+# j2 = json.dumps(r0, indent=2)
+
+# j1s = objsize.get_deep_size(j1)
+# j2s = objsize.get_deep_size(j2)
+# rqs = objsize.get_deep_size(r_list)
+# print("-----------OP GLST-----------")
+# print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+# print("=============================\n\n")
+
+
+path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_int/samples/large/input/input.json'
 write_req_to_file(r1, path)
 req = build_req_from_file(path)
 r_int = GenerateInt(r1)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_int/samples/large/output/output.json'
+write_req_to_file(r_int, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/GenerateMatrixA/inputs/input.json'
+
+path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_matrix_a/samples/large/input/input.json'
 write_req_to_file(r1, path)
 req = build_req_from_file(path)
 m1 = GenerateMatrixA(r1)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_matrix_a/samples/large/output/output.json'
+write_req_to_file(m1, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/GenerateMatrixB/inputs/input.json'
+
+path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_matrix_b/samples/large/input/input.json'
 write_req_to_file(r1, path)
 req = build_req_from_file(path)
 m2 = GenerateMatrixB(r1)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_matrix_b/samples/large/output/output.json'
+write_req_to_file(m2, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Sine/inputs/input.json'
+r0 = m2.get_body()
+j1 = json.dumps(r0)
+j2 = json.dumps(r0, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(m2)
+print("-----------OP GGEN-----------")
+print(f"JSON DUMP : {j1s/1024*2}\nJSON DUMP INDENT : {j2s/1024*2}\nSerWOObject : {rqs/1024*2}")
+print("=============================\n\n")
+
+path = '/home/nikhil/work/xfaas-workloads/functions/math/sine/samples/large/input/input.json'
 write_req_to_file(r_int, path)
 req = build_req_from_file(path)
 s1 = Sine(r_int)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/sine/samples/large/output/output.json'
+write_req_to_file(s1, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Cosine/inputs/input.json'
+
+path = '/home/nikhil/work/xfaas-workloads/functions/math/cosine/samples/large/input/input.json'
 write_req_to_file(r_int, path)
 req = build_req_from_file(path)
 c1 = Cosine(r_int)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/cosine/samples/large/input/input.json'
+write_req_to_file(c1, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Factors/inputs/input.json'
+
+path = '/home/nikhil/work/xfaas-workloads/functions/math/factors/samples/large/input/input.json'
 write_req_to_file(r_int, path)
 req = build_req_from_file(path)
 fc = Factors(r_int)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/factors/samples/large/output/output.json'
+write_req_to_file(fc, path)
+
 
 fanin_list = [s1, c1, fc]
 idx = 0
 for r in fanin_list:
     idx = idx+1
-    path = f'/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Aggregator1/inputs/input{idx}.json'
+    path = f'/home/nikhil/work/xfaas-workloads/functions/math/Aggregator1/samples/large/input/input{idx}.json'
     write_req_to_file(r, path)
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Aggregator1/inputs/'
+path = '/home/nikhil/work/xfaas-workloads/functions/math/Aggregator1/samples/large/input/'
 file_list = os.listdir(path)
 
 fin_list = []
@@ -483,19 +535,21 @@ l_obj = build_serwo_list_object(fanin_object)
 ag1 = Aggregate(l_obj)
 
 
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/FFT/inputs/input.json'
+path = '/home/nikhil/work/xfaas-workloads/functions/math/fast_fourier_transform/samples/large/input/input.json'
 write_req_to_file(r_list, path)
 req = build_req_from_file(path)
 ff = FFT(r_list)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/fast_fourier_transform/samples/large/output/output.json'
+write_req_to_file(ff, path)
 
 
 fanin_list = [m1, m2]
 idx = 0
 for r in fanin_list:
     idx = idx+1
-    path = f'/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Aggregator2/inputs/input{idx}.json'
+    path = f'/home/nikhil/work/xfaas-workloads/functions/math/Aggregator2/samples/large/input/input{idx}.json'
     write_req_to_file(r, path)
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Aggregator2/inputs/'
+path = '/home/nikhil/work/xfaas-workloads/functions/math/Aggregator2/samples/large/input/'
 file_list = os.listdir(path)
 
 fin_list = []
@@ -509,25 +563,30 @@ l_obj = build_serwo_list_object(fanin_object)
 
 ag2 = Aggregate(l_obj)
 
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/MatrixMultiplication/inputs/input.json'
+path = '/home/nikhil/work/xfaas-workloads/functions/math/matrix_multiplication/samples/large/input/input.json'
 write_req_to_file(ag2, path)
 req = build_req_from_file(path)
 mm = MatMul(ag2)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/matrix_multiplication/samples/large/output/output.json'
+write_req_to_file(mm, path)
 
 
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Linpack/inputs/input.json'
+
+path = '/home/nikhil/work/xfaas-workloads/functions/math/linpack/samples/large/input/input.json'
 write_req_to_file(ag2, path)
 req = build_req_from_file(path)
 lp = Linpack(ag2)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/linpack/samples/large/output/output.json'
+write_req_to_file(lp, path)
 
 
 fanin_list = [mm, lp]
 idx = 0
 for r in fanin_list:
     idx = idx+1
-    path = f'/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Aggregator3/inputs/input{idx}.json'
+    path = f'/home/nikhil/work/xfaas-workloads/functions/math/Aggregator3/samples/large/input/input{idx}.json'
     write_req_to_file(r, path)
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Aggregator3/inputs/'
+path = '/home/nikhil/work/xfaas-workloads/functions/math/Aggregator3/samples/large/input/'
 file_list = os.listdir(path)
 
 fin_list = []
@@ -546,18 +605,23 @@ fanin_list = [ag1, ag3, ff]
 idx = 0
 for r in fanin_list:
     idx = idx+1
-    path = f'/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Aggregator4/inputs/input{idx}.json'
+    path = f'/home/nikhil/work/xfaas-workloads/functions/math/aggregator/samples/large/input/input{idx}.json'
     write_req_to_file(r, path)
-path = '/home/azureuser/XFaaS/serwo/examples/MathFunctionsRevisedAz/functions/Aggregator4/inputs/'
+path = '/home/nikhil/work/xfaas-workloads/functions/math/aggregator/samples/large/input/'
 file_list = os.listdir(path)
 
 fin_list = []
 for filename in file_list:
     if os.path.isfile(os.path.join(path, filename)):
+        print("NOWWWWWWWWWWWWWWWWWW")
         fin_list.append(build_req_from_file(path+filename))
 
 # emulated return object for lambda of the format ([{"body": val1},..,{"body": val2}])
 fanin_object = [dict(body=obj.get_body()) for obj in fin_list]
 l_obj = build_serwo_list_object(fanin_object)
 
+# path = '/home/nikhil/work/xfaas-workloads/functions/math/aggregator/samples/large/input/input.json'
+# write_req_to_file(l_obj, path)
 ag4 = Aggregate(l_obj)
+path = '/home/nikhil/work/xfaas-workloads/functions/math/aggregator/samples/large/output/output.json'
+write_req_to_file(ag4, path)

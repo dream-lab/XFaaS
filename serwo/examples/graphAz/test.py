@@ -7,6 +7,7 @@ import logging
 from networkx.readwrite import json_graph
 import json
 import os
+import objsize
 
 
 #///////////////////////////////////////////////////////////////
@@ -207,45 +208,141 @@ def build_req_from_file(path):
         # Write data to the file
         req_txt = file.read()
         req_json = json.loads(req_txt)
-        req = SerWOObject.from_json(req_json)
+        # req = SerWOObject.from_json(req_json)
+        req = SerWOObject(body=req_json)
     return req
 
 def write_req_to_file(req, path):
     with open(path, "w") as file:
         # Write data to the file
-        file.write(req.to_json())
+        print(req.get_body())
+        file.write(json.dumps(req.get_body()))
 
-
-req_body = {"size": 32, "graph_type": "complete"}
+##64,136,300
+req_body = {"size": 300, "graph_type": "complete"}
+j1 = json.dumps(req_body)
+j2 = json.dumps(req_body, indent=2)
 req = SerWOObject(body=req_body)
 
-path = '/home/azureuser/XFaaS/serwo/examples/graphAz/functions/graphGen/input.json'
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(req)
+print("-----------IP GGEN-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+
+path = '/home/nikhil/work/xfaas-workloads/functions/graph/graph_gen/samples/large/input/input.json'
 write_req_to_file(req, path)
 req = build_req_from_file(path)
 ret_obj = graphGenHandler(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/graph/graph_gen/samples/large/output/output.json'
+write_req_to_file(ret_obj, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/graphAz/functions/graphBFT/input.json'
+r0 = ret_obj.get_body()
+j1 = json.dumps(r0)
+j2 = json.dumps(r0, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(ret_obj)
+print("-----------OP GGEN-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+print("=============================\n\n")
+
+
+
+j1 = json.dumps(r0)
+j2 = json.dumps(r0, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(ret_obj)
+print("-----------IP GBFT-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+
+path = '/home/nikhil/work/xfaas-workloads/functions/graph/graph_bft/samples/large/input/input.json'
 write_req_to_file(ret_obj, path)
 req = build_req_from_file(path)
 bft_ret = BFTHandler(ret_obj)
+path = '/home/nikhil/work/xfaas-workloads/functions/graph/graph_bft/samples/large/output/output.json'
+write_req_to_file(bft_ret, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/graphAz/functions/graphMST/input.json'
+r = bft_ret.get_body()
+j1 = json.dumps(r)
+j2 = json.dumps(r, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(bft_ret)
+print("-----------OP GBFT-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+print("=============================\n\n")
+
+
+
+
+j1 = json.dumps(r0)
+j2 = json.dumps(r0, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(ret_obj)
+print("-----------IP GMST-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+
+path = '/home/nikhil/work/xfaas-workloads/functions/graph/graph_mst/samples/large/input/input.json'
 write_req_to_file(ret_obj, path)
 req = build_req_from_file(path)
 mst_ret = MSTHandler(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/graph/graph_mst/samples/large/output/output.json'
+write_req_to_file(mst_ret, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/graphAz/functions/pagerank/input.json'
+r = mst_ret.get_body()
+j1 = json.dumps(r)
+j2 = json.dumps(r, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(mst_ret)
+print("-----------OP GMST-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+print("=============================\n\n")
+
+
+j1 = json.dumps(r0)
+j2 = json.dumps(r0, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(ret_obj)
+print("-----------IP PGRK-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+
+
+path = '/home/nikhil/work/xfaas-workloads/functions/graph/pagerank/samples/large/input/input.json'
 write_req_to_file(ret_obj, path)
 req = build_req_from_file(path)
 pg_ret = PageRankHandler(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/graph/pagerank/samples/large/output/output.json'
+write_req_to_file(pg_ret, path)
+
+r = pg_ret.get_body()
+j1 = json.dumps(r)
+j2 = json.dumps(r, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(pg_ret)
+print("-----------OP PGRK-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+print("=============================\n\n")
 
 fanin_list = [bft_ret, mst_ret, pg_ret]
 idx = 0
 for r in fanin_list:
     idx = idx+1
-    path = f'/home/azureuser/XFaaS/serwo/examples/graphAz/functions/aggregate/inputs/input{idx}.json'
+    path = f'/home/nikhil/work/xfaas-workloads/functions/graph/aggregate/samples/large/input/input{idx}.json'
     write_req_to_file(r, path)
-path = '/home/azureuser/XFaaS/serwo/examples/graphAz/functions/aggregate/inputs/'
+path = '/home/nikhil/work/xfaas-workloads/functions/graph/aggregate/samples/large/input/'
 file_list = os.listdir(path)
 
 fin_list = []
@@ -257,4 +354,39 @@ for filename in file_list:
 fanin_object = [dict(body=obj.get_body()) for obj in fin_list]
 l_obj = build_serwo_list_object(fanin_object)
 
+obs = l_obj.get_objects()
+lsz = 0
+lsz_ind = 0
+for ob in obs:
+    bd = ob.get_body()
+    osj1 = json.dumps(bd)
+    osj2 = json.dumps(bd, indent=2)
+    lsz = lsz + objsize.get_deep_size(osj1)
+    lsz_ind = lsz + objsize.get_deep_size(osj2)
+
+j1 = json.dumps(r0)
+j2 = json.dumps(r0, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(l_obj)
+print("-----------IP AGG-----------")
+print(f"JSON DUMP : {lsz/1024}\nJSON DUMP INDENT : {lsz_ind/1024}\nSerWOObject : {rqs/1024}")
+
+
+
 agg = AggHandler(l_obj)
+path = '/home/nikhil/work/xfaas-workloads/functions/graph/aggregate/samples/large/output/output.json'
+write_req_to_file(agg, path)
+
+
+r = agg.get_body()
+j1 = json.dumps(r)
+j2 = json.dumps(r, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(agg)
+print("-----------OP AGG-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+print("=============================\n\n")

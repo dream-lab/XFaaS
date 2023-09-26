@@ -7,6 +7,7 @@ import numpy as np
 from PIL import Image
 import onnxruntime as ort
 import os
+import objsize
 
 from python.src.utils.classes.commons.serwo_objects import SerWOObject
 from python.src.utils.classes.commons.serwo_objects import *
@@ -273,7 +274,7 @@ def InferResnet(serwoObject) -> SerWOObject:
         body = serwoObject.get_body()
         img_base64 = body['encoded']
         base = serwoObject.get_basepath()
-        base = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/resnet/'
+        base = '/home/nikhil/work/xfaas-workloads/functions/multimedia/resnet/'
         img = decode_base64(img_base64)
         img = preprocess(img)
         model_path = f'{base}dependencies/models/resnet50v2.onnx'
@@ -293,7 +294,7 @@ def InferAlexNet(serwoObject) -> SerWOObject:
         body = serwoObject.get_body()
         img_base64 = body['encoded']
         base = serwoObject.get_basepath()
-        base = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/alexnet/'
+        base = '/home/nikhil/work/xfaas-workloads/functions/multimedia/alexnet/'
         img = decode_base64(img_base64)
         img = preprocess(img)
         model_path = f'{base}dependencies/models/bvlcalexnet-12-int8.onnx'
@@ -313,7 +314,7 @@ def InferMobilenet(serwoObject) -> SerWOObject:
         body = serwoObject.get_body()
         img_base64 = body['encoded']
         base = serwoObject.get_basepath()
-        base = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/mobilenet/'
+        base = '/home/nikhil/work/xfaas-workloads/functions/multimedia/mobilenet/'
         img = decode_base64(img_base64)
         img = preprocess(img)
         model_path = f'{base}dependencies/models/mobilenetv2-12.onnx'
@@ -366,59 +367,169 @@ def build_req_from_file(path):
         # Write data to the file
         req_txt = file.read()
         req_json = json.loads(req_txt)
-        req = SerWOObject.from_json(req_json)
+        # req = SerWOObject.from_json(req_json)
+        req = SerWOObject(body=req_json)
     return req
 
 def write_req_to_file(req, path):
     with open(path, "w") as file:
         # Write data to the file
-        file.write(req.to_json())
+        print(req.get_body())
+        file.write(json.dumps(req.get_body()))
 
-body = {"url":"https://i.imgur.com/MgrsE2G.jpg"}
+body = {"url":"https://i.imgur.com/AXSUGAQ.jpg"}
 
 req = SerWOObject(body=body)
 
-path = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/fetch/inputs/input.json'
+j1 = json.dumps(body)
+j2 = json.dumps(body, indent=2)
+req = SerWOObject(body=body)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(req)
+print("-----------IP FDAT-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/fetch_data/samples/large/input/input.json'
 write_req_to_file(req, path)
 req = build_req_from_file(path)
 img = FetchData(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/fetch_data/samples/large/output/output.json'
+write_req_to_file(img, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/grayscale/inputs/input.json'
+r0 = img.get_body()
+j1 = json.dumps(r0)
+j2 = json.dumps(r0, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(img)
+print("-----------OP FDAT-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+print("=============================\n\n")
+
+body = img.get_body()
+j1 = json.dumps(body)
+j2 = json.dumps(body, indent=2)
+req = SerWOObject(body=body)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(img)
+print("-----------IP GRAY-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+
+
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/grayscale/samples/large/input/input.json'
 write_req_to_file(img, path)
 req = build_req_from_file(path)
 gry = Grayscale(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/grayscale/samples/large/output/output.json'
+write_req_to_file(gry, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/flip/inputs/input.json'
+r0 = gry.get_body()
+j1 = json.dumps(r0)
+j2 = json.dumps(r0, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(gry)
+print("-----------OP GRAY-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+print("=============================\n\n")
+
+
+body = gry.get_body()
+j1 = json.dumps(body)
+j2 = json.dumps(body, indent=2)
+req = SerWOObject(body=body)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(gry)
+print("-----------IP FLIP-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/flip/samples/large/input/input.json'
 write_req_to_file(gry, path)
 req = build_req_from_file(path)
 flp = Flip(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/flip/samples/large/output/output.json'
+write_req_to_file(flp, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/rotate/inputs/input.json'
+r0 = flp.get_body()
+j1 = json.dumps(r0)
+j2 = json.dumps(r0, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(flp)
+print("-----------OP FLIP-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+print("=============================\n\n")
+
+
+body = flp.get_body()
+j1 = json.dumps(body)
+j2 = json.dumps(body, indent=2)
+req = SerWOObject(body=body)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(flp)
+print("-----------IP IMRT-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+
+
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/rotate/samples/large/input/input.json'
 write_req_to_file(flp, path)
 req = build_req_from_file(path)
 rtt = Rotate(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/rotate/samples/large/output/output.json'
+write_req_to_file(rtt, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/resize/inputs/input.json'
+r0 = rtt.get_body()
+j1 = json.dumps(r0)
+j2 = json.dumps(r0, indent=2)
+
+j1s = objsize.get_deep_size(j1)
+j2s = objsize.get_deep_size(j2)
+rqs = objsize.get_deep_size(rtt)
+print("-----------OP ROTT-----------")
+print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
+print("=============================\n\n")
+
+
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/resize/samples/large/input/input.json'
 write_req_to_file(rtt, path)
 req = build_req_from_file(path)
 rsz = Resize(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/resize/samples/large/output/output.json'
+write_req_to_file(rsz, path)
 
 
-path = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/resnet/inputs/input.json'
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/resnet/samples/large/input/input.json'
 write_req_to_file(rsz, path)
 req = build_req_from_file(path)
 i1 = InferResnet(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/resnet/samples/large/output/output.json'
+write_req_to_file(i1, path)
 
-path = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/alexnet/inputs/input.json'
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/alexnet/samples/large/input/input.json'
 write_req_to_file(rsz, path)
 req = build_req_from_file(path)
 i2 = InferAlexNet(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/alexnet/samples/large/output/output.json'
+write_req_to_file(i2, path)
 
 
-path = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/mobilenet/inputs/input.json'
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/mobilenet/samples/large/input/input.json'
 write_req_to_file(rsz, path)
 req = build_req_from_file(path)
 i3 = InferMobilenet(req)
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/mobilenet/samples/large/output/output.json'
+write_req_to_file(i3, path)
 
 
 
@@ -431,9 +542,9 @@ fanin_list = [i1, i2, i3]
 idx = 0
 for r in fanin_list:
     idx = idx+1
-    path = f'/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/aggregate/inputs/input{idx}.json'
+    path = f'/home/nikhil/work/xfaas-workloads/functions/multimedia/aggregator/samples/large/input/input{idx}.json'
     write_req_to_file(r, path)
-path = '/home/azureuser/XFaaS/serwo/examples/ImageProcessAz/functions/aggregate/inputs/'
+path = '/home/nikhil/work/xfaas-workloads/functions/multimedia/aggregator/samples/large/input/'
 file_list = os.listdir(path)
 
 fin_list = []
