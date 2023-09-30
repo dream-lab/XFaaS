@@ -2,7 +2,7 @@ import random
 import time as t
 import numpy as np
 from math import sin, cos, pi
-import math
+import math, time
 import json
 import objsize
 from json import JSONEncoder
@@ -275,7 +275,7 @@ def matGen_handlerA(body):
     np.random.seed(body['seed'])
     ub = body['upper_bound']
     # size = np.random.randint(ub)
-    size = 72
+    size = ub
 
     #Generating a matrix by resetting the seed
     randomNo = random.randint(0,10000)
@@ -317,7 +317,7 @@ def matGen_handlerB(body):
     np.random.seed(body['seed'])
     ub = body['upper_bound']
     # size = np.random.randint(ub)
-    size = 72
+    size = ub
 
     #Generating a matrix by resetting the seed
     randomNo = random.randint(0,10000)
@@ -424,59 +424,71 @@ def build_serwo_list_object(event):
         list_obj.add_object(body=record.get("body"))
     return list_obj
 
+def run_and_log_timing(func, req, path):
+    execution_times = []
+    for _ in range(100):
+        start_time = time.time()
+        r1 = func(req)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        execution_times.append(execution_time)
+
+    with open(path, 'w+') as log_file:
+        for i, execution_time in enumerate(execution_times, start=1):
+            log_file.write(f"{execution_time:.6f}\n")
+    return r1
 
 body = {"seed":10, "iters": 1, "upper_bound": 170}
 
 req = SerWOObject(body=body)
 
-path = '/home/nikhil/work/xfaas-workloads/functions/math/source/samples/large/input/input.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/source/samples/large/input/input.json'
 write_req_to_file(req, path)
 req = build_req_from_file(path)
-r1 = Source(req)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/source/samples/large/output/output.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/source/time/large/time.txt'
+# r1 = Source(req)
+r1 = run_and_log_timing(Source, req, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/source/samples/large/output/output.json'
 write_req_to_file(r1, path)
 
 
-path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_list/samples/large/input/input.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_list/samples/large/input/input.json'
 write_req_to_file(r1, path)
 req = build_req_from_file(path)
-r_list = GenerateList(r1)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_list/samples/large/output/output.json'
+# r_list = GenerateList(r1)
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_list/time/large/time.txt'
+r_list = run_and_log_timing(GenerateList, r1, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_list/samples/large/output/output.json'
 write_req_to_file(r_list, path)
 
-# r0 = r_list.get_body()
-# j1 = json.dumps(r0)
-# j2 = json.dumps(r0, indent=2)
 
-# j1s = objsize.get_deep_size(j1)
-# j2s = objsize.get_deep_size(j2)
-# rqs = objsize.get_deep_size(r_list)
-# print("-----------OP GLST-----------")
-# print(f"JSON DUMP : {j1s/1024}\nJSON DUMP INDENT : {j2s/1024}\nSerWOObject : {rqs/1024}")
-# print("=============================\n\n")
-
-
-path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_int/samples/large/input/input.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_int/samples/large/input/input.json'
 write_req_to_file(r1, path)
 req = build_req_from_file(path)
-r_int = GenerateInt(r1)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_int/samples/large/output/output.json'
+# r_int = GenerateInt(r1)
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_int/time/large/time.txt'
+r_int = run_and_log_timing(GenerateInt, r1, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_int/samples/large/output/output.json'
 write_req_to_file(r_int, path)
 
 
-path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_matrix_a/samples/large/input/input.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_matrix_a/samples/large/input/input.json'
 write_req_to_file(r1, path)
 req = build_req_from_file(path)
-m1 = GenerateMatrixA(r1)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_matrix_a/samples/large/output/output.json'
+# m1 = GenerateMatrixA(r1)
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_matrix_a/time/large/time.txt'
+m1 = run_and_log_timing(GenerateMatrixA, r1, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_matrix_a/samples/large/output/output.json'
 write_req_to_file(m1, path)
 
 
-path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_matrix_b/samples/large/input/input.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_matrix_b/samples/large/input/input.json'
 write_req_to_file(r1, path)
 req = build_req_from_file(path)
-m2 = GenerateMatrixB(r1)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/gen_matrix_b/samples/large/output/output.json'
+# m2 = GenerateMatrixB(r1)
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_matrix_b/time/large/time.txt'
+m2 = run_and_log_timing(GenerateMatrixB, r1, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/gen_matrix_b/samples/large/output/output.json'
 write_req_to_file(m2, path)
 
 r0 = m2.get_body()
@@ -490,27 +502,33 @@ print("-----------OP GGEN-----------")
 print(f"JSON DUMP : {j1s/1024*2}\nJSON DUMP INDENT : {j2s/1024*2}\nSerWOObject : {rqs/1024*2}")
 print("=============================\n\n")
 
-path = '/home/nikhil/work/xfaas-workloads/functions/math/sine/samples/large/input/input.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/sine/samples/large/input/input.json'
 write_req_to_file(r_int, path)
 req = build_req_from_file(path)
-s1 = Sine(r_int)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/sine/samples/large/output/output.json'
+# s1 = Sine(r_int)
+path = '/home/azureuser/xfaas-workloads/functions/math/sine/time/large/time.txt'
+s1 = run_and_log_timing(Sine, r_int, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/sine/samples/large/output/output.json'
 write_req_to_file(s1, path)
 
 
-path = '/home/nikhil/work/xfaas-workloads/functions/math/cosine/samples/large/input/input.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/cosine/samples/large/input/input.json'
 write_req_to_file(r_int, path)
 req = build_req_from_file(path)
-c1 = Cosine(r_int)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/cosine/samples/large/input/input.json'
+# c1 = Cosine(r_int)
+path = '/home/azureuser/xfaas-workloads/functions/math/cosine/time/large/time.txt'
+c1 = run_and_log_timing(Cosine, r_int, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/cosine/samples/large/input/input.json'
 write_req_to_file(c1, path)
 
 
-path = '/home/nikhil/work/xfaas-workloads/functions/math/factors/samples/large/input/input.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/factors/samples/large/input/input.json'
 write_req_to_file(r_int, path)
 req = build_req_from_file(path)
-fc = Factors(r_int)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/factors/samples/large/output/output.json'
+# fc = Factors(r_int)
+path = '/home/azureuser/xfaas-workloads/functions/math/factors/time/large/time.txt'
+fc = run_and_log_timing(Factors, r_int, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/factors/samples/large/output/output.json'
 write_req_to_file(fc, path)
 
 
@@ -518,9 +536,9 @@ fanin_list = [s1, c1, fc]
 idx = 0
 for r in fanin_list:
     idx = idx+1
-    path = f'/home/nikhil/work/xfaas-workloads/functions/math/Aggregator1/samples/large/input/input{idx}.json'
+    path = f'/home/azureuser/xfaas-workloads/functions/math/Aggregator1/samples/large/input/input{idx}.json'
     write_req_to_file(r, path)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/Aggregator1/samples/large/input/'
+path = '/home/azureuser/xfaas-workloads/functions/math/Aggregator1/samples/large/input/'
 file_list = os.listdir(path)
 
 fin_list = []
@@ -535,11 +553,13 @@ l_obj = build_serwo_list_object(fanin_object)
 ag1 = Aggregate(l_obj)
 
 
-path = '/home/nikhil/work/xfaas-workloads/functions/math/fast_fourier_transform/samples/large/input/input.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/fast_fourier_transform/samples/large/input/input.json'
 write_req_to_file(r_list, path)
 req = build_req_from_file(path)
-ff = FFT(r_list)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/fast_fourier_transform/samples/large/output/output.json'
+# ff = FFT(r_list)
+path = '/home/azureuser/xfaas-workloads/functions/math/fast_fourier_transform/time/large/time.txt'
+ff = run_and_log_timing(FFT, r_list, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/fast_fourier_transform/samples/large/output/output.json'
 write_req_to_file(ff, path)
 
 
@@ -547,9 +567,9 @@ fanin_list = [m1, m2]
 idx = 0
 for r in fanin_list:
     idx = idx+1
-    path = f'/home/nikhil/work/xfaas-workloads/functions/math/Aggregator2/samples/large/input/input{idx}.json'
+    path = f'/home/azureuser/xfaas-workloads/functions/math/Aggregator2/samples/large/input/input{idx}.json'
     write_req_to_file(r, path)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/Aggregator2/samples/large/input/'
+path = '/home/azureuser/xfaas-workloads/functions/math/Aggregator2/samples/large/input/'
 file_list = os.listdir(path)
 
 fin_list = []
@@ -563,20 +583,24 @@ l_obj = build_serwo_list_object(fanin_object)
 
 ag2 = Aggregate(l_obj)
 
-path = '/home/nikhil/work/xfaas-workloads/functions/math/matrix_multiplication/samples/large/input/input.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/matrix_multiplication/samples/large/input/input.json'
 write_req_to_file(ag2, path)
 req = build_req_from_file(path)
-mm = MatMul(ag2)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/matrix_multiplication/samples/large/output/output.json'
+# mm = MatMul(ag2)
+path = '/home/azureuser/xfaas-workloads/functions/math/matrix_multiplication/time/large/time.txt'
+mm = run_and_log_timing(MatMul, ag2, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/matrix_multiplication/samples/large/output/output.json'
 write_req_to_file(mm, path)
 
 
 
-path = '/home/nikhil/work/xfaas-workloads/functions/math/linpack/samples/large/input/input.json'
+path = '/home/azureuser/xfaas-workloads/functions/math/linpack/samples/large/input/input.json'
 write_req_to_file(ag2, path)
 req = build_req_from_file(path)
-lp = Linpack(ag2)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/linpack/samples/large/output/output.json'
+# lp = Linpack(ag2)
+path = '/home/azureuser/xfaas-workloads/functions/math/linpack/time/large/time.txt'
+lp = run_and_log_timing(Linpack, ag2, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/linpack/samples/large/output/output.json'
 write_req_to_file(lp, path)
 
 
@@ -584,9 +608,9 @@ fanin_list = [mm, lp]
 idx = 0
 for r in fanin_list:
     idx = idx+1
-    path = f'/home/nikhil/work/xfaas-workloads/functions/math/Aggregator3/samples/large/input/input{idx}.json'
+    path = f'/home/azureuser/xfaas-workloads/functions/math/Aggregator3/samples/large/input/input{idx}.json'
     write_req_to_file(r, path)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/Aggregator3/samples/large/input/'
+path = '/home/azureuser/xfaas-workloads/functions/math/Aggregator3/samples/large/input/'
 file_list = os.listdir(path)
 
 fin_list = []
@@ -605,23 +629,24 @@ fanin_list = [ag1, ag3, ff]
 idx = 0
 for r in fanin_list:
     idx = idx+1
-    path = f'/home/nikhil/work/xfaas-workloads/functions/math/aggregator/samples/large/input/input{idx}.json'
+    path = f'/home/azureuser/xfaas-workloads/functions/math/aggregator/samples/large/input/input{idx}.json'
     write_req_to_file(r, path)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/aggregator/samples/large/input/'
+path = '/home/azureuser/xfaas-workloads/functions/math/aggregator/samples/large/input/'
 file_list = os.listdir(path)
 
 fin_list = []
 for filename in file_list:
     if os.path.isfile(os.path.join(path, filename)):
-        print("NOWWWWWWWWWWWWWWWWWW")
         fin_list.append(build_req_from_file(path+filename))
 
 # emulated return object for lambda of the format ([{"body": val1},..,{"body": val2}])
 fanin_object = [dict(body=obj.get_body()) for obj in fin_list]
 l_obj = build_serwo_list_object(fanin_object)
 
-# path = '/home/nikhil/work/xfaas-workloads/functions/math/aggregator/samples/large/input/input.json'
+# path = '/home/azureuser/xfaas-workloads/functions/math/aggregator/samples/large/input/input.json'
 # write_req_to_file(l_obj, path)
-ag4 = Aggregate(l_obj)
-path = '/home/nikhil/work/xfaas-workloads/functions/math/aggregator/samples/large/output/output.json'
+# ag4 = Aggregate(l_obj)
+path = '/home/azureuser/xfaas-workloads/functions/math/aggregator/time/large/time.txt'
+ag4 = run_and_log_timing(Aggregate, l_obj, path)
+path = '/home/azureuser/xfaas-workloads/functions/math/aggregator/samples/large/output/output.json'
 write_req_to_file(ag4, path)
