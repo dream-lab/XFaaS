@@ -1,4 +1,0 @@
-fd3e4e53-fc09-4c7a-a21f-ec2b16a088e8,azure,centralindia,1,300,medium,static
-d5784164-9145-4caf-8fec-deca2601c02c,azure_v2,centralindia,1,300,medium,static
-b4edcca9-a920-4e3b-bd5b-8d741efd0f1a,azure,centralindia,1,300,medium,static
-9c4a4103-27f4-4865-95f5-c465663a984b,azure_v2,centralindia,1,300,medium,static
