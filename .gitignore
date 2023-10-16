@@ -30,3 +30,4 @@ build
 *.jsonl
 log_files
 serwo/config
+recents
