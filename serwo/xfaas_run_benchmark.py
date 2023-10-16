@@ -68,7 +68,8 @@ def read_dynamism_file(dynamism,duration, max_rps):
     data = [x.strip() for x in data]
     final_data = []
     for d in data:
-        vals = [float(x) for x in d.split(",") if x != "" ]
+        vals = [float(x) for x in d.split(",") if x != "" ] # '''and 'KB' not in x'''
+        # size = d.split(",")[-1]
         
         final_data.append((vals[0],vals[1]))
     return final_data
@@ -95,7 +96,7 @@ def get_aws_resources(csp,region,part_id,wf_user_directory):
             execute_url = r['OutputValue']
         elif r['Description'] == 'Serwo CLI State machine ARN':
             state_machine_arn = r['OutputValue']
-    
+        
     return execute_url, state_machine_arn
 
 
@@ -279,6 +280,8 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
     for d in dynamism_data:
         duration = d[0]
         rps = d[1]
+        # payload_size = d[2]
+        # payload = load_payload(wf_user_directory,payload_size)
         ne_session_id = session_id + str(i)
         
         make_jmx_file(csp, rps * 60.0, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id,payload)
@@ -376,7 +379,7 @@ if __name__ == "__main__":
    
     print('==================BUILDING WF===========================')
 
-    build_workflow(wf_user_directory)
+    # build_workflow(wf_user_directory)
     
     wf_user_directory += "/workflow-gen"
     
@@ -384,11 +387,11 @@ if __name__ == "__main__":
     print('==================DEPLOYING WF===========================')
     wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
     
-    time.sleep(60)
+    # wf_deployment_id = 'a9f607c8-fbdd-4c7b-b6af-b9a0b0f63217'
+    # time.sleep(60)
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
-    time.sleep(100)
-    
+    time.sleep(30)
     try:
         print('==================PLOTTING METRICS===========================')
         plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name)

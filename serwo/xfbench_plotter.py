@@ -9,6 +9,7 @@ import pathlib
 import pprint
 import argparse
 import statistics
+import get_aws_containers as aws_containers
 
 from typing import Any
 from collections import defaultdict
@@ -37,9 +38,8 @@ class XFBenchPlotter:
         self.__workflow_directory = workflow_directory
         self.__workflow_deployment_id = workflow_deployment_id
         self.__run_id = run_id
-        self.__xfaas_dag = self.DagLoader(pathlib.Path(self.__workflow_directory) / "dag.json").get_dag()
+        self.__xfaas_dag = self.__init__dag(self.__workflow_directory+ "/dag.json")
         self.__format = format
-
         '''
         Constructed directories and paths
         '''
@@ -72,6 +72,7 @@ class XFBenchPlotter:
         self.__exp_conf = config.get("experiment_conf")
         self.__queue_name = config.get("queue_details").get("queue_name")
         self.__conn_str = config.get("queue_details").get("connection_string")
+        self.__app_name = config.get("app_name")
         
         '''
         Create an experiment description dictionary
@@ -80,7 +81,8 @@ class XFBenchPlotter:
         self.__exp_desc = dict(wf_name=temp_conf.get("wf_name"),
                                csp=temp_conf.get("csp"),
                                dynamism=temp_conf.get("dynamism"),
-                               payload=temp_conf.get("payload_size"))
+                               payload=temp_conf.get("payload_size"),
+                               rps = temp_conf.get("rps"))
         
 
         self.__logfile = f"{self.__get_outfile_prefix()}_dyndb_items.jsonl"
@@ -92,49 +94,44 @@ class XFBenchPlotter:
         if not os.path.exists(self.__logs_dir / self.__logfile):
             self.__get_from_queue_add_to_file()
 
-    class DagLoader:
-        # private variables
-        __dag_config_data = dict() # dag configuration (picked up from user file)
-        __nodeIDMap = {} # map: nodeName -> nodeId (used internally)
-        __dag = nx.DiGraph() # networkx directed graph
 
-        # Constructor
-        def __init__(self, user_config_path):
-            # throw an exception if loading file has a problem
-            try:
-                self.__dag_config_data = self.__load_user_spec(user_config_path)
-                self.__workflow_name = self.__dag_config_data["WorkflowName"]
-            except Exception as e:
-                raise e
-        
-            index = 1
-            for node in self.__dag_config_data["Nodes"]:
-                nodeID = node["NodeId"]
-                # TODO - add a better way to add node codenames to the DAG
-                self.__nodeIDMap[node["NodeName"]] = nodeID
-                self.__dag.add_node(nodeID,
-                                    NodeId=nodeID,
-                                    NodeName=node["NodeName"], 
-                                    Path=node["Path"],
-                                    EntryPoint=node["EntryPoint"],
-                                    MemoryInMB=node["MemoryInMB"],
-                                    Codename=node["Code"])
-                index += 1
-
-            # add edges in the dag
-            for edge in self.__dag_config_data["Edges"]:
-                for key in edge:
-                    for val in edge[key]:
-                        self.__dag.add_edge(self.__nodeIDMap[key], self.__nodeIDMap[val])
-
-        # private methods
-        def __load_user_spec(self, user_config_path):
+    def __init__dag( self,user_config_path):
+        def __load_user_spec( user_config_path):
             with open(user_config_path, "r") as user_dag_spec:
                 dag_data = json.load(user_dag_spec)
             return dag_data
+        __dag_config_data = dict() # dag configuration (picked up from user file)
+        __nodeIDMap = {} # map: nodeName -> nodeId (used internally)
+        __dag = nx.DiGraph() # networkx directed graph
+        
+        # throw an exception if loading file has a problem
+        try:
+            __dag_config_data = __load_user_spec(user_config_path)
+            __workflow_name = __dag_config_data["WorkflowName"]
+        except Exception as e:
+            raise e
+    
+        index = 1
+        for node in __dag_config_data["Nodes"]:
+            nodeID = node["NodeId"]
+            # TODO - add a better way to add node codenames to the DAG
+            __nodeIDMap[node["NodeName"]] = nodeID
+            __dag.add_node(nodeID,
+                                NodeId=nodeID,
+                                NodeName=node["NodeName"], 
+                                Path=node["Path"],
+                                EntryPoint=node["EntryPoint"],
+                                MemoryInMB=node["MemoryInMB"],
+                                Codename=node["Code"])
+            index += 1
 
-        def get_dag(self):
-            return self.__dag
+        # add edges in the dag
+        for edge in __dag_config_data["Edges"]:
+            for key in edge:
+                for val in edge[key]:
+                    __dag.add_edge(__nodeIDMap[key], __nodeIDMap[val])
+
+        return __dag
         
     
     def __get_outfile_prefix(self):
@@ -207,6 +204,13 @@ class XFBenchPlotter:
         for item in log_items:
             e2e_time.append(int(item["functions"][sink_node]["end_delta"])/1000) # e2e time in seconds
         return e2e_time
+    
+    def __get_overheads(self, log_items):
+        oh = [] 
+        for item in log_items:
+            oh.append((int(item["invocation_start_time_ms"]) - int(item["client_request_time_ms"]))/1000)
+
+        return oh
 
     def __get_edge_time(self, log_items,src,sink):
         edge_times = []
@@ -384,8 +388,9 @@ class XFBenchPlotter:
                     tm = 0
                     for node in path:
                         tm += function_times[node][i]
-                    temp.append(tm)
-                cumm_function_exec.append(max(temp))
+                    temp.append((tm,path))
+                a,b = max(temp)
+                cumm_function_exec.append(a)
             
 
             ## cumm comm time
@@ -396,8 +401,9 @@ class XFBenchPlotter:
                     tm = 0
                     for j in range(0,len(path)-1):
                         tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
-                    temp.append(tm)
-                cumm_comm_time.append(max(temp))
+                    temp.append((tm,path))
+                a,b = max(temp)
+                cumm_comm_time.append(a)
             
             ## e2e
             e2e_time = []
@@ -410,8 +416,39 @@ class XFBenchPlotter:
                         tm += edge_times[f"{path[j]}-{path[j+1]}"][i]
                         tm += function_times[path[j]][i]
                     tm += function_times[path[-1]][i]
-                    temp.append(tm)
-                e2e_time.append(max(temp))
+                    temp.append((tm,path))
+                a,b = max(temp)
+                e2e_time.append(a)
+
+            # print(cumm_function_exec)
+            ss = dict()
+            s2 = dict()
+            s3 = dict()
+            # for p in cumm_function_exec:
+            #     xd = str(p[1])
+            #     if xd in ss:
+            #         ss[xd][0] += 1
+            #     else:
+            #         ss[xd] = (1,p[0])
+                
+
+            # for p in cumm_comm_time:
+            #     xd = str(p[1])
+            #     if xd in s2:
+            #         s2[xd] += 1
+            #     else:
+            #         s2[xd] = 1
+            
+            # for p in e2e_time:
+            #     xd = str(p[1])
+            #     if xd in s3:
+            #         s3[xd] += 1
+            #     else:
+            #         s3[xd] = 1
+                
+            # print('compute times',ss)
+            # print('interfn times',s2)
+            # print('e2e times',s3)
 
             return cumm_function_exec,cumm_comm_time,e2e_time
 
@@ -543,17 +580,14 @@ class XFBenchPlotter:
 
         
         functions = []
+        print("God dict length: ", len(god_dict.keys()))
         for cid in god_dict:
             god_dict[cid].sort()
             ans.append(god_dict[cid][0])
             # mins.append((god_dict[cid][0][0]-int(min_start_time))/1000)
             mins.append((god_dict[cid][0][1]-int(min_start_time))/1000)
             wf_invocation_ids.add(god_dict[cid][0][2])
-            if (god_dict[cid][0][1]-int(min_start_time))/1000 >=145 and (god_dict[cid][0][1]-int(min_start_time))/1000 <= 155:
-                print("Function Id: ", god_dict[cid][0][3])
             functions.append(god_dict[cid][0][3])
-        print(sorted(mins))
-        print("Function Ids that start containers: ", functions)
         
         return sorted(mins), wf_invocation_ids
     
@@ -571,18 +605,10 @@ class XFBenchPlotter:
         timestamps = [int(item["invocation_start_time_ms"]) for item in sorted(logs, key=lambda k: int(k["invocation_start_time_ms"]))] # NOTE - the timeline is w.r.t client
         timeline = [(t-timestamps[0])/1000 for t in timestamps] # timeline in seconds
         e2e_time = self.__get_e2e_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
-
-        ##temporary hack for graph
-        # edge_1 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "1",sink = "2")
-        # edge_2 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "1",sink = "3")
-        # edge_3 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "1",sink = "4")
-        # edge_4 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "2",sink = "5")
-        # edge_5 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "3",sink = "5")
-        # edge_6 = self.__get_edge_time(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])),src = "4",sink = "5")
-
-        # print(edge_1,edge_2,edge_3,edge_4,edge_5,edge_6)
-        logger.info(f"Entry Count in Timeline - {len(timeline)}, Expected Entry Count - {self.__get_expected_entry_count()}")
+        oh = self.__get_overheads(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
         
+        logger.info(f"Entry Count in Timeline - {len(timeline)}, Expected Entry Count - {self.__get_expected_entry_count()}")
+        # self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
         # fontdict = {'size': 12} # NOTE - custom fontdict 
         fig, ax = plt.subplots()
         fig.set_dpi(400)
@@ -608,15 +634,10 @@ class XFBenchPlotter:
             ax.set_xticks(xticks)
             ax.set_xticklabels(str(x) for x in xticks)
         
-        # print(e2e_time[145:165])
+       
         ax.plot(timeline, e2e_time)
-        # ax.plot(timeline, edge_1,color = 'purple')
-        # ax.plot(timeline, edge_2,color = 'orange')
-        # ax.plot(timeline, edge_3,color = 'magenta')
-        # ax.plot(timeline, edge_4,color = 'green')
-        # ax.plot(timeline, edge_5,color = 'red')
-        # ax.plot(timeline, edge_6,color = 'black')
-
+        print(e2e_time[0:23])
+        
 
         if is_overlay:
             yticks_mod = [y for y in ax.get_yticks() if y >= 0]
@@ -636,8 +657,25 @@ class XFBenchPlotter:
             ax.vlines(x=container_spawn_times, ymin=0, ymax=ax.get_ylim()[1]/2, linestyles='dashed', color='darkgrey', linewidth=2)
 
         if self.__exp_desc.get("csp") == "aws":
-           logger.info("TODO: Complete the aws container traces function")
-           pass
+            logger.info("TODO: Complete the aws container traces function")
+            log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"]))
+            min_timestamp = int(log_items[0]["invocation_start_time_ms"])
+            aws_containers_ts = aws_containers.get_container_count(self.__app_name)
+            aws_containers_ts = dict(sorted(aws_containers_ts.items()))
+            container_spawn_times = list(aws_containers_ts.keys()) 
+            import datetime
+            wall_clock_times = [datetime.datetime.fromtimestamp(int(t)).strftime('%Y-%m-%d %H:%M:%S') for t in container_spawn_times]
+            print('wall clock: ',wall_clock_times)
+            
+            container_spawn_times = [(int(t) - min_timestamp/1000) for t in container_spawn_times]
+            print('from portal: ',container_spawn_times)
+            ## epoch time to actual time
+            
+            ax.plot(container_spawn_times, [ax.get_ylim()[1]/2 for i in range(0, len(container_spawn_times))], color='green', marker='o', markersize=8, linestyle='None')
+            ax.vlines(x=container_spawn_times, ymin=0, ymax=ax.get_ylim()[1]/2, linestyles='dashed', color='darkgrey', linewidth=2)
+            print('Timeline: ',aws_containers_ts)
+           
+
         #    self.__get_aws_containers()
 
         ax.grid(axis="y", which="major", linestyle="-", color="black")
@@ -747,7 +785,6 @@ class XFBenchPlotter:
                 patch.set_facecolor('red')
             else:
                 patch.set_facecolor(get_color(interleaved_label_ids[idx]))
-
         # set the label colors
         for idx, xtick in enumerate(ax.get_xticklabels()[0:len(interleaved_label_ids)]):
             if idx == 0:
@@ -784,14 +821,22 @@ class XFBenchPlotter:
         cumm_labels = [r'$\sum Exec$', r'$\sum Comms$', r'$\sum E2E$']
 
         # NOTE - for custom size uncomment these with fontdict
-        # fontdict = {'size': 20} 
-        # ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
+        fontdict = {'size': 20} 
+        ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
         
         distribution_dict = self.__get_timings_dict()
         # cumm_func_time = get_cumm_time_func(time_map=distribution_dict["functions"], num_iters=len(e2e_all_sessions))
         cumm_compute_time, cumm_comms_time, cumm_e2e_time = self.__get_cumm_time(distribution_dict["functions"],
                                                                                 distribution_dict["edges"],
                                                                                 num_iters=len(self.__get_provenance_logs()))
+
+        print(cumm_compute_time[0:20])
+        print(cumm_comms_time[0:20])
+        print(cumm_e2e_time[0:20])
+
+        cumm_compute_time = cumm_compute_time[0:23]
+        cumm_comms_time = cumm_comms_time[0:23]
+        cumm_e2e_time = cumm_e2e_time[0:23]
 
         bplot2 = ax.boxplot([np.array(cumm_compute_time), np.array(cumm_comms_time), np.array(cumm_e2e_time)],
                              vert=True,
@@ -829,7 +874,7 @@ class XFBenchPlotter:
                                 cumm_comms_time=cumm_comms_time,
                                 cumm_e2e_time=cumm_e2e_time)
         
-        fig.savefig(self.__plots_dir / f"cumm_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
+        fig.savefig(self.__plots_dir / f"cumm_{self.__get_outfile_prefix()}_{self.__exp_desc.get('rps')}.{self.__format}", bbox_inches='tight')
 
     '''
     Box plot containng the e2e times for invocations which start the containers
@@ -847,9 +892,10 @@ class XFBenchPlotter:
             # _, container_wf_invocation_ids = self.__get_aws_containers()
             pass
 
-        logger.info(f"Invocation Ids with conatiner spawn :: CSP {csp} - {container_wf_invocations_ids}")
+        # logger.info(f"Invocation Ids with conatiner spawn :: CSP {csp} - {container_wf_invocations_ids}")
         
         sink_node = [node for node in self.__xfaas_dag.nodes if self.__xfaas_dag.out_degree(node) == 0][0]
+        
         e2e_wo_containers = []
         e2e_w_containers = []
         
@@ -898,10 +944,10 @@ class XFBenchPlotter:
         ax.grid(axis="y", which="major", linestyle="-", color="black")
         ax.grid(axis="y", which="minor", linestyle="-", color="grey")
         ax.set_axisbelow(True)
-
+        # 
 
         fig.savefig(self.__plots_dir / f"e2e_wnwo_container_contrast_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
-
+        return e2e_w_containers, e2e_wo_containers
 
     
     '''
@@ -909,20 +955,7 @@ class XFBenchPlotter:
     '''
     def plot_cumm_e2e_container(self, csp,yticks: list):
         logs = self.__get_provenance_logs()
-        fig, ax = plt.subplots()
-        fig.set_dpi(400)
-        # fig.set_figwidth(9)
-        ax.set_ylabel("Time (sec)")
-        cumm_labels = [r'$\sum Exec$', r'$\sum Comms$', r'$\sum E2E$']
-
-        # NOTE - for custom size uncomment these with fontdict
-        # fontdict = {'size': 20} 
-        # ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size'])
-        
         distribution_dict = self.__get_timings_dict()
-       
-        # cumm_func_time = get_cumm_time_func(time_map=distribution_dict["functions"], num_iters=len(e2e_all_sessions))
-
         if csp == 'azure':
             # NOTE - this returns a "set" of ids
             _ , container_wf_invocations_ids = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
@@ -930,114 +963,23 @@ class XFBenchPlotter:
             #TODO - structure aws container fetching similar to azure
             # _, container_wf_invocation_ids = self.__get_aws_containers()
             pass
-
-        
         logger.info(f"Invocation Ids with conatiner spawn :: CSP {csp} - {container_wf_invocations_ids}")
         
         sink_node = [node for node in self.__xfaas_dag.nodes if self.__xfaas_dag.out_degree(node) == 0][0]
-
-       
-        cumm_compute_time, cumm_comms_time, cumm_e2e_time = self.__get__filtered_cumm_time(distribution_dict["functions"],
+        cumm_compute_time_wo, cumm_comms_time_wo, cumm_e2e_time_wo = self.__get__filtered_cumm_time(distribution_dict["functions"],
                                                                                 distribution_dict["edges"],
                                                                                 num_iters=len(self.__get_provenance_logs()),
                                                                                 wf_invocation_ids= distribution_dict["wf_invocation_id"],
                                                                                 container_invocation_ids= container_wf_invocations_ids,
                                                                                 include_continer=False)
-
-        print(len(cumm_comms_time))
-        bplot2 = ax.boxplot([np.array(cumm_compute_time), np.array(cumm_comms_time), np.array(cumm_e2e_time)],
-                             vert=True,
-                             widths=0.2,
-                             patch_artist=True,
-                             showfliers=False)
-        
-        if not yticks == []:
-            ax.set_yticks(yticks)
-            ax.set_yticklabels([str(x) for x in yticks])
-        
-        ax.set_xticks([x+1 for x in range(0, len(cumm_labels))])
-        ax.set_xticklabels(cumm_labels)
-
-        # Set ylim
-        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
-        # color='pink'
-        colors = ['blue', 'green', 'brown']
-        for patch, color in zip(bplot2['boxes'], colors):
-            patch.set_facecolor(color)
-
-        _xloc = ax.get_xticks()
-        vlines_x_between = []
-        for idx in range(0, len(_xloc)-1):
-            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
-        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
-
-        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
-        ax.grid(axis="y", which="major", linestyle="-", color="black")
-        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
-        ax.set_axisbelow(True)
-
-
-        self.__print_cumm_stats(cumm_compute_time=cumm_compute_time,
-                                cumm_comms_time=cumm_comms_time,
-                                cumm_e2e_time=cumm_e2e_time)
-        
-        fig.savefig(self.__plots_dir / f"cumm_wo_containers_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
-
-
-
-        fig, ax = plt.subplots()
-        fig.set_dpi(400)
-        # fig.set_figwidth(9)
-        ax.set_ylabel("Time (sec)")
-        cumm_labels = [r'$\sum Exec$', r'$\sum Comms$', r'$\sum E2E$']
-
-
-        cumm_compute_time, cumm_comms_time, cumm_e2e_time = self.__get__filtered_cumm_time(distribution_dict["functions"],
+        cumm_compute_time_w, cumm_comms_time_w, cumm_e2e_time_w = self.__get__filtered_cumm_time(distribution_dict["functions"],
                                                                                 distribution_dict["edges"],
                                                                                 num_iters=len(self.__get_provenance_logs()),
                                                                                 wf_invocation_ids= distribution_dict["wf_invocation_id"],
                                                                                 container_invocation_ids= container_wf_invocations_ids,
                                                                                 include_continer=True)
 
-        print(len(cumm_comms_time))
-        bplot2 = ax.boxplot([np.array(cumm_compute_time), np.array(cumm_comms_time), np.array(cumm_e2e_time)],
-                             vert=True,
-                             widths=0.2,
-                             patch_artist=True,
-                             showfliers=False)
-        
-        if not yticks == []:
-            ax.set_yticks(yticks)
-            ax.set_yticklabels([str(x) for x in yticks])
-        
-        ax.set_xticks([x+1 for x in range(0, len(cumm_labels))])
-        ax.set_xticklabels(cumm_labels)
-
-        # Set ylim
-        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
-        # color='pink'
-        colors = ['blue', 'green', 'brown']
-        for patch, color in zip(bplot2['boxes'], colors):
-            patch.set_facecolor(color)
-
-        _xloc = ax.get_xticks()
-        vlines_x_between = []
-        for idx in range(0, len(_xloc)-1):
-            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
-        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
-
-        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
-        ax.grid(axis="y", which="major", linestyle="-", color="black")
-        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
-        ax.set_axisbelow(True)
-
-
-        self.__print_cumm_stats(cumm_compute_time=cumm_compute_time,
-                                cumm_comms_time=cumm_comms_time,
-                                cumm_e2e_time=cumm_e2e_time)
-        
-        fig.savefig(self.__plots_dir / f"cumm_w_containers_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
-
+        return cumm_compute_time_w,cumm_compute_time_wo,cumm_comms_time_w,cumm_comms_time_wo,cumm_e2e_time_w,cumm_e2e_time_wo
     '''
     Plot Stagewise
     '''
@@ -1053,18 +995,18 @@ class XFBenchPlotter:
         logger.info("Plotting Stagewise Boxplots")
         distribution_dict = self.__get_timings_dict_with_containers(container_wf_invocations_ids)
 
-        fig, ax = plt.subplots()
-        fig.set_dpi(450)
+        # fig, ax = plt.subplots()
+        # fig.set_dpi(450)
 
-        if figwidth:
-            fig.set_figwidth(figwidth)
+        # if figwidth:
+        #     fig.set_figwidth(figwidth)
 
-        ax.set_ylabel("Time (sec)") # NOTE - use ...,fontdict=fontdict for custom font
-        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
+        # ax.set_ylabel("Time (sec)") # NOTE - use ...,fontdict=fontdict for custom font
+        # ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
 
-        if not yticks == []:
-            ax.set_yticks(yticks)
-            ax.set_yticklabels([str(y) for y in yticks])
+        # if not yticks == []:
+        #     ax.set_yticks(yticks)
+        #     ax.set_yticklabels([str(y) for y in yticks])
         
         # NOTE for custom tick params uncomment this
         # ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size']) 
@@ -1118,53 +1060,61 @@ class XFBenchPlotter:
                 visited.add(u)
 
         interleaved_data = [np.array(distribution_dict["client_overheads"])] + [get_data(id) for id in interleaved_label_ids]    
+        interleaved_label_ids_new = []
+        for i in interleaved_label_ids:
+            if '-' not in i:
+                interleaved_label_ids_new.append(i)
+
+        intereleaved_functions_with_cont = [get_data(id) for id in interleaved_label_ids_new]
+        intereleaved_functions_with_cont = (intereleaved_functions_with_cont, interleaved_label_ids_new)
+        
         # rectangular box plot
-        bplot1 = ax.boxplot(interleaved_data,
-                            vert=True,  # vertical box alignment
-                            patch_artist=True,
-                            widths=0.2,
-                            showfliers=False)  # fill with color
-                            # labels=interfunction_labels)
+        # bplot1 = ax.boxplot(interleaved_data,
+        #                     vert=True,  # vertical box alignment
+        #                     patch_artist=True,
+        #                     widths=0.2,
+        #                     showfliers=False)  # fill with color
+        #                     # labels=interfunction_labels)
         
-        interleaved_labels_modified = ["INIT-OH"] + get_labels(interleaved_label_ids)
-        logger.info(f"Interleaved Labels - {interleaved_labels_modified}")
+        # interleaved_labels_modified = ["INIT-OH"] + get_labels(interleaved_label_ids)
+        # logger.info(f"Interleaved Labels - {interleaved_labels_modified}")
         
-        ax.set_xticklabels(interleaved_labels_modified, 
-                           rotation=90)
-        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
+        # ax.set_xticklabels(interleaved_labels_modified, 
+        #                    rotation=90)
+        # ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
 
-        interleaved_label_ids = ['init-oh'] + interleaved_label_ids
+        # interleaved_label_ids = ['init-oh'] + interleaved_label_ids
 
-        for idx, patch in enumerate(bplot1['boxes']):
-            # NOTE - set facecolor for the client overheads
-            if idx == 0:
-                patch.set_facecolor('red')
-            else:
-                patch.set_facecolor(get_color(interleaved_label_ids[idx]))
+        # for idx, patch in enumerate(bplot1['boxes']):
+        #     # NOTE - set facecolor for the client overheads
+        #     if idx == 0:
+        #         patch.set_facecolor('red')
+        #     else:
+        #         patch.set_facecolor(get_color(interleaved_label_ids[idx]))
 
-        # set the label colors
-        for idx, xtick in enumerate(ax.get_xticklabels()[0:len(interleaved_label_ids)]):
-            if idx == 0:
-                xtick.set_color('red')
-            else:
-                xtick.set_color(get_label_color(interleaved_label_ids[idx]))
+        # # set the label colors
+        # for idx, xtick in enumerate(ax.get_xticklabels()[0:len(interleaved_label_ids)]):
+        #     if idx == 0:
+        #         xtick.set_color('red')
+        #     else:
+        #         xtick.set_color(get_label_color(interleaved_label_ids[idx]))
 
-        ##### VLINES #####        
-        # add lighter vlines between the boxes themselves
-        _xloc = ax.get_xticks()[0: len(interleaved_label_ids)]
-        vlines_x_between = []
-        for idx in range(0, len(_xloc)-1):
-            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
-        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
-        ###### VLINES ####
+        # ##### VLINES #####        
+        # # add lighter vlines between the boxes themselves
+        # _xloc = ax.get_xticks()[0: len(interleaved_label_ids)]
+        # vlines_x_between = []
+        # for idx in range(0, len(_xloc)-1):
+        #     vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
+        # ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
+        # ###### VLINES ####
 
-        ax.grid(axis="y", which="major", linestyle="-", color="black")
-        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
-        ax.set_axisbelow(True)
+        # ax.grid(axis="y", which="major", linestyle="-", color="black")
+        # ax.grid(axis="y", which="minor", linestyle="-", color="grey")
+        # ax.set_axisbelow(True)
 
-        self.__print_stats_stagewise(distribution_dict)
+        # self.__print_stats_stagewise(distribution_dict)
         
-        fig.savefig(self.__plots_dir / f"stagewise_w_containers_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
+        # fig.savefig(self.__plots_dir / f"stagewise_w_containers_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
 
 
 
@@ -1174,18 +1124,18 @@ class XFBenchPlotter:
         logger.info("Plotting Stagewise Boxplots")
         distribution_dict = self.__get_timings_dict_without_containers(container_wf_invocations_ids)
 
-        fig, ax = plt.subplots()
-        fig.set_dpi(450)
+        # fig, ax = plt.subplots()
+        # fig.set_dpi(450)
 
-        if figwidth:
-            fig.set_figwidth(figwidth)
+        # if figwidth:
+        #     fig.set_figwidth(figwidth)
 
-        ax.set_ylabel("Time (sec)") # NOTE - use ...,fontdict=fontdict for custom font
-        ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
+        # ax.set_ylabel("Time (sec)") # NOTE - use ...,fontdict=fontdict for custom font
+        # ax.yaxis.set_minor_locator(tck.AutoMinorLocator())
 
-        if not yticks == []:
-            ax.set_yticks(yticks)
-            ax.set_yticklabels([str(y) for y in yticks])
+        # if not yticks == []:
+        #     ax.set_yticks(yticks)
+        #     ax.set_yticklabels([str(y) for y in yticks])
         
         # NOTE for custom tick params uncomment this
         # ax.yaxis.set_tick_params(which='major', labelsize=fontdict['size']) 
@@ -1239,50 +1189,60 @@ class XFBenchPlotter:
                 visited.add(u)
 
         interleaved_data = [np.array(distribution_dict["client_overheads"])] + [get_data(id) for id in interleaved_label_ids]    
+        interleaved_label_ids_new = []
+
+        for i in interleaved_label_ids:
+            if '-' not in i:
+                interleaved_label_ids_new.append(i)
+        # print(interleaved_label_ids_new)
+
+        intereleaved_functions_without_cont = [get_data(id) for id in interleaved_label_ids_new]
+        intereleaved_functions_without_cont = (intereleaved_functions_without_cont,interleaved_label_ids_new)
+        return intereleaved_functions_with_cont,intereleaved_functions_without_cont
         # rectangular box plot
-        bplot1 = ax.boxplot(interleaved_data,
-                            vert=True,  # vertical box alignment
-                            patch_artist=True,
-                            widths=0.2,
-                            showfliers=False)  # fill with color
-                            # labels=interfunction_labels)
+        # bplot1 = ax.boxplot(interleaved_data,
+        #                     vert=True,  # vertical box alignment
+        #                     patch_artist=True,
+        #                     widths=0.2,
+        #                     showfliers=False)  # fill with color
+        #                     # labels=interfunction_labels)
         
-        interleaved_labels_modified = ["INIT-OH"] + get_labels(interleaved_label_ids)
-        logger.info(f"Interleaved Labels - {interleaved_labels_modified}")
+        # interleaved_labels_modified = ["INIT-OH"] + get_labels(interleaved_label_ids)
+        # logger.info(f"Interleaved Labels - {interleaved_labels_modified}")
         
-        ax.set_xticklabels(interleaved_labels_modified, 
-                           rotation=90)
-        ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
+        # ax.set_xticklabels(interleaved_labels_modified, 
+        #                    rotation=90)
+        # ax.set_ylim(ymin=0, ymax=max(ax.get_yticks()))
 
-        interleaved_label_ids = ['init-oh'] + interleaved_label_ids
+        # interleaved_label_ids = ['init-oh'] + interleaved_label_ids
 
-        for idx, patch in enumerate(bplot1['boxes']):
-            # NOTE - set facecolor for the client overheads
-            if idx == 0:
-                patch.set_facecolor('red')
-            else:
-                patch.set_facecolor(get_color(interleaved_label_ids[idx]))
+        # for idx, patch in enumerate(bplot1['boxes']):
+        #     # NOTE - set facecolor for the client overheads
+        #     if idx == 0:
+        #         patch.set_facecolor('red')
+        #     else:
+        #         patch.set_facecolor(get_color(interleaved_label_ids[idx]))
 
-        # set the label colors
-        for idx, xtick in enumerate(ax.get_xticklabels()[0:len(interleaved_label_ids)]):
-            if idx == 0:
-                xtick.set_color('red')
-            else:
-                xtick.set_color(get_label_color(interleaved_label_ids[idx]))
+        # # set the label colors
+        # for idx, xtick in enumerate(ax.get_xticklabels()[0:len(interleaved_label_ids)]):
+        #     if idx == 0:
+        #         xtick.set_color('red')
+        #     else:
+        #         xtick.set_color(get_label_color(interleaved_label_ids[idx]))
 
-        ##### VLINES #####        
-        # add lighter vlines between the boxes themselves
-        _xloc = ax.get_xticks()[0: len(interleaved_label_ids)]
-        vlines_x_between = []
-        for idx in range(0, len(_xloc)-1):
-            vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
-        ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
-        ###### VLINES ####
+        # ##### VLINES #####        
+        # # add lighter vlines between the boxes themselves
+        # _xloc = ax.get_xticks()[0: len(interleaved_label_ids)]
+        # vlines_x_between = []
+        # for idx in range(0, len(_xloc)-1):
+        #     vlines_x_between.append(_xloc[idx]/2 + _xloc[idx+1]/2)
+        # ax.vlines(x=vlines_x_between, ymin=0, ymax=ax.get_ylim()[1], linestyles='solid', color='darkgrey', linewidth=1.5)
+        # ###### VLINES ####
 
-        ax.grid(axis="y", which="major", linestyle="-", color="black")
-        ax.grid(axis="y", which="minor", linestyle="-", color="grey")
-        ax.set_axisbelow(True)
+        # ax.grid(axis="y", which="major", linestyle="-", color="black")
+        # ax.grid(axis="y", which="minor", linestyle="-", color="grey")
+        # ax.set_axisbelow(True)
 
-        self.__print_stats_stagewise(distribution_dict)
+        # self.__print_stats_stagewise(distribution_dict)
         
-        fig.savefig(self.__plots_dir / f"stagewise_wo_containers_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')
+        # fig.savefig(self.__plots_dir / f"stagewise_wo_containers_{self.__get_outfile_prefix()}.{self.__format}", bbox_inches='tight')

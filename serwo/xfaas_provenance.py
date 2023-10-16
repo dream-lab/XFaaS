@@ -108,6 +108,18 @@ def generate_provenance_artifacts(user_dir, wf_id, refactored_wf_id, wf_deployme
     resources_dir = pathlib.Path.joinpath(
         pathlib.Path(user_dir), "build/workflow/resources"
     )
+    resouces_file = f'{resources_dir}/{csp}-{region}-{part_id}.json'
+    ##load json from file
+    with open(resouces_file) as f:
+        resources = json.load(f)
+
+    if csp == 'aws':
+        for r in resources:
+            if r['OutputKey'] == 'SAMStackName':
+                app_name = r['OutputValue'] 
+    elif csp == 'azure' or csp == 'azure_v2':
+        app_name = resources['group']
+
     if queue_details is None:
        raise Exception("Queue details not found, Try a Fresh Deployment by clearing CollectLogs")
     else:    
@@ -118,7 +130,8 @@ def generate_provenance_artifacts(user_dir, wf_id, refactored_wf_id, wf_deployme
             "queue_details": {
                 "queue_name": queue_details["queue_name"],
                 "connection_string": queue_details["connection_string"]
-            }
+            },
+            "app_name": app_name
         }
 
     json_output = json.dumps(provenance_artifacts, indent=4)

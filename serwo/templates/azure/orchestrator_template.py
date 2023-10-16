@@ -7,7 +7,15 @@ from .python.src.utils.classes.commons.serwo_objects import SerWOObject
 import time
 import os, psutil
 import uuid
+import cpuinfo
+import random
+import string
 
+def generate_random_string(N):
+    res = ''.join(random.choices(string.ascii_lowercase + string.ascii_uppercase +
+                                string.digits, k=N))
+ 
+    return res
 
 def trace_containers(metadata):
     function_id = 0
@@ -75,6 +83,7 @@ def insert_end_stats_in_metadata(input):
     end_delta = get_delta(metadata["workflow_start_time"])
     meta_list = metadata["functions"]
     ne_list = []
+   
     for meta in meta_list:
         start_delta_local = 0
         end_delta_local = 0
@@ -117,6 +126,7 @@ def insert_end_stats_in_metadata(input):
     return input
 
 
+
 def orchestrator_function(context: df.DurableOrchestrationContext):
     # convert input body to serwoObject for first function
     curr_time = int(time.time() * 1000)
@@ -134,7 +144,6 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         metadata["request_timestamp"] = request_timestamp
     func_id = 255
 
-    
 
     start_delta = get_delta(metadata["workflow_start_time"])
     process = psutil.Process(os.getpid())

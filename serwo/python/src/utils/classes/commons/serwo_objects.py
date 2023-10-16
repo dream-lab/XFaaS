@@ -87,6 +87,7 @@ def build_serwo_list_object(event):
                 request_timestamp=incoming_metadata.get("request_timestamp"),
                 session_id=incoming_metadata.get("session_id"),
                 deployment_id = incoming_metadata.get("deployment_id")
+                # cpu = incoming_metadata.get("cpu"),
             )
         )
         # get the functions list for each record and add it to a dict to remove duplicates

@@ -1,1 +1,0 @@
-eb52ab82-6897-44ce-bd19-99f9731b25c6,azure,centralindia,1,300,small,static

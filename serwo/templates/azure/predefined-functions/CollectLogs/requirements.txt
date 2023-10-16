@@ -1,3 +1,4 @@
 azure-storage-queue
 psutil
 requests
+py-cpuinfo
