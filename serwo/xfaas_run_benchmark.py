@@ -379,7 +379,7 @@ if __name__ == "__main__":
    
     print('==================BUILDING WF===========================')
 
-    # build_workflow(wf_user_directory)
+    build_workflow(wf_user_directory)
     
     wf_user_directory += "/workflow-gen"
     

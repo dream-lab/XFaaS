@@ -9,38 +9,28 @@
 *Note: XFaaS was earlier known as SerWO. So some of the references in the code/documentation may use these terms interchangably.*
 
 ## XFaaS Deployment processs
+- First, clone the workloads repository and checkout out `workflow-integration` branch.: (https://github.com/dream-lab/xfaas-workloads/tree/workflow-integration)
+- Prerequisites: A client VM to be spun up that is publicly accessible(eg: an AWS VM). 
+    - Feed the client credentials in a file at: serwo/config/client_config.json, with the following schema
+        {
+            "<client_key>":{
+                "server_ip": "<IP>",
+                "server_user_id" : "<USER_NAME>",
+                "server_pem_file_path":"<Path_to_pem_file>"
+            }
+        }
+    - client_key can be anything defined by the user.
+    - Apache jmeter to be installed on the VM: version: 5.6.2 (https://jmeter.apache.org/download_jmeter.cgi)
+- Then Run the command: export XFAAS_WF_DIR=<absolute path to directory where you cloned above repo>
+- Install all dependencies:
+    pip install -r requirements.txt
+- Set Azure Subscription id: 
+    - Fethc Azure subscription id using: az account subscription list
+    - Run export  export AZURE_SUBSCRIPTION_ID=<azure_subscription_id>
+- Command to begin The Experiment:
+    - python serwo/xfaas_run_benchmark.py --csp <can take values: aws, azure,azure_v2> --region <data_centre_region> --max-rps <max_rps> --duration <duration of run> --payload-size <payload_size> --dynamism <qorkload dynamism> --wf-name <wf name> --wf-user-directory <absolute path to user wf directory, wf will be contained in the workloads repo> --path-to-client-config <absolute path to client_config.json created above> --dag-file-name dag.json --teardown-flag <set to 1 if you wish to delete remote resources created, 0 recommended as remote deletion takes time> --client-key <client_key defined above>
 
-### **User directory structure**
-The user directory should look like (see serwo/examples for reference)
-```
-folder/src - directory containing function code
-
-```
-
-
-### *AWS Step functions*
-
-
-#### **Deployment commands**
-
-```
-Command
-    python3 <path..>/aws_create_statemachine.py <path-to-user-dir> <workflow-description-filename> <trigger-type>
-
-NOTE
-    trigger types - REST | SQS
-```
-
-### *Azure Durable functions*
-#### **Deployment commands**
-
-```
-Command
-    python3 <path..>/azure_create_statemachine.py <path-to-user-dir> <workflow-description-filename> <trigger-type>
-
-NOTE
-    trigger types - !To be integrated!
-```
+- You can refer to example run commands from exp_runner.py script
 
 ## Cite this work as
 * A. Khochare, T. Khare, V. Kulkarni and Y. Simmhan, "XFaaS: Cross-platform Orchestration of FaaS Workflows on Hybrid Clouds," 2023 IEEE/ACM 23rd International Symposium on Cluster, Cloud and Internet Computing (CCGrid), Bangalore, India, 2023, pp. 498-512, doi: 10.1109/CCGrid57682.2023.00053.
