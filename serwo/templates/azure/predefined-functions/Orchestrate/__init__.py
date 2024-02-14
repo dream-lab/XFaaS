@@ -158,42 +158,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    dbqb = yield context.call_activity("Source", serwoObject)
-    kuqj = yield context.call_activity("GenerateList", dbqb)
-    ifcb = []
-    rirl = context.call_activity("GenerateMatrixA", dbqb)
-    onmf = context.call_activity("GenerateMatrixB", dbqb)
-    ifcb.append(rirl)
-    ifcb.append(onmf)
-    twjc = yield context.task_all(ifcb)
-    lvzv = yield context.call_activity("Aggregator2", twjc)
-    tptl = []
-    xhrb = context.call_activity("MatrixMultiplication", lvzv)
-    lacd = context.call_activity("LinPack", lvzv)
-    tptl.append(xhrb)
-    tptl.append(lacd)
-    zqal = yield context.task_all(tptl)
-    yjgm = yield context.call_activity("GenerateInteger", dbqb)
-    gzpe = []
-    gkzt = context.call_activity("Sine", yjgm)
-    obot = context.call_activity("Cosine", yjgm)
-    mmdb = context.call_activity("Factors", yjgm)
-    gzpe.append(gkzt)
-    gzpe.append(obot)
-    gzpe.append(mmdb)
-    ogha = yield context.task_all(gzpe)
-    axyd = []
-    ymzc = context.call_activity("FastFourierTransform", kuqj)
-    yndx = context.call_activity("Aggregator3", zqal)
-    obva = context.call_activity("Aggregator1", ogha)
-    axyd.append(ymzc)
-    axyd.append(yndx)
-    axyd.append(obva)
-    vjxk = yield context.task_all(axyd)
-    yyqa = yield context.call_activity("Aggregator4", vjxk)
-    yyqa = insert_end_stats_in_metadata(yyqa)
-    qips = yield context.call_activity("CollectLogs", yyqa)
-    return qips
+    zowk = yield context.call_activity("graphGen", serwoObject)
+    xpam = []
+    rpmy = context.call_activity("graphBft", zowk)
+    vfjo = context.call_activity("graphMst", zowk)
+    wufk = context.call_activity("pagerank", zowk)
+    xpam.append(rpmy)
+    xpam.append(vfjo)
+    xpam.append(wufk)
+    ctfy = yield context.task_all(xpam)
+    rpft = yield context.call_activity("aggregate", ctfy)
+    rpft = insert_end_stats_in_metadata(rpft)
+    rzlw = yield context.call_activity("CollectLogs", rpft)
+    return rzlw
 
 
 main = df.Orchestrator.create(orchestrator_function)

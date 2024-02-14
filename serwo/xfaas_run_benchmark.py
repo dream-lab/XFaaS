@@ -422,6 +422,3 @@ if __name__ == "__main__":
         remote_teardown(wf_user_directory,csp,region,part_id)
 
     local_teardown(wf_user_directory)
-
-
-
