@@ -127,6 +127,8 @@ def generate_provenance_artifacts(user_dir, wf_id, refactored_wf_id, wf_deployme
             "workflow_id": wf_id,
             "refactored_workflow_id": refactored_wf_id,
             "deployment_id": wf_deployment_id,
+            "csp": csp,
+            "region": region,
             "queue_details": {
                 "queue_name": queue_details["queue_name"],
                 "connection_string": queue_details["connection_string"]

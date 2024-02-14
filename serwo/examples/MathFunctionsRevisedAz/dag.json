@@ -120,14 +120,6 @@
         "EntryPoint": "aggr.py",
         "CSP": "NA",
         "MemoryInMB": 256
-      },
-      {
-        "NodeId": "16",
-        "NodeName": "CollectLogsMathAz",
-        "Path": "examples/MathFunctionsRevisedAz/src/CollectLogsMathAz",
-        "EntryPoint": "func.py",
-        "CSP": "NA",
-        "MemoryInMB": 256
       }
     ],
     "Edges": [
@@ -172,9 +164,6 @@
         },
         {
           "Aggregator3": ["Aggregator4"]
-        },
-        {
-          "Aggregator4" : ["CollectLogsMathAz"]
         }
     ]
   }

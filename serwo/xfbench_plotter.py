@@ -599,7 +599,7 @@ class XFBenchPlotter:
     Plot e2e timeline plot with and without overlay of rps
     NOTE - the e2e timeline will be with respect to the invocation start time and not the client_request
     '''
-    def plot_e2e_timeline(self, xticks: list, yticks: list, is_overlay: bool):
+    def plot_e2e_timeline(self, xticks: list, yticks: list, is_overlay: bool,region):
         logger.info(f"Plotting E2E timeline with rps_overlay={is_overlay}")
         logs = self.__get_provenance_logs()
         timestamps = [int(item["invocation_start_time_ms"]) for item in sorted(logs, key=lambda k: int(k["invocation_start_time_ms"]))] # NOTE - the timeline is w.r.t client
@@ -658,25 +658,25 @@ class XFBenchPlotter:
 
         if self.__exp_desc.get("csp") == "aws":
             logger.info("TODO: Complete the aws container traces function")
-            log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"]))
-            min_timestamp = int(log_items[0]["invocation_start_time_ms"])
-            aws_containers_ts = aws_containers.get_container_count(self.__app_name)
-            aws_containers_ts = dict(sorted(aws_containers_ts.items()))
-            container_spawn_times = list(aws_containers_ts.keys()) 
-            import datetime
-            wall_clock_times = [datetime.datetime.fromtimestamp(int(t)).strftime('%Y-%m-%d %H:%M:%S') for t in container_spawn_times]
-            print('wall clock: ',wall_clock_times)
+            # log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"]))
+            # min_timestamp = int(log_items[0]["invocation_start_time_ms"])
+            # aws_containers_ts = aws_containers.get_container_count(self.__app_name)
+            # aws_containers_ts = dict(sorted(aws_containers_ts.items()))
+            # container_spawn_times = list(aws_containers_ts.keys()) 
+            # import datetime
+            # wall_clock_times = [datetime.datetime.fromtimestamp(int(t)).strftime('%Y-%m-%d %H:%M:%S') for t in container_spawn_times]
+            # print('wall clock: ',wall_clock_times)
             
-            container_spawn_times = [(int(t) - min_timestamp/1000) for t in container_spawn_times]
-            print('from portal: ',container_spawn_times)
-            ## epoch time to actual time
+            # container_spawn_times = [(int(t) - min_timestamp/1000) for t in container_spawn_times]
+            # print('from portal: ',container_spawn_times)
+            # ## epoch time to actual time
             
-            ax.plot(container_spawn_times, [ax.get_ylim()[1]/2 for i in range(0, len(container_spawn_times))], color='green', marker='o', markersize=8, linestyle='None')
-            ax.vlines(x=container_spawn_times, ymin=0, ymax=ax.get_ylim()[1]/2, linestyles='dashed', color='darkgrey', linewidth=2)
-            print('Timeline: ',aws_containers_ts)
+            # ax.plot(container_spawn_times, [ax.get_ylim()[1]/2 for i in range(0, len(container_spawn_times))], color='green', marker='o', markersize=8, linestyle='None')
+            # ax.vlines(x=container_spawn_times, ymin=0, ymax=ax.get_ylim()[1]/2, linestyles='dashed', color='darkgrey', linewidth=2)
+            # print('Timeline: ',aws_containers_ts)
            
 
-        #    self.__get_aws_containers()
+        
 
         ax.grid(axis="y", which="major", linestyle="-", color="black")
         ax.grid(axis="y", which="minor", linestyle="-", color="darkgrey")

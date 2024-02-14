@@ -119,8 +119,10 @@ def template_azure_jmx_file(rps, duration, execute_url, payload_size, input_jmx,
     data = data.replace(deployment_id_keyword, deployment_id)
     data = data.replace(azure_payload_keyword, get_azure_payload(payload))
     to_replace = '"ThreadGroup.num_threads">2'
-    if rps == 1020.0 or rps == 840.0:
+    if rps == 1020.0 or rps == 840.0: 
         data = data.replace(to_replace, f'"ThreadGroup.num_threads">17')
+    elif rps == 1920.0 or rps == 3840.0 or rps == 7680.0:
+        data = data.replace(to_replace, f'"ThreadGroup.num_threads">64')
     
     with open(output_path, "w") as f:
         f.write(data)
@@ -148,13 +150,18 @@ def template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload
     data = data.replace(session_id_keyword, str(session_id))
     data = data.replace(deployment_id_keyword, deployment_id)
     data = data.replace(aws_payload_keyword, get_aws_payload(payload))
+    to_replace = '"ThreadGroup.num_threads">2'
+    if rps == 1020.0 or rps == 840.0: 
+        data = data.replace(to_replace, f'"ThreadGroup.num_threads">17')
+    elif rps == 1920.0 or rps == 3840.0 or rps == 7680.0:
+        data = data.replace(to_replace, f'"ThreadGroup.num_threads">64')
 
     with open(output_path, "w") as f:
         f.write(data)
 
 
 def make_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id,run_id, payload):
-    jmx_template_path, jmx_output_path,jmx_output_filename = get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism,session_id)
+    jmx_template_path, jmx_output_path,jmx_output_filename = get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism,session_id,region)
     if 'azure' in csp:
        template_azure_jmx_file(rps, duration, execute_url, payload_size, jmx_template_path, jmx_output_path, session_id,payload)
     else:
@@ -209,18 +216,18 @@ def send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration):
         shell_script_commands.append(cmd)
     
 
-def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_id):
+def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_id,region):
     ## use pathlib to get the path of the current file
     cur_path = pathlib.Path(__file__).parent
     
     jmx_template_path = f"{cur_path}/benchmark_resources/{csp.split('_')[0]}_jmx_template.jmx"
-    jmx_output_filename = f"{csp}-{wf_name}-{payload_size}-{dynamism}-{int(rps/60)}-{int(duration)}-session-{session_id}.jmx"
+    jmx_output_filename = f"{csp}-{region}-{wf_name}-{payload_size}-{dynamism}-{int(rps/60)}-{int(duration)}-session-{session_id}.jmx"
     jmx_output_path  = pathlib.Path(__file__).parent / f"benchmark_resources/generated_jmx_resources/{jmx_output_filename}"
     return jmx_template_path,jmx_output_path,jmx_output_filename
 
 
-def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynamism):
-    shell_file_name  = f"{csp}-{payload_size}-{wf_name}-{rps}-{duration}-{dynamism}.sh"
+def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynamism,region):
+    shell_file_name  = f"{csp}-{region}-{payload_size}-{wf_name}-{rps}-{duration}-{dynamism}.sh"
     output_path = pathlib.Path(__file__).parent / f"benchmark_resources/generated_shell_scripts/{shell_file_name}"
     code = "#!/bin/sh\n"
     for command in shell_script_commands:
@@ -286,7 +293,7 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
         
         make_jmx_file(csp, rps * 60.0, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id,payload)
         i += 1
-    generate_shell_script_and_scp(csp,payload_size, wf_name,   max_rps, duration,dynamism)
+    generate_shell_script_and_scp(csp,payload_size, wf_name,   max_rps, duration,dynamism,region)
     
 
 
@@ -316,16 +323,16 @@ def deploy_workflow(user_wf_dir,dag_filename, region,csp):
     wf_id, refactored_wf_id, wf_deployment_id = xfaas_deployer(user_wf_dir, dag_filename ,'dag-benchmark-revised.json',csp,region)
     return wf_id, refactored_wf_id, wf_deployment_id
 
-def plot_metrics(user_wf_dir, wf_deployment_id, run_id, wf_name):
+def plot_metrics(user_wf_dir, wf_deployment_id, run_id, wf_name,region):
     format = 'pdf'
     plotter = XFBenchPlotter(user_wf_dir, wf_deployment_id, run_id,format)
-    plotter.plot_e2e_timeline(xticks=[], yticks=[],is_overlay=True)
+    plotter.plot_e2e_timeline(xticks=[], yticks=[],is_overlay=True,region=region)
     figwidth = 7
     if wf_name == 'fileProcessing' or wf_name == 'math':
         figwidth = 20   
     plotter.plot_stagewise( yticks=[],figwidth=figwidth)
     plotter.plot_cumm_e2e(yticks=[])
-    plotter.plot_e2e_invocations_wnwo_containers(csp="azure", yticks=[])
+    # plotter.plot_e2e_invocations_wnwo_containers(csp="azure", yticks=[])
 
 
 
@@ -387,14 +394,15 @@ if __name__ == "__main__":
     print('==================DEPLOYING WF===========================')
     wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
     
-    # wf_deployment_id = 'a9f607c8-fbdd-4c7b-b6af-b9a0b0f63217'
-    # time.sleep(60)
+    
+    time.sleep(10)
+    
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
-    time.sleep(30)
+    time.sleep(60)
     try:
         print('==================PLOTTING METRICS===========================')
-        plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name)
+        plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name,region)
     except Exception as e:
         print('==================PLOTTING METRICS FAILED===========================')
         print(e)

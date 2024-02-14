@@ -20,6 +20,7 @@ def user_function(serwoObject) -> SerWOObject:
         fin_dict["metadata"] = metadata
         print("Fin dict - ", fin_dict)
         queue.send_message(json.dumps(fin_dict))
+        data = {"body": "success: OK"}
         return SerWOObject(body=data)
     except Exception as e:
         return SerWOObject(error=True)

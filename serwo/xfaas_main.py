@@ -42,7 +42,12 @@ def randomString(stringLength):
     return ''.join(random.choice(letters) for i in range(stringLength))
 
 
-def add_collect_logs(dag_definition_path,user_wf_dir, xfaas_user_dag):
+def add_collect_logs(dag_definition_path,user_wf_dir, xfaas_user_dag,region):
+    if region == 'us-east-1':
+        region = 'eastus'
+    elif region == 'ap-southeast-1':
+        region = 'southeastasia'
+    
     region = 'centralindia'
     
     collect_logs_dir = f'{project_dir}/templates/azure/predefined-functions/CollectLogs'
@@ -162,7 +167,7 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
     partition_config = [PartitionPoint("function_name", 2, csp, None, part_id, region)]
 
     wf_id = xfaas_provenance.push_user_dag(dag_definition_path)
-    queue_details = add_collect_logs(dag_definition_path,user_wf_dir,xfaas_user_dag)
+    queue_details = add_collect_logs(dag_definition_path,user_wf_dir,xfaas_user_dag,region)
     dag_definition_path = f'{user_wf_dir}/refactored-{dag_definition_file}'
     refactored_wf_id = xfaas_provenance.push_refactored_workflow("refactored-dag.json", user_wf_dir, wf_id,csp)
     wf_deployment_id = xfaas_provenance.push_deployment_logs("refactored-dag.json",user_wf_dir,wf_id,refactored_wf_id,csp)

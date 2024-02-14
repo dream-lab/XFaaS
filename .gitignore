@@ -31,3 +31,5 @@ build
 log_files
 serwo/config
 recents
+examples
+exp_runner*

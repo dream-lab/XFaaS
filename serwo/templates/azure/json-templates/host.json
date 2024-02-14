@@ -20,10 +20,12 @@
   "extensions": {
     "durableTask": {
         "maxConcurrentActivityFunctions": 1,
-        "maxConcurrentOrchestratorFunctions": 8
+        "maxConcurrentOrchestratorFunctions": 8,
+        "storageProvider": {
+          "partitionCount": 1
+        }
 
-    },
-    "partitionCount": 1
+    }
     
   }
 }

@@ -48,7 +48,9 @@ def deploy_to_azure(storage, group, app, user_dir, region,is_netherite):
         event_hubs_connection_string = data['event_hubs_connection_string']
         f.close()
         ## add EventHubsConnection connection string to app config
-        stream = os.popen(f'az functionapp config appsettings set --name {app} --resource-group {group} --settings EventHubsConnection="{event_hubs_connection_string}"')
+        command = f'az functionapp config appsettings set --name {app} --resource-group {group} --settings EventHubsConnection="{event_hubs_connection_string}"'
+        print(command)
+        stream = os.popen(command)
         app_config_output = stream.read()
         # print(app_config_output)
         stream.close()
@@ -56,7 +58,9 @@ def deploy_to_azure(storage, group, app, user_dir, region,is_netherite):
     os.chdir(user_dir)
 
     print(':' * 80,f'User app created, deploying {app}')
-    stream = os.popen(f'func azure functionapp publish {app}')
+    command = f'func azure functionapp publish {app}'
+    print(command)
+    stream = os.popen(command)
     app_deploy_output = stream.read()
     # print(app_deploy_output)
     stream.close()

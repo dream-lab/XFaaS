@@ -61,9 +61,9 @@ def get_max_concurrent_execs(func_name):
     return timestamps, concurrent_execs
 
 
-def get_container_count(wf_name):
+def get_container_count(wf_name,region):
     # Initialize the Lambda client
-    lambda_client = boto3.client('lambda', region_name='ap-south-1')
+    lambda_client = boto3.client('lambda', region_name=region)
 
     # Replace 'YourLayerName-' with the actual name of your Lambda application (Layer)
     # wf_name = sys.argv[1]
