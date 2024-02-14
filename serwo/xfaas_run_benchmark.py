@@ -27,6 +27,12 @@ parser.add_argument("--path-to-client-config",dest='client_config_path',type=str
 parser.add_argument("--client-key",dest='client_key',type=str,help="Key of client to pick from client config file")
 parser.add_argument("--dag-file-name",dest='dag_filename',type=str,help="DAG FILE NAME")
 parser.add_argument("--teardown-flag",dest='teardown_flag',type=str,help="Tear down application by default true")
+parser.add_argument("--is_singleton_wf",dest='is_singleton_wf',type=str,help="Is singleton workflow",default=0)
+parser.add_argument("--function-class",dest='function_class',type=str,help="Function class")
+parser.add_argument("--function-name",dest='function_name',type=str,help="Function name")
+parser.add_argument("--function-code",dest='function_code',type=str,help="Function code")
+parser.add_argument("--node_name",dest='node_name',type=str,help="Node name")
+
 artifact_suffix = 'artifact.json'
 args = parser.parse_args()
 provenance_artifact_filename = None
@@ -348,6 +354,12 @@ def remote_teardown(wf_user_directory,csp,region,part_id):
         os.system(remove_resource_group_command)
 
 
+def build_singleton_wf(function_class, function_name,function_code,node_name):
+    root_dir = os.getenv("XFAAS_WF_DIR")
+    wf_builder_code = f'{root_dir}/workflows/build_singleton_wf.py'
+    sys.path.append(wf_builder_code)
+    args_to_send = f"--function-class {function_class} --function-name {function_name} --function-code {function_code} --node_name {node_name}"
+    os.system(f'python3 {wf_builder_code} {args_to_send}')
 
 def local_teardown(wf_user_directory):
     remove_build_command = f"rm -rf {wf_user_directory}/build"
@@ -386,7 +398,23 @@ if __name__ == "__main__":
    
     print('==================BUILDING WF===========================')
 
-    build_workflow(wf_user_directory)
+    ##if args does not contain is_singleton_wf then set is_singleton_wf_flag to False
+    
+    is_singleton_wf_flag = bool(int(args.is_singleton_wf))
+    
+    if is_singleton_wf_flag == True:
+        print('==================SINGLETON WF===========================')
+        function_class = args.function_class
+        function_name = args.function_name
+        function_code = args.function_code
+        node_name = args.node_name
+        if None in [function_class, function_name, function_code, node_name]:
+            raise ValueError("Function class, function name, function code and node name are required for singleton workflow")
+        
+        build_singleton_wf(function_class, function_name,function_code,node_name)
+        wf_user_directory = os.getenv("XFAAS_WF_DIR") + f"/workflows/singleton_workflows/{function_class}/{function_name}"
+    else:
+        build_workflow(wf_user_directory)
     
     wf_user_directory += "/workflow-gen"
     
@@ -422,6 +450,3 @@ if __name__ == "__main__":
         remote_teardown(wf_user_directory,csp,region,part_id)
 
     local_teardown(wf_user_directory)
-
-
-
