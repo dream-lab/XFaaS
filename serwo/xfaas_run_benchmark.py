@@ -228,12 +228,16 @@ def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_i
     
     jmx_template_path = f"{cur_path}/benchmark_resources/{csp.split('_')[0]}_jmx_template.jmx"
     jmx_output_filename = f"{csp}-{region}-{wf_name}-{payload_size}-{dynamism}-{int(rps/60)}-{int(duration)}-session-{session_id}.jmx"
+    make_jmx_resources_dir = f"{cur_path}/benchmark_resources/generated_jmx_resources"
+    os.makedirs(make_jmx_resources_dir, exist_ok=True)
     jmx_output_path  = pathlib.Path(__file__).parent / f"benchmark_resources/generated_jmx_resources/{jmx_output_filename}"
     return jmx_template_path,jmx_output_path,jmx_output_filename
 
 
 def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynamism,region):
     shell_file_name  = f"{csp}-{region}-{payload_size}-{wf_name}-{rps}-{duration}-{dynamism}.sh"
+    make_shell_scripts_dir = f"{pathlib.Path(__file__).parent}/benchmark_resources/generated_shell_scripts"
+    os.makedirs(make_shell_scripts_dir, exist_ok=True)
     output_path = pathlib.Path(__file__).parent / f"benchmark_resources/generated_shell_scripts/{shell_file_name}"
     code = "#!/bin/sh\n"
     for command in shell_script_commands:
