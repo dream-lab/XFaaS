@@ -48,15 +48,15 @@ def add_collect_logs(dag_definition_path,user_wf_dir, xfaas_user_dag,region):
     elif region == 'ap-southeast-1':
         region = 'southeastasia'
     
-    region = 'centralindia'
+    # region = 'centralindia'
     
     collect_logs_dir = f'{project_dir}/templates/azure/predefined-functions/CollectLogs'
     new_collect_logs_dir = f'{user_wf_dir}/CollectLogs'
    
 
     print('creating xfaas logging queue')
-    resource_group_name = "xfaasGlobalLogger"
-    storage_account_name = "xfaasgloballogger"
+    resource_group_name = f"xfaasLog{region}"
+    storage_account_name = f"xfaaslog{region}"
    
     queue_name = randomString(5)
     
