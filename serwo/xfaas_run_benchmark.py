@@ -166,13 +166,13 @@ def template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload
         f.write(data)
 
 
-def make_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id,run_id, payload):
+def make_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id,run_id, payload,is_localhost):
     jmx_template_path, jmx_output_path,jmx_output_filename = get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism,session_id,region)
     if 'azure' in csp:
        template_azure_jmx_file(rps, duration, execute_url, payload_size, jmx_template_path, jmx_output_path, session_id,payload)
     else:
         template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload_size, jmx_template_path, jmx_output_path, session_id,payload)
-    send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration)
+    send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration,is_localhost)
     dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id,run_id)
 
 
@@ -203,23 +203,27 @@ def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, 
         json.dump(provenance_artefacts, f,indent=4)
     
 
-def send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration):
-    if rps != 0:
-        server_jmx_files_dir = f"/home/{server_user_id}/jmx-files"
-        if server_pem_file_path is not None:
-            remote_copy_command = f"scp -i {server_pem_file_path} {jmx_output_path} {server_user_id}@{server_ip}:{server_jmx_files_dir}"
-            remote_mkdir_command = f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} mkdir -p /home/{server_user_id}/jmx-files"
-        else:
-            remote_mkdir_command = f"ssh {server_user_id}@{server_ip} mkdir -p /home/{server_user_id}/jmx-files"
-            remote_copy_command = f"scp {jmx_output_path} {server_user_id}@{server_ip}:{server_jmx_files_dir}"
+def send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration,is_localhost):
+    if not is_localhost:
+        if rps != 0:
+            server_jmx_files_dir = f"/home/{server_user_id}/jmx-files"
+            if server_pem_file_path is not None:
+                remote_copy_command = f"scp -i {server_pem_file_path} {jmx_output_path} {server_user_id}@{server_ip}:{server_jmx_files_dir}"
+                remote_mkdir_command = f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} mkdir -p /home/{server_user_id}/jmx-files"
+            else:
+                remote_mkdir_command = f"ssh {server_user_id}@{server_ip} mkdir -p /home/{server_user_id}/jmx-files"
+                remote_copy_command = f"scp {jmx_output_path} {server_user_id}@{server_ip}:{server_jmx_files_dir}"
 
-        os.system(remote_mkdir_command)
-        os.system(remote_copy_command)
-        experiment_begin_command = f"/home/{server_user_id}/apache-jmeter-5.6.2/bin/jmeter -n -t {server_jmx_files_dir}/{jmx_output_filename}  -l {server_jmx_files_dir}/{jmx_output_filename}.jtl"
-        shell_script_commands.append(experiment_begin_command)
+            os.system(remote_mkdir_command)
+            os.system(remote_copy_command)
+            experiment_begin_command = f"/home/{server_user_id}/apache-jmeter-5.6.2/bin/jmeter -n -t {server_jmx_files_dir}/{jmx_output_filename}  -l {server_jmx_files_dir}/{jmx_output_filename}.jtl"
+            shell_script_commands.append(experiment_begin_command)
+        else:
+            cmd = f"sleep {int(duration)}"
+            shell_script_commands.append(cmd)
     else:
-        cmd = f"sleep {int(duration)}"
-        shell_script_commands.append(cmd)
+        experiment_begin_command = f"jmeter -n -t {jmx_output_path}  -l {jmx_output_path}.jtl"
+        shell_script_commands.append(experiment_begin_command)
     
 
 def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_id,region):
@@ -234,7 +238,7 @@ def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_i
     return jmx_template_path,jmx_output_path,jmx_output_filename
 
 
-def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynamism,region):
+def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynamism,region,is_localhost):
     shell_file_name  = f"{csp}-{region}-{payload_size}-{wf_name}-{rps}-{duration}-{dynamism}.sh"
     make_shell_scripts_dir = f"{pathlib.Path(__file__).parent}/benchmark_resources/generated_shell_scripts"
     os.makedirs(make_shell_scripts_dir, exist_ok=True)
@@ -246,18 +250,22 @@ def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynam
     with open(output_path, "w") as f:
         f.write(code)
     
-    if server_pem_file_path is not None:
-        # mkdir if not exists
-        os.system(f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} mkdir -p shell_scripts")
-        os.system(f"scp -i {server_pem_file_path} {output_path} {server_user_id}@{server_ip}:shell_scripts/")
-        os.system(f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
-        os.system(f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
+    if not is_localhost:
+        if server_pem_file_path is not None:
+            # mkdir if not exists
+            os.system(f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} mkdir -p shell_scripts")
+            os.system(f"scp -i {server_pem_file_path} {output_path} {server_user_id}@{server_ip}:shell_scripts/")
+            os.system(f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
+            os.system(f"ssh -i {server_pem_file_path} {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
+        else:
+            # mkdir if not exists
+            os.system(f"ssh {server_user_id}@{server_ip} mkdir -p shell_scripts")
+            os.system(f"scp {output_path} {server_user_id}@{server_ip}:shell_scripts/")
+            os.system(f"ssh {server_user_id}@{server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
+            os.system(f"ssh {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
     else:
-        # mkdir if not exists
-        os.system(f"ssh {server_user_id}@{server_ip} mkdir -p shell_scripts")
-        os.system(f"scp {output_path} {server_user_id}@{server_ip}:shell_scripts/")
-        os.system(f"ssh {server_user_id}@{server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
-        os.system(f"ssh {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
+        os.system(f"chmod +x {output_path}")
+        os.system(f"/{output_path}")
     
 def load_payload(wf_user_directory,payload_size):
     payload_path = f"{wf_user_directory}/samples/{payload_size}/input/input.json"
@@ -267,7 +275,7 @@ def load_payload(wf_user_directory,payload_size):
     return payload
 
 
-def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory, wf_deployment_id,run_id):
+def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory, wf_deployment_id,run_id, is_localhost):
 
     copy_provenance_artifacts(csp, region, part_id, wf_user_directory, wf_deployment_id,max_rps,run_id)
     
@@ -301,9 +309,9 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
         # payload = load_payload(wf_user_directory,payload_size)
         ne_session_id = session_id + str(i)
         
-        make_jmx_file(csp, rps * 60.0, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id,payload)
+        make_jmx_file(csp, rps * 60.0, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id,payload,is_localhost)
         i += 1
-    generate_shell_script_and_scp(csp,payload_size, wf_name,   max_rps, duration,dynamism,region)
+    generate_shell_script_and_scp(csp,payload_size, wf_name,   max_rps, duration,dynamism,region,is_localhost)
     
 
 
@@ -397,7 +405,12 @@ if __name__ == "__main__":
     dag_filename = args.dag_filename
     teardown_flag = args.teardown_flag
     provenance_artifact_filename = f"{csp}-{dynamism}-{payload_size}-{max_rps}rps.json"
-    get_client_login_details(path_to_config_file)
+    is_localhost = False
+    if "localhost" != args.client_key:
+        get_client_login_details(path_to_config_file)
+    else:
+        is_localhost = True
+    
     run_id = 'exp1'
    
     print('==================BUILDING WF===========================')
@@ -430,7 +443,7 @@ if __name__ == "__main__":
     time.sleep(10)
     
     print('==================RUNNING WF===========================')
-    run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id)
+    run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id,is_localhost)
     time.sleep(60)
     try:
         print('==================PLOTTING METRICS===========================')
