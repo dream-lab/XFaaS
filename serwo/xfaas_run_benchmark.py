@@ -68,7 +68,7 @@ def get_azure_payload(payload):
 
 
 def read_dynamism_file(dynamism,duration, max_rps):
-    file_path = os.getenv("XFAAS_WF_DIR") + f"/workloads/{dynamism}-{max_rps}-{duration}.csv"
+    file_path = os.getenv("XFBENCH_DIR") + f"/workloads/{dynamism}-{max_rps}-{duration}.csv"
     with open(file_path) as f:  
         data = f.readlines()
     data = [x.strip() for x in data]
@@ -228,13 +228,13 @@ def send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration,is_
 
 def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_id,region):
     ## use pathlib to get the path of the current file
-    cur_path = pathlib.Path(__file__).parent
-    
+   
+    cur_path = os.getenv("XFAAS_DIR")+ "/serwo"
     jmx_template_path = f"{cur_path}/benchmark_resources/{csp.split('_')[0]}_jmx_template.jmx"
     jmx_output_filename = f"{csp}-{region}-{wf_name}-{payload_size}-{dynamism}-{int(rps/60)}-{int(duration)}-session-{session_id}.jmx"
     make_jmx_resources_dir = f"{cur_path}/benchmark_resources/generated_jmx_resources"
     os.makedirs(make_jmx_resources_dir, exist_ok=True)
-    jmx_output_path  = pathlib.Path(__file__).parent / f"benchmark_resources/generated_jmx_resources/{jmx_output_filename}"
+    jmx_output_path  = f"{cur_path}/benchmark_resources/generated_jmx_resources/{jmx_output_filename}"
     return jmx_template_path,jmx_output_path,jmx_output_filename
 
 
@@ -265,7 +265,7 @@ def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynam
             os.system(f"ssh {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
     else:
         os.system(f"chmod +x {output_path}")
-        os.system(f"/{output_path}")
+        os.system(f"./{output_path}")
     
 def load_payload(wf_user_directory,payload_size):
     payload_path = f"{wf_user_directory}/samples/{payload_size}/input/input.json"
@@ -331,7 +331,7 @@ def copy_provenance_artifacts(csp, region, part_id, wf_user_directory,wf_deploym
         
 
 def build_workflow(user_wf_dir):
-    root_dir = os.getenv("XFAAS_WF_DIR")
+    root_dir = os.getenv("XFBENCH_DIR")
     wf_builder_code = f'{root_dir}/workflows/build_wf.py'
     sys.path.append(wf_builder_code)
     args_to_send = '--wf-user-directory ' + user_wf_dir
@@ -367,7 +367,7 @@ def remote_teardown(wf_user_directory,csp,region,part_id):
 
 
 def build_singleton_wf(function_class, function_name,function_code,node_name):
-    root_dir = os.getenv("XFAAS_WF_DIR")
+    root_dir = os.getenv("XFBENCH_DIR")
     wf_builder_code = f'{root_dir}/workflows/build_singleton_wf.py'
     sys.path.append(wf_builder_code)
     args_to_send = f"--function-class {function_class} --function-name {function_name} --function-code {function_code} --node_name {node_name}"
@@ -429,7 +429,7 @@ if __name__ == "__main__":
             raise ValueError("Function class, function name, function code and node name are required for singleton workflow")
         
         build_singleton_wf(function_class, function_name,function_code,node_name)
-        wf_user_directory = os.getenv("XFAAS_WF_DIR") + f"/workflows/singleton_workflows/{function_class}/{function_name}"
+        wf_user_directory = os.getenv("XFBENCH_DIR") + f"/workflows/singleton_workflows/{function_class}/{function_name}"
     else:
         build_workflow(wf_user_directory)
     
