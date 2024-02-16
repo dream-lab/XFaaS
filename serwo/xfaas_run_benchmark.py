@@ -229,12 +229,13 @@ def send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration,is_
 def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_id,region):
     ## use pathlib to get the path of the current file
     cur_path = pathlib.Path(__file__).parent
-    
+    cwd = os.getcwd()
+    cur_path = f"{cwd}/serwo"
     jmx_template_path = f"{cur_path}/benchmark_resources/{csp.split('_')[0]}_jmx_template.jmx"
     jmx_output_filename = f"{csp}-{region}-{wf_name}-{payload_size}-{dynamism}-{int(rps/60)}-{int(duration)}-session-{session_id}.jmx"
     make_jmx_resources_dir = f"{cur_path}/benchmark_resources/generated_jmx_resources"
     os.makedirs(make_jmx_resources_dir, exist_ok=True)
-    jmx_output_path  = pathlib.Path(__file__).parent / f"benchmark_resources/generated_jmx_resources/{jmx_output_filename}"
+    jmx_output_path  = f"{cur_path}/benchmark_resources/generated_jmx_resources/{jmx_output_filename}"
     return jmx_template_path,jmx_output_path,jmx_output_filename
 
 
@@ -265,7 +266,7 @@ def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynam
             os.system(f"ssh {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
     else:
         os.system(f"chmod +x {output_path}")
-        os.system(f"/{output_path}")
+        os.system(f"./{output_path}")
     
 def load_payload(wf_user_directory,payload_size):
     payload_path = f"{wf_user_directory}/samples/{payload_size}/input/input.json"

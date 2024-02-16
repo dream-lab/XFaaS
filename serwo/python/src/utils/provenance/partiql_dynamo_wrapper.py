@@ -22,7 +22,7 @@ class PartiQLWrapper:
         """
         :param dyn_resource: A Boto3 DynamoDB resource.
         """
-        self.dyn_resource = boto3.resource("dynamodb")
+        self.dyn_resource = boto3.resource("dynamodb", region_name="ap-south-1")
         self.table_name = table_name
 
     def run_partiql(self, statement, params):

@@ -57,7 +57,8 @@ python3 serwo/xfaas_run_benchmark.py (run benchmark code file)
 5. aws configure
 6. git clone -b CCGRID2024 https://github.com/dream-lab/XFaaS.git
 7. git clone -b CCGRID2024 https://github.com/dream-lab/xfaas-workloads
-8. export XF_WF_DIR=<absolute path to xfaas-workloads folder>
+8. export XFAAS_WF_DIR=<absolute path to xfaas-workloads folder>
+9. export AZURE_SUBSCRIPTION_ID=<Azure account subscription id>
 ```
 
 
