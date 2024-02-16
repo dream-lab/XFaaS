@@ -60,6 +60,7 @@ python3 serwo/xfaas_run_benchmark.py (run benchmark code file)
 8. export AZURE_SUBSCRIPTION_ID=<Azure account subscription id>
 9. export XFBENCH_DIR=/XFBench
 10. export XFAAS_DIR=/XFaaS
+11. pip3 install -r requirements.txt
 ```
 
 

@@ -36,3 +36,4 @@ exp_runner*
 trash-files
 jmeter.log
 *.csv
+deployments.txt

@@ -439,7 +439,11 @@ if __name__ == "__main__":
     print('==================DEPLOYING WF===========================')
     wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
     
-    
+    ## write deployment id to a file create if not exists else append
+    deployment_id_file_path = "deployments.txt"
+    with open(deployment_id_file_path, "a") as f:
+        f.write(f"{wf_deployment_id}\n")
+
     time.sleep(10)
     
     print('==================RUNNING WF===========================')
