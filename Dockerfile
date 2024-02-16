@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 RUN apt update 
-RUN apt install -y python3 python3-pip git curl unzip wget
+RUN apt install -y python3.9 python3-pip git curl unzip wget
 # NOTE - The zip containing aws cli is specific to x86-64 arch
 # if you are using an arm architecture use - https://s3.amazonaws.com/aws-cli/awscli-bundle.zip. (Have to test)
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
