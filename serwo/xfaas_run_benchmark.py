@@ -229,8 +229,9 @@ def send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration,is_
 def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_id,region):
     ## use pathlib to get the path of the current file
     cur_path = pathlib.Path(__file__).parent
-    cwd = os.getcwd()
-    cur_path = f"{cwd}/serwo"
+    file_path = os.path.realpath(__file__)
+
+    cur_path = os.path.dirname(file_path)
     jmx_template_path = f"{cur_path}/benchmark_resources/{csp.split('_')[0]}_jmx_template.jmx"
     jmx_output_filename = f"{csp}-{region}-{wf_name}-{payload_size}-{dynamism}-{int(rps/60)}-{int(duration)}-session-{session_id}.jmx"
     make_jmx_resources_dir = f"{cur_path}/benchmark_resources/generated_jmx_resources"
