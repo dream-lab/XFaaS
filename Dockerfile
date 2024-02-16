@@ -19,7 +19,7 @@ RUN apt install azure-functions-core-tools-3
 RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt install -y openjdk-11-jdk
 RUN curl -LO https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.5.tgz
 RUN tar xf apache-jmeter-5.5.tgz
-RUN export XFBENCH_DIR=\XFBench
-RUN export XFAAS_DIR=\XFaaS
+RUN export XFBENCH_DIR=/XFBench
+RUN export XFAAS_DIR=/XFaaS
 ENV PATH "$PATH:/apache-jmeter-5.5/bin"
 ENTRYPOINT ["tail", "-f", "/dev/null"]
