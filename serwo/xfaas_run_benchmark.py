@@ -222,8 +222,12 @@ def send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration,is_
             cmd = f"sleep {int(duration)}"
             shell_script_commands.append(cmd)
     else:
-        experiment_begin_command = f"jmeter -n -t {jmx_output_path}  -l {jmx_output_path}.jtl"
-        shell_script_commands.append(experiment_begin_command)
+        if rps != 0:
+            experiment_begin_command = f"jmeter -n -t {jmx_output_path}  -l {jmx_output_path}.jtl"
+            shell_script_commands.append(experiment_begin_command)
+        else:
+            cmd = f"sleep {int(duration)}"
+            shell_script_commands.append(cmd)
     
 
 def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_id,region):

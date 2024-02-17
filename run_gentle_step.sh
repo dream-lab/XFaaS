@@ -8,7 +8,7 @@ python3 serwo/xfaas_run_benchmark.py \
 --payload-size medium \
 --dynamism gentle-step \
 --wf-name pagerank \
---wf-user-directory /XFBench/workflows/singleton_workflows/pagerank \
+--wf-user-directory /XFBench/workflows/singleton_workflows/graph/pagerank \
 --dag-file-name dag.json \
 --teardown-flag 0 \
 --client-key localhost \
@@ -29,7 +29,7 @@ python3 serwo/xfaas_run_benchmark.py \
 --payload-size medium \
 --dynamism gentle-step \
 --wf-name pagerank \
---wf-user-directory /XFBench/workflows/singleton_workflows/pagerank \
+--wf-user-directory /XFBench/workflows/singleton_workflows/graph/pagerank \
 --dag-file-name dag.json \
 --teardown-flag 0 \
 --client-key localhost \
