@@ -61,7 +61,7 @@ def plot_stacked_bar(a,b):
     ax.set_xlabel('RPS Variation')
     ax.legend()
     xfaas_dir = os.getenv('XFAAS_DIR')
-    plt.savefig(f"{xfaas_dir}/ccgrid2024_artifact_plotting_scripts/rps_variation.pdf",bbox_inches='tight')
+    plt.savefig(f"{xfaas_dir}/ccgrid2024_artifact_plots/rps_variation.pdf",bbox_inches='tight')
 
 
 def get_cumm_time(function_times, edge_times, num_iters):
