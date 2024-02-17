@@ -12,3 +12,6 @@ python3 serwo/xfaas_run_benchmark.py \
 --dag-file-name dag.json \
 --teardown-flag 0 \
 --client-key localhost
+
+
+echo "Sanity check completed successfully!"

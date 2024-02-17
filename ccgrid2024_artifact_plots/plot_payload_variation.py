@@ -127,6 +127,9 @@ if __name__ == "__main__":
     cumm_comms = []
     i = 0
     for deployment in deployments: 
+        if i==4:
+            cumm_execs.append(0)
+            cumm_comms.append(0)
         log_file_dir = f"{wf_user_directory}/{deployment}/exp1/logs/"
         ## list all files in the directory
         files = os.listdir(log_file_dir)

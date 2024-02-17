@@ -51,7 +51,7 @@ def plot_stacked_bar(a,b):
     ax.grid(True)
     xlables = ["AWS Step","AZ Step","AWS Sawtooth","AZ Sawtooth","AWS Alibaba","AZ ALibaba"]
     ax.set_xticks(np.arange(len(a)))
-    ax.set_xticklabels(xlables)
+    ax.set_xticklabels(xlables,rotation=45)
     ## add vertical text at the 5th x tick saying NA
     colors_bottom = ['orange','blue','orange','blue','orange','blue']
     colors_top = ['gold','cyan','gold','cyan','gold','cyan']
@@ -63,6 +63,9 @@ def plot_stacked_bar(a,b):
     xfaas_dir = os.getenv('XFAAS_DIR')
     plt.savefig(f"{xfaas_dir}/ccgrid2024_artifact_plots/dynamism_variation.pdf",bbox_inches='tight')
 
+    
+def copy_pdf_file(src,dest):
+    os.system(f"cp {src} {dest}")
 
 def get_cumm_time(function_times, edge_times, num_iters):
     source = "1"
@@ -124,8 +127,19 @@ if __name__ == "__main__":
     cumm_execs = []
     cumm_comms = []
     i = 0
+    os.makedirs(f"{xfaas_dir}/ccgrid2024_artifact_plots/dynamism_timelines", exist_ok=True)
+    timeline_dir = f"{xfaas_dir}/ccgrid2024_artifact_plots/dynamism_timelines"
     for deployment in deployments:
         log_file_dir = f"{wf_user_directory}/{deployment}/exp1/logs/"
+        plots_dir = f"{wf_user_directory}/{deployment}/exp1/plots/"
+        ## list all files in directory
+        plots = os.listdir(plots_dir)
+        for p in plots:
+            print(p)
+            if 'timeline' in p:
+                full_path = f"{plots_dir}/{p}"
+                copy_pdf_file(full_path,timeline_dir)
+
         ## list all files in the directory
         files = os.listdir(log_file_dir)
         log_file_path = f"{log_file_dir}/{files[0]}"

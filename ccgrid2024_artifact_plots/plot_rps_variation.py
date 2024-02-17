@@ -51,6 +51,7 @@ def plot_stacked_bar(a,b):
     ax.grid(True)
     xlables = ["AWS 1","AZ 1","AWS 4","AZ 4","AWS 8","AZ 8"]
     ax.set_xticks(np.arange(len(a)))
+    print(len(a),len(b))
     ax.set_xticklabels(xlables)
     ## add vertical text at the 5th x tick saying NA
     colors_bottom = ['orange','blue','orange','blue','orange','blue']
@@ -125,9 +126,6 @@ if __name__ == "__main__":
     cumm_comms = []
     i = 0
     for deployment in deployments:
-        if i==4:
-            cumm_execs.append(0)
-            cumm_comms.append(0)
         log_file_dir = f"{wf_user_directory}/{deployment}/exp1/logs/"
         ## list all files in the directory
         files = os.listdir(log_file_dir)
