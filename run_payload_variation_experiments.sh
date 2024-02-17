@@ -82,7 +82,7 @@ python3 serwo/xfaas_run_benchmark.py \
 echo "AZURE LARGE PAYLOAD SIZE Done!!"
 sleep 10
 
-python3 ccgrid2024_artifact_plotting_scripts/plot_payload_variation.py \
+python3 ccgrid2024_artifact_plots/plot_payload_variation.py \
 --wf-user-directory /XFBench/workflows/custom_workflows/graph_processing_wf
 
 echo "Plotting Done!!"
