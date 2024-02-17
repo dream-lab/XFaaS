@@ -8,7 +8,7 @@ python3 serwo/xfaas_run_benchmark.py \
 --payload-size medium \
 --dynamism growing-step \
 --wf-name pagerank \
---wf-user-directory /Users/varad.kulkarni/xfaas/XFBench/workflows/singleton_workflows/pagerank \
+--wf-user-directory /XFBench/workflows/singleton_workflows/pagerank \
 --dag-file-name dag.json \
 --teardown-flag 0 \
 --client-key localhost \
