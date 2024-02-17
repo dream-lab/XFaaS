@@ -103,3 +103,5 @@ python3 ccgrid2024_artifact_plots/plot_dynamism_variation.py \
 --wf-user-directory /XFBench/workflows/custom_workflows/graph_processing_wf
 
 echo "Plotting Done!!"
+
+> /XFaaS/deployments.txt

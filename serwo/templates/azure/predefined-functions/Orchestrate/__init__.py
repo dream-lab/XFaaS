@@ -158,19 +158,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    yhgd = yield context.call_activity("graphGen", serwoObject)
-    tmhl = []
-    qkex = context.call_activity("graphBft", yhgd)
-    kkww = context.call_activity("graphMst", yhgd)
-    oyhz = context.call_activity("pagerank", yhgd)
-    tmhl.append(qkex)
-    tmhl.append(kkww)
-    tmhl.append(oyhz)
-    nmii = yield context.task_all(tmhl)
-    news = yield context.call_activity("aggregate", nmii)
-    news = insert_end_stats_in_metadata(news)
-    gast = yield context.call_activity("CollectLogs", news)
-    return gast
+    tsqp = yield context.call_activity("graphGen", serwoObject)
+    wtij = []
+    eiat = context.call_activity("graphBft", tsqp)
+    sqyt = context.call_activity("graphMst", tsqp)
+    fwdw = context.call_activity("pagerank", tsqp)
+    wtij.append(eiat)
+    wtij.append(sqyt)
+    wtij.append(fwdw)
+    nohk = yield context.task_all(wtij)
+    wwxd = yield context.call_activity("aggregate", nohk)
+    wwxd = insert_end_stats_in_metadata(wwxd)
+    jgmq = yield context.call_activity("CollectLogs", wwxd)
+    return jgmq
 
 
 main = df.Orchestrator.create(orchestrator_function)

@@ -41,3 +41,10 @@ python3 serwo/xfaas_run_benchmark.py \
 
 echo "AZURE Gentle Step Done!!"
 sleep 10
+
+python3 ccgrid2024_artifact_plots/plot_gentle_step.py \
+--wf-user-directory /XFBench/workflows/singleton_workflows/graph/pagerank
+
+echo "Plotting Done!!"
+
+> /XFaaS/deployments.txt

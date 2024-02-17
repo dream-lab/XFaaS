@@ -13,7 +13,7 @@ python3 serwo/xfaas_run_benchmark.py \
 --teardown-flag 0 \
 --client-key localhost
 
-sleep10
+sleep 10
 
 python3 serwo/xfaas_run_benchmark.py \
 --csp azure \
@@ -29,3 +29,5 @@ python3 serwo/xfaas_run_benchmark.py \
 --client-key localhost
 
 echo "Sanity check completed successfully!"
+
+> /XFaaS/deployments.txt

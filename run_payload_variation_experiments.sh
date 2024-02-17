@@ -87,4 +87,4 @@ python3 ccgrid2024_artifact_plots/plot_payload_variation.py \
 
 echo "Plotting Done!!"
 
-# > deployments.txt
+> /XFaaS/deployments.txt

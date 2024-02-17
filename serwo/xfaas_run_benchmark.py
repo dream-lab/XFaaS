@@ -440,9 +440,21 @@ if __name__ == "__main__":
     wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
     
     ## write deployment id to a file create if not exists else append
-    deployment_id_file_path = "deployments.txt"
-    with open(deployment_id_file_path, "a") as f:
-        f.write(f"{wf_deployment_id}\n")
+    deps = []
+    xfaas_dir = os.getenv('XFAAS_DIR')
+    deployment_id_file_path = f"{xfaas_dir}/deployments.txt"
+    ## read the file if exists
+    if not os.path.exists(deployment_id_file_path):
+        with open(deployment_id_file_path, "w") as f:
+            f.write(wf_deployment_id + "\n")
+    else:
+        with open(deployment_id_file_path, "r") as f:
+            deps = f.readlines()
+            deps = [x.strip() for x in deps]
+        deps.append(wf_deployment_id)
+        with open(deployment_id_file_path, "w") as f:
+            for dep in deps:
+                f.write(dep + "\n")
 
     time.sleep(10)
     
