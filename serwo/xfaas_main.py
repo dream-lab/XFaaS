@@ -163,23 +163,24 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
     dag_definition_path = f"{user_wf_dir}/{dag_definition_file}"
     user_pinned_nodes = get_user_pinned_nodes()
     xfaas_user_dag = xfaas_init.init(dag_definition_path)
-    partition_config = xfaas_optimizer.optimize(xfaas_user_dag,
-                                                user_pinned_nodes, benchmark_path)
+    # partition_config = xfaas_optimizer.optimize(xfaas_user_dag,
+    #                                             user_pinned_nodes, benchmark_path)
     
 
 
-    # partition_config = [PartitionPoint("function_name", 2, csp, None, part_id, region)]
+    partition_config = [PartitionPoint("function_name", 2, csp, None, part_id, region)]
 
-    # wf_id = xfaas_provenance.push_user_dag(dag_definition_path)
-    # queue_details = add_collect_logs(dag_definition_path,user_wf_dir,xfaas_user_dag,region)
-    # dag_definition_path = f'{user_wf_dir}/refactored-{dag_definition_file}'
-    # refactored_wf_id = xfaas_provenance.push_refactored_workflow("refactored-dag.json", user_wf_dir, wf_id,csp)
-    # wf_deployment_id = xfaas_provenance.push_deployment_logs("refactored-dag.json",user_wf_dir,wf_id,refactored_wf_id,csp)
-    # xfaas_resource_generator.generate(user_wf_dir, dag_definition_path, partition_config,"refactored-dag.json")
-    # xfaas_provenance.generate_provenance_artifacts(user_wf_dir,wf_id,refactored_wf_id,wf_deployment_id,csp,region,part_id,queue_details)
-    return "wf_id", "refactored_wf_id", "wf_deployment_id"
+    wf_id = xfaas_provenance.push_user_dag(dag_definition_path)
+    queue_details = add_collect_logs(dag_definition_path,user_wf_dir,xfaas_user_dag,region)
+    dag_definition_path = f'{user_wf_dir}/refactored-{dag_definition_file}'
+    # dag_definition_path = f'{user_wf_dir}/{dag_definition_file}'
+    refactored_wf_id = xfaas_provenance.push_refactored_workflow("refactored-dag.json", user_wf_dir, wf_id,csp)
+    wf_deployment_id = xfaas_provenance.push_deployment_logs("refactored-dag.json",user_wf_dir,wf_id,refactored_wf_id,csp)
+    xfaas_resource_generator.generate(user_wf_dir, dag_definition_path, partition_config,"refactored-dag.json")
+    xfaas_provenance.generate_provenance_artifacts(user_wf_dir,wf_id,refactored_wf_id,wf_deployment_id,csp,region,part_id,queue_details)
+    # return "wf_id", "refactored_wf_id", "wf_deployment_id"
 
-    # return wf_id, refactored_wf_id, wf_deployment_id
+    return wf_id, refactored_wf_id, wf_deployment_id
    
 
 if __name__ == '__main__':

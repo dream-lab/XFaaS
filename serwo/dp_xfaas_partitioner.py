@@ -49,6 +49,8 @@ def get_optimal_partitions(latencies_benchmark, data_transfers_benchmark,data_tr
         cloud_indices.append(min_i_local)
         min_i = min_i_local
 
+    print(list(reversed(cloud_indices)),min_latency)
+
     return list(reversed(cloud_indices)),min_latency
 
 
@@ -77,4 +79,4 @@ def evaluate_inter_cloud_data_transfer_constraints(data_tranfers, i, j, v):
     return flag
 
 
-# print(get_optimal_partitions([[5,8,14,2],[3,11,10,7]],[[0,12],[1,0]],[64,64,64],[False,False,False,False]))
+print(get_optimal_partitions([[5,8,14,2],[3,11,10,7]],[[0,12],[1,0]],[64,64,64],[False,False,False,False]))

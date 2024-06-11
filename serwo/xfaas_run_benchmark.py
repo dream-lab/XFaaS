@@ -269,7 +269,7 @@ def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynam
             os.system(f"ssh {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
     else:
         os.system(f"chmod +x {output_path}")
-        os.system(f"./{output_path}")
+        os.system(f"/{output_path}")
     
 def load_payload(wf_user_directory,payload_size):
     payload_path = f"{wf_user_directory}/samples/{payload_size}/input/input.json"
@@ -366,8 +366,14 @@ def remote_teardown(wf_user_directory,csp,region,part_id):
         with open(resource_path) as f:
             resource = json.load(f)
         resource_group_name = resource['group']
-        remove_resource_group_command = f"az group delete --name {resource_group_name} --yes"
-        os.system(remove_resource_group_command)
+        storage_account = resource['storage_account']
+        app_name = resource["app_name"]
+        # storage_group_remove_command = f"az storage account delete --name {storage_account} --resource-group {resource_group_name} --yes"
+        stop_function_app = f"az functionapp stop --name {app_name} --resource-group {resource_group_name}"
+        delete_app_insights = f"az monitor app-insights component delete --app {app_name} --resource-group {resource_group_name}"
+        os.system(stop_function_app)
+        os.system(delete_app_insights)
+        # os.system(storage_group_remove_command)
 
 
 def build_singleton_wf(function_class, function_name,function_code,node_name):
@@ -435,6 +441,7 @@ if __name__ == "__main__":
         build_singleton_wf(function_class, function_name,function_code,node_name)
         wf_user_directory = os.getenv("XFBENCH_DIR") + f"/workflows/singleton_workflows/{function_class}/{function_name}"
     else:
+        # pass
         build_workflow(wf_user_directory)
     
     wf_user_directory += "/workflow-gen"
@@ -460,7 +467,7 @@ if __name__ == "__main__":
             for dep in deps:
                 f.write(dep + "\n")
 
-    time.sleep(10)
+    # time.sleep(10)
     
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id,is_localhost)

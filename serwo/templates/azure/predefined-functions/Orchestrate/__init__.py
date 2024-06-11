@@ -96,7 +96,7 @@ def insert_end_stats_in_metadata(input):
         mem_after = 0
         body_size_before = 0
         body_size_after = 0
-        cid = ''
+        # cid = ''
         for fid in meta:
             func_id_local = fid
             start_delta_local = meta[fid]["start_delta"]
@@ -106,7 +106,7 @@ def insert_end_stats_in_metadata(input):
                 mem_after = meta[fid]["mem_after"]
                 body_size_before = meta[fid]["in_payload_bytes"]
                 body_size_after = meta[fid]["out_payload_bytes"]
-                cid = meta[fid]["cid"]
+                # cid = meta[fid]["cid"]
             if fid == "0":
                 end_delta_local = end_delta
         func_json = {
@@ -117,7 +117,7 @@ def insert_end_stats_in_metadata(input):
                 "mem_after": mem_after,
                 "in_payload_bytes": body_size_before,
                 "out_payload_bytes": body_size_after,
-                "cid": cid
+                # "cid" : cid
             }
         }
         ne_list.append(func_json)
@@ -158,19 +158,19 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    tsqp = yield context.call_activity("graphGen", serwoObject)
-    wtij = []
-    eiat = context.call_activity("graphBft", tsqp)
-    sqyt = context.call_activity("graphMst", tsqp)
-    fwdw = context.call_activity("pagerank", tsqp)
-    wtij.append(eiat)
-    wtij.append(sqyt)
-    wtij.append(fwdw)
-    nohk = yield context.task_all(wtij)
-    wwxd = yield context.call_activity("aggregate", nohk)
-    wwxd = insert_end_stats_in_metadata(wwxd)
-    jgmq = yield context.call_activity("CollectLogs", wwxd)
-    return jgmq
+    oeww = yield context.call_activity("graphGen", serwoObject)
+    szja = []
+    wbgi = context.call_activity("graphBft", oeww)
+    zatk = context.call_activity("graphMst", oeww)
+    hfxl = context.call_activity("pagerank", oeww)
+    szja.append(wbgi)
+    szja.append(zatk)
+    szja.append(hfxl)
+    ainr = yield context.task_all(szja)
+    ytxc = yield context.call_activity("aggregate", ainr)
+    ytxc = insert_end_stats_in_metadata(ytxc)
+    pelv = yield context.call_activity("CollectLogs", ytxc)
+    return pelv
 
 
 main = df.Orchestrator.create(orchestrator_function)

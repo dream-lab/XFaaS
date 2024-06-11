@@ -146,7 +146,7 @@ class XFBenchPlotter:
         dynamodb_item_list = []
 
         queue = QueueClient.from_connection_string(conn_str=self.__conn_str, queue_name=self.__queue_name)
-        response = queue.receive_messages(visibility_timeout=3000)
+        response = queue.receive_messages(visibility_timeout=300)
         print('Reading Queue')
         for message in response:
             queue_item = json.loads(message.content)

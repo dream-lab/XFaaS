@@ -1,6 +1,7 @@
 import scripts.azure.azure_resource_generator as azure_resource_generator
 import scripts.azure.azure_builder as azure_builder
 import scripts.azure.azure_deploy as azure_deployer
+import scripts.openfaas.openfaas_builder as openfaas_builder
 
 
 from serwo.aws_create_statemachine import AWS
@@ -24,7 +25,14 @@ class CSP:
             aws_deployer.build_workflow()
             aws_deployer.deploy_workflow()
             pass
+        if self.__name == 'openfaas':
+            self.build_openfaas(dag_definition_file, dag_definition_path, part_id, region, user_dir)
 
+    def build_openfaas(self, dag_definition_file, dag_definition_path, part_id, region, user_dir):
+        print('hellooo')
+        print(':'*80, 'Open FaaS Build')
+        openfaas_builder.build(user_dir, dag_definition_file, region, part_id)
+        pass
 
     def build_az(self, dag_definition_file, dag_definition_path, part_id, region, user_dir,is_netherite):
         print(':'*80, 'Azure resource generation')
