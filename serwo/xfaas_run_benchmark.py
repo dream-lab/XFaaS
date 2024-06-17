@@ -467,7 +467,7 @@ if __name__ == "__main__":
             for dep in deps:
                 f.write(dep + "\n")
 
-    # time.sleep(10)
+    time.sleep(300)
     
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id,is_localhost)
