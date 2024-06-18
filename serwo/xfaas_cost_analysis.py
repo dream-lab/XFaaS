@@ -21,17 +21,17 @@ def cost_predict(user_wf_dir, wf_deployment_id, run_id, wf_name,region, csp,payl
     cost_map = {}
     for id in time_map:
         if csp == 'azure' or csp == 'azure_v2':
-            cost_map[id] = time_map[id] * memory_map[id] * 0.000016 / 80
+            cost_map[id] = time_map[id] * memory_map[id] * 0.000016 * 80
         elif csp == 'aws':
-            cost_map[id] = time_map[id] * memory_map[id] * 0.00001667 / 80
+            cost_map[id] = time_map[id] * memory_map[id] * 0.00001667 * 80
 
     single_exec_cost =  sum(cost_map.values()) / num_entries 
     single_inter_cost = inter_function_time_from_portal / num_entries
-
+    # print(sum(time_map.values()),num_entries)
     if csp == 'aws':
         num_edges = get_num_edges(dag_path)
         single_inter_cost = num_edges * 0.0285 / 1000
-        single_inter_cost = single_inter_cost / 80
+        single_inter_cost = single_inter_cost * 80
     
     tot_single_cost = single_exec_cost + single_inter_cost
     print(csp,payload_size,tot_single_cost)
