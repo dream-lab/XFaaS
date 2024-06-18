@@ -14,9 +14,9 @@ def user_function(serwoObject) -> SerWOObject:
     try:
         fin_dict = dict()
         data = serwoObject.get_body()
-        print("Data to push - ", data)
+        # print("Data to push - ", data)
         metadata = serwoObject.get_metadata()
-        fin_dict["data"] = data
+        fin_dict["data"] = {"body": "success: OK"}
         fin_dict["metadata"] = metadata
         print("Fin dict - ", fin_dict)
         queue.send_message(json.dumps(fin_dict))

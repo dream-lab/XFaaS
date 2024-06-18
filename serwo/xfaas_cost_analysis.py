@@ -34,7 +34,7 @@ def cost_predict(user_wf_dir, wf_deployment_id, run_id, wf_name,region, csp,payl
         single_inter_cost = single_inter_cost * 80
     
     tot_single_cost = single_exec_cost + single_inter_cost
-    print(csp,payload_size,tot_single_cost)
+    print(wf_name,csp,payload_size,tot_single_cost)
 
 def get_num_edges(dag_path):
     with open(dag_path, 'r') as f:
