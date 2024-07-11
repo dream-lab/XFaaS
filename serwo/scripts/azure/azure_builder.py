@@ -5,6 +5,7 @@ import shutil
 from jinja2 import Environment, FileSystemLoader
 from signal import signal, SIGPIPE, SIG_DFL
 from .orchestrator_async_update import async_update
+from .map_update import map_update
 
 signal(SIGPIPE,SIG_DFL)
 from random import randint
@@ -57,7 +58,7 @@ def init_paths():
 def build_working_dir(region,part_id,is_netherite):
 
     global az_functions_path,build_dir
-    dummy, user_workflow_name = get_user_workflow_details()
+    dummy, user_workflow_name,dummy2 = get_user_workflow_details()
 
     if is_netherite:
         build_dir += f"azure_v2-{region}-{part_id}"
@@ -72,7 +73,10 @@ def get_user_workflow_details():
     json_path = user_workflow_directory + '/' + user_dag_file_name
     data = json.load(open(json_path))
     fns_data = data['Nodes']
-    return fns_data,data['WorkflowName']
+    subgraphs= None
+    if "SubGraphs" in data:
+        subgraphs = data["SubGraphs"]
+    return fns_data, data['WorkflowName'], subgraphs
 
 def get_set_of_async_funtions(fns_data):
     # json_path = user_workflow_directory + '/' + user_dag_file_name
@@ -353,7 +357,7 @@ def build(user_dir, dag_definition_file, region, part_id,is_netherite):
     DAG_DEFINITION_FILE = dag_definition_file
     init_paths()
     build_working_dir(region,part_id,is_netherite)
-    user_fns_data, user_app_name = get_user_workflow_details()
+    user_fns_data, user_app_name, subgraphs = get_user_workflow_details()
     ingress_queue_name, app_name = generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,region,part_id,is_netherite)
     build_user_fn_dirs(user_fns_data)
     copy_meta_files(user_fns_data,ingress_queue_name,app_name,is_netherite)
@@ -365,6 +369,7 @@ def build(user_dir, dag_definition_file, region, part_id,is_netherite):
     print("Async_Fn_detction",async_func_set)
     print("Orchestrator initial path:",orchestrator_generated_path)
     print("Orchestrator dest path:",orch_dest_path)
+    map_update.add_graph_node(orchestrator_generated_path,orchestrator_generated_path,subgraphs)
     async_update.orchestrator_async_update(orchestrator_generated_path,orch_dest_path,async_func_set)
 
 if __name__ == '__main__':

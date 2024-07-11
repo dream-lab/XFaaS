@@ -223,6 +223,10 @@ class UserDag:
     # get a map: function_name -> function_object
     def get_node_object_map(self):
         return self.__functions
+    def get_map_list(self):
+        if "SubGraphs" in self.__dag_config_data:
+            return self.__dag_config_data["SubGraphs"]
+        return None
 
     # get a list of node dictionaries
     def get_node_param_list(self):
@@ -248,6 +252,14 @@ class UserDag:
             tasklist = output_dag.nodes[node]["machine_list"]
 
         return tasklist
+    def get_parent_nodename(self, node_name):
+        for node in self.__dag_config_data["Edges"]:
+            for key, value in node.items():
+                for name in value:
+                    if name == node_name:
+                        return key
+        return None
+    
     def get_successor_node_names(self, node_name):
         # Get the node ID corresponding to the given node name
         node_id = self.__nodeIDMap.get(node_name)

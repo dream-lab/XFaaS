@@ -3,7 +3,7 @@ import json
 import azure.functions as func
 import azure.durable_functions as df
 from .python.src.utils.classes.commons.serwo_objects import build_serwo_object
-from .python.src.utils.classes.commons.serwo_objects import SerWOObject
+from .python.src.utils.classes.commons.serwo_objects import SerWOObject, SerWOObjectsList
 import time
 import os, psutil
 import uuid
@@ -126,7 +126,15 @@ def insert_end_stats_in_metadata(input):
     input = build_serwo_object(out_dict).to_json()
     return input
 
-
+def serwolist_to_obj(list):
+    # list=var.get_objects()
+    #TODO: Add metadata field to  
+    # matadata=var.get_metadata()
+    List=[]
+    for obj in list:
+        body = unmarshall(json.loads(obj)).get_body()
+        List.append(body)
+    return List
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
     # convert input body to serwoObject for first function

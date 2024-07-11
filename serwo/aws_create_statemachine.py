@@ -182,11 +182,6 @@ class AWS:
         with open(temp_runner_path, "w") as file:
             file.write(contents)
 
-        # TODO - Fix the stickytape issue for AWS
-        # GitHub Issue link - https://github.com/dream-lab/XFaaS/issues/4
-        """
-        Sticytape the runner
-        """
         logger.info(f"Stickytape the runner template for dependency resolution")
         runner_file_path = fn_dir / f"{runner_filename}.py"
         print("Temprory  runner path",temp_runner_path)
@@ -346,6 +341,8 @@ class AWS:
         
         
         dag_json=self.__user_dag.get_user_dag_nodes()
+        map_list=self.__user_dag.get_map_list()
+
         list_async_fns= get_set_of_async_funtions(dag_json)
         # print("List of Async Fns:",list_async_fns)
         changing_fns=set()
@@ -359,6 +356,8 @@ class AWS:
         # print("List of changing funtions:",changing_fns_list)
         # Statemachine.asl.josn should be changed here
         sfn_json_copy = copy.deepcopy(json.loads(sfn_json))
+        sfn_json_copy = self.add_map_flow(sfn_json_copy,map_list)
+        print(sfn_json_copy)
         data=add_async_afn_builder(sfn_json_copy,changing_fns_list)
         # print("Updated data of sfn builder after adding poll",data)
         with open(f"{self.__aws_build_dir}/{self.__json_file}", "w") as statemachinejson:
@@ -455,6 +454,24 @@ class AWS:
             json.dump(data, f, indent=4)
 
         return self.__outputs_filepath
+    
+    def add_map_flow(self,asl_json,subgraphs):
+        if subgraphs==None:
+            return asl_json
+        for i in range(0,len(subgraphs)):
+            subgraph=subgraphs[i]
+            if asl_json["StartAt"]==subgraph["Nodes"][0]:
+                asl_json["StartAt"]="Map"+str(i)
+            extracted_states={}
+            for node in subgraph["Nodes"]:
+                extracted_states[node]=asl_json["States"][node]
+                del asl_json["States"][node]
+            parent_node=self.__user_dag.get_parent_nodename(subgraph["Nodes"][0])
+            if parent_node != None:
+                asl_json["States"][parent_node]["Next"] = "Map"+str(i)
+            
+            asl_json["States"]["Map"+str(i)]=map_template(subgraph,extracted_states)
+        return asl_json
 
 
 def add_async_afn_builder(data,list):
@@ -682,3 +699,40 @@ def copy_if_not_exists(source_directory, destination_directory):
             shutil.copytree(src_path, dst_path)  # Copy entire folder
         else:
             shutil.copy(src_path, dst_path)  # Copy individual file
+
+def map_template(subgraph,extracted_states):
+    lastnode=subgraph["Nodes"][-1]
+    next_node=extracted_states[lastnode]["Next"]
+    del extracted_states[lastnode]["Next"]
+    extracted_states[lastnode]["End"]=True
+    template={
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": subgraph["Nodes"][0],
+        "States": extracted_states
+      },
+      "Next": next_node,
+      "ResultPath": "$.body."+subgraph["Listname"]+"Result",
+      "ItemsPath": "$.body."+subgraph["Listname"]
+    }
+    return template
+# def add_map_flow(self,asl_json,subgraphs):
+#     if subgraphs==None:
+#         return asl_json
+#     for i in range(0,len(subgraphs)):
+#         subgraph=subgraphs[i]
+#         if asl_json["StartAt"]==subgraph["Nodes"][0]:
+#             asl_json["StartAt"]="Map"+str(i)
+#         extracted_states={}
+#         for node in subgraph["Nodes"]:
+#             extracted_states[node]=asl_json["States"][node]
+#             del asl_json["States"][node]
+#         parent_node=self.__user_dag.get_parent_nodename()
+#         if parent_node != None:
+#             asl_json["States"][parent_node]["Next"] = "Map"+str(i)
+        
+#         asl_json["States"]["Map"+str(i)]=map_template(subgraph,extracted_states)
+#     return asl_json

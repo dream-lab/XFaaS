@@ -24,7 +24,7 @@ def extract_var(input_str):
     # print("Second Argument:", second_argument)
     return str(variable_name), first_argument, str(second_argument)
 
-def codegen(in_var,out_var,func_name):
+def async_codegen(in_var,out_var,func_name):
     # new_code ='\n'
     # new_code ='\n\t'+ out_var +' = '+ in_var
     # new_code +='\n\twhile True: '
@@ -75,7 +75,7 @@ class async_update:
             if 'context.call_activity' in line:
                 a,b,c= extract_var(line)
                 if c in var_list:
-                    new_code=codegen(c,a,b)
+                    new_code=async_codegen(c,a,b)
                     print(new_code)
                     new_lines.append(new_code)
                 else:
