@@ -1,0 +1,12 @@
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf,333360b1-d6c5-42bb-bfea-6af1e9aa91de,graph,ap-south-1,aws,medium,1.2
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf_az_india,562df837-73b5-4181-8f04-cfb5cb1e192f,graph,centralindia,azure,medium,3.40
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf_az_india,05254ca8-6371-4c00-9ac4-2d33ee7268f9,graph,centralindia,azure_v2,medium,0.05
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/math_processing_wf,c83e8f4b-faf7-41e7-abbc-834e90eb3848,math,ap-south-1,aws,medium,1.2
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/math_processing_wf_az_india,e7320e82-d210-4b48-a1dd-0091abe114aa,math,centralindia,azure,medium,1.78
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/math_processing_wf_az_india,0d6515e8-f8eb-4fce-a70e-73518c7aefb3,math,centralindia,azure_v2,medium,2.48
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/image_processing_wf,0ff4c1da-94d3-4029-8f8c-07e8572136f8,image,ap-south-1,aws,medium,1.2
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/image_processing_wf_az_india,870235bb-fe61-4693-bcf2-e5b0b4888c05,image,centralindia,azure,medium,1.65
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/image_processing_wf_az_india,870235bb-fe61-4693-bcf2-e5b0b4888c06,image,centralindia,azure_v2,medium,1.65
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/text_analytics_wf,b30d9d93-082d-4791-a056-59ea638cdc84,text,ap-south-1,aws,medium,1.2
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/text_analytics_wf_az_india,b30d9d93-082d-4791-a056-59ea638cdc84,text,centralindia,azure,medium,1.2
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/text_analytics_wf_az_india,b30d9d93-082d-4791-a056-59ea638cdc84,text,centralindia,azure_v2,medium,1.2

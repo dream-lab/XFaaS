@@ -42,6 +42,15 @@ def plot():
     print('func exec mse',func_exec_mse)
     print('inter func mse',inter_func_mse)
 
+    print('Actual exec costs: ',actual_func_exec)
+    print('Actual inter costs: ',actual_inter_func)
+
+    tot_cs = []
+    for i in range(len(actual_func_exec)):
+        tot_cs.append(actual_func_exec[i]+actual_inter_func[i])
+    print('Actual total costs: ',tot_cs)
+
+    ##r squared error for func exec and inter func
     func_exec_r2 = 0
     inter_func_r2 = 0
     actual_func_exec_mean = statistics.mean(actual_func_exec)
@@ -54,58 +63,71 @@ def plot():
     print('func exec r2',func_exec_r2)
     print('inter func r2',inter_func_r2)
 
+
     print(len(actual_func_exec),len(predicted_func_exec),len(actual_inter_func),len(predicted_inter_func))
-    ## plot a stacked bar graph with func exec in bottom and inter func on top, alternate bars for actual and predicted
-    fig, ax = plt.subplots()
-    fig.set_size_inches(2, 7)
-    barWidth = 0.2
-    r1 = np.arange(len(actual_func_exec))
-    ax.minorticks_on()
-    ax.grid(which='major', linestyle='-', linewidth='0.1', color='lightgrey')
-    ax.grid(which='minor', linestyle='-', linewidth='0.1', color='lightgrey')
-    
-    r1 = [0,0.4,0.8,1.4,1.8,2.2,2.8,3.2,3.6]
-    r1 = [x - 0.2 for x in r1]
-    r2 = [x + barWidth for x in r1]
-    labels = ['AWS S','AzS S','AzN S', 'AWS M','AzS M','AzN M', 'AWS L','AzS L','AzN L']
-    ##add three lables for 3 groups of bars below x axis
-    lab = ['Small','Medium','Large']
-    
-
-
-    
-    xticks = [x + barWidth/2 for x in r1]
-    ax.set_xticks(xticks)
-    ax.set_xticklabels(labels,fontsize=14,rotation=90)
-    yticks = [0.000001,0.00001,0.0001,0.001,0.01,0.1,1]
-    ax.set_yticks(yticks,minor=True,fontsize=16)
-
-    ## if value is 0 then write NA  
     inds = [i for i, x in enumerate(actual_func_exec) if x == 0]
-    for ind in inds:
-        ax.text(r1[ind], 0.00001, 'NA', ha='center', va='bottom',rotation=90,c='red')
-        ax.text(r2[ind], 0.00001, 'NA', ha='center', va='bottom', rotation=90,c='red')
-
-    colors_func_exec = ['orange','blue','green','orange','blue','green','orange','blue','green']
-    colors_inter_func = ['gold','cyan','green','gold','cyan','green','gold','cyan','green']
-    ax.set_yscale('log')
-    ax.bar(r1, actual_func_exec, width=barWidth, edgecolor='grey', label='Actual Func Exec',color = colors_func_exec)
-    ax.bar(r2, predicted_func_exec, width=barWidth, edgecolor='grey', label='Predicted Func Exec',color = colors_func_exec, hatch='//')
-
-    ax.bar(r1, actual_inter_func, width=barWidth, edgecolor='grey', label='Actual Inter Func', bottom=actual_func_exec,color = colors_inter_func)
-    ax.bar(r2, predicted_inter_func, width=barWidth, edgecolor='grey', label='Predicted Inter Func', bottom=predicted_func_exec,color = colors_inter_func, hatch='\\')
     
-    plt.legend(fontsize=11)
-    # ax2 = ax.twinx()
-    # ax2.set_xticks([0.4,2.4,3.4])
-    # ax2.set_xticklabels(lab)
-    fd = {'fontsize': 20}
-    plt.xlabel('CSP / Payload Size',fontdict=fd)
-    plt.ylabel('Cost(INR)',fontdict=fd)
-    ##xtick labels fontsize
+    # plot a stacked bar graph with func exec in bottom and inter func on top, alternate bars for actual and predicted
+    # fig, ax = plt.subplots()
+    # fig.set_size_inches(4, 7)
+    # barWidth = 0.2
+    
+    # ax.minorticks_on()
+    # ax.grid(which='major', linestyle='-', linewidth='0.1', color='lightgrey')
+    # ax.grid(which='minor', linestyle='-', linewidth='0.1', color='lightgrey')
+    
+    # r1 = [0,0.4,0.8,1.4,1.8,2.2,2.8,3.2,3.6,4.2,4.6,5]
+    # r1 = [x - 0.2 for x in r1]
+    # r2 = [x + barWidth for x in r1]
+    # labels = ['graph', 'math','image','text']
+    
 
-    # plt.show()
-    # plt.savefig('cost_analysis_graph.pdf', bbox_inches='tight' ,dpi=300)
+    # mpatches = [plt.Line2D([0], [0], color='orange', lw=4),
+    #             plt.Line2D([0], [0], color='blue', lw=4),
+    #             plt.Line2D([0], [0], color='green', lw=4),
+    #             plt.Line2D([0], [0], color='gold', lw=4),
+    #             ]
+    
+    
+    # xticks = [0.4,1.8,3.2,4.6]
+    # # ax2 = ax.twinx()
+    
+    
+    # # y2= [i*5 for i in range(len(ytt))]
+    
+    # ##match yticks with yticks of ax
+    # # ytt = [0.000001,0.00001,0.0001,0.001,0.01,0.1,1,10]
+    # # ax2.set_yticks(ytt,minor=True)
+    # # ax2.set_yticklabels(ytt)
+    # # ax2.set_yscale('log')
+    # ax.set_xticks(xticks)
+    # ax.set_xticklabels(labels,fontsize=14)
+    # yticks = [0.000001,0.00001,0.0001,0.001,0.01,0.1,1,10]
+    # ax.set_yticks(yticks,minor=True,fontsize=16)
+    # ax.set_yticklabels(yticks,fontsize=16)
+
+    # # ## if value is 0 then write NA  
+    
+    # for ind in inds:
+    #     ax.text(r1[ind], 0.00001, 'NA', ha='center', va='bottom',rotation=90,c='red')
+    #     ax.text(r2[ind], 0.00001, 'NA', ha='center', va='bottom', rotation=90,c='red')
+
+    # colors_func_exec = ['orange','blue','green','orange','blue','green','orange','blue','green','orange','blue','green']
+    # colors_inter_func = ['gold','cyan','green','gold','cyan','green','gold','cyan','green','gold','cyan','green']
+    # ax.set_yscale('log')
+    # ax.bar(r1, actual_func_exec, width=barWidth, edgecolor='grey', label='Actual Func Exec',color = colors_func_exec)
+    # ax.bar(r2, predicted_func_exec, width=barWidth, edgecolor='grey', label='Predicted Func Exec',color = colors_func_exec, hatch='//')
+
+    # ax.bar(r1, actual_inter_func, width=barWidth, edgecolor='grey', label='Actual Inter Func', bottom=actual_func_exec,color = colors_inter_func)
+    # ax.bar(r2, predicted_inter_func, width=barWidth, edgecolor='grey', label='Predicted Inter Func', bottom=predicted_func_exec,color = colors_inter_func, hatch='\\')
+    
+    # # plt.legend(fontsize=11)
+    # ax.legend(mpatches, ['AWS', 'AzS', 'AzN'],loc='upper left',fontsize=11)
+    # fd = {'fontsize': 20}
+    # plt.xlabel('Workflow',fontdict=fd)
+    # plt.ylabel('Cost(INR)',fontdict=fd)
+    # plt.savefig('cost_analysis_all_wf.pdf', bbox_inches='tight' ,dpi=300)
+
 def cost_predict(user_wf_dir, wf_deployment_id, run_id, wf_name,region, csp,payload_size,inter_function_time_from_portal):
     
     user_wf_dir = user_wf_dir + "/workflow-gen"
@@ -136,7 +158,7 @@ def cost_predict(user_wf_dir, wf_deployment_id, run_id, wf_name,region, csp,payl
     memory_map = get_memory_map(dag_path)
     logs_path = f"{user_wf_dir}/{wf_deployment_id}/{run_id}/logs/"
     if not os.path.exists(logs_path):
-        
+        # print('no logs found')
         actual_func_exec.append(0)
         actual_inter_func.append(0)
         predicted_func_exec.append(0)
@@ -145,7 +167,7 @@ def cost_predict(user_wf_dir, wf_deployment_id, run_id, wf_name,region, csp,payl
     time_map,num_entries = get_time_map(logs_path)
 
     if time_map == -1:
-       
+        # print('no logs found')
         actual_func_exec.append(0)
         actual_inter_func.append(0)
         predicted_func_exec.append(0)
@@ -252,7 +274,7 @@ def get_memory_map(dag_path):
 
 if __name__ == '__main__':
     run_id = 'exp1'
-    deployments_file = 'serwo/deployments.txt'
+    deployments_file = 'serwo/dep.txt'
 
     with open(deployments_file, 'r') as f:
         deployments = f.readlines()
