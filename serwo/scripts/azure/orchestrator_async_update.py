@@ -42,7 +42,10 @@ def async_codegen(in_var,out_var,func_name):
     new_code +='\n\tif not body["Poll"] or body["Poll"]==False: '
     new_code +='\n\t\tbreak '
     new_code +='\n\telse:'
-    new_code +='\n\t\tdeadline = context.current_utc_datetime + timedelta(seconds=900) '
+    new_code +='\n\t\tdelta = 900 '
+    new_code +='\n\t\tif "waittime" in body : '
+    new_code +='\n\t\t\tdelta = body["waittime"] '
+    new_code +='\n\t\tdeadline = context.current_utc_datetime + timedelta(seconds=delta) '
     new_code +='\n\t\tyield context.create_timer(deadline)\n\n'
     return new_code
 
