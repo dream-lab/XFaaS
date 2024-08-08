@@ -6,10 +6,12 @@ import os
 import shutil
 import sys
 import time
+import base64
 from datetime import datetime
 from xfaas_main import run as xfaas_deployer
 import time
 from xfbench_plotter import XFBenchPlotter
+
 parser = argparse.ArgumentParser(
     prog="ProgramName",
     description="What the program does",
@@ -41,6 +43,11 @@ deployment_id = ''
 server_ip = None
 server_user_id  = None
 server_pem_file_path = None
+
+shell_script_commands = []
+aws_shell_script_commands = []
+
+
 def get_client_login_details(config_path):
     global server_ip, server_user_id, server_pem_file_path
     with open(config_path) as f:
@@ -51,9 +58,6 @@ def get_client_login_details(config_path):
     if 'server_pem_file_path' in data:
         server_pem_file_path = data['server_pem_file_path']
 
-shell_script_commands = []
-aws_shell_script_commands = []
-
 
 def get_aws_payload(payload):
     payload = json.dumps(payload)
@@ -61,11 +65,18 @@ def get_aws_payload(payload):
     payload = payload[1:-1]
     return payload
 
+
 def get_azure_payload(payload):
     payload = json.dumps(payload)
     payload = payload.replace('"', '&quot;')
     return payload
 
+
+def get_openwhisk_payload(payload):
+    payload = json.dumps(payload)
+    payload = payload.replace('"', '&quot;')
+    payload = payload[1:-1]
+    return payload
 
 
 def read_dynamism_file(dynamism,duration, max_rps):
@@ -105,6 +116,13 @@ def get_aws_resources(csp,region,part_id,wf_user_directory):
             state_machine_arn = r['OutputValue']
         
     return execute_url, state_machine_arn
+
+
+def get_openwhisk_resources(csp, region, part_id, wf_user_directory):
+    resources = read_resources(csp, region, part_id, wf_user_directory)
+    execution_url = resources["ExecutionUrl"]
+    execution_auth_creds = resources["ExecutionAuth"]
+    return execution_url, execution_auth_creds
 
 
 def template_azure_jmx_file(rps, duration, execute_url, payload_size, input_jmx, output_path, session_id,payload):
@@ -167,15 +185,59 @@ def template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload
         f.write(data)
 
 
-def make_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id,run_id, payload,is_localhost):
+def template_openwhisk_jmx_file(rps, duration, execute_url, execute_auth_base64, input_jmx, output_path, session_id, payload):
+    global deployment_id
+
+    with open(input_jmx) as f:
+        data = f.read()
+
+    data = data.replace("DURATION", str(int(duration)))
+    data = data.replace("RPS", str(rps))
+    data = data.replace("OPENWHISK_PAYLOAD_TO_REPLACE", get_openwhisk_payload(payload))
+    data = data.replace("URL", execute_url)
+    data = data.replace("SESSION", str(session_id))
+    data = data.replace("DEPLOYMENT_ID", deployment_id)
+    data = data.replace("BASE64_AUTH", execute_auth_base64)
+    
+    to_replace = '"ThreadGroup.num_threads">2'
+    if rps == 1020.0 or rps == 840.0: 
+        data = data.replace(to_replace, f'"ThreadGroup.num_threads">17')
+    elif rps == 1920.0 or rps == 3840.0 or rps == 7680.0:
+        data = data.replace(to_replace, f'"ThreadGroup.num_threads">64')
+
+    with open(output_path, "w") as f:
+        f.write(data)
+
+
+def add_jmeter_openwhisk_response_path(jmx_file_path, wf_user_directory, wf_deployment_id, run_id):
+    with open(jmx_file_path) as f:
+        data = f.read()
+
+    jmeter_responses_file_path = f"{wf_user_directory}/{wf_deployment_id}/{run_id}/jmeter_responses.csv"
+    data = data.replace("JMETER_RESPONSES_PATH", jmeter_responses_file_path)
+    
+    with open(jmx_file_path, "w") as f:
+        f.write(data)
+
+
+def make_jmx_file(csp, rps, duration, payload_size, wf_name, execute_url, state_machine_arn, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id, run_id, payload, is_localhost, execute_auth_creds):
+    """
+    Changelog:
+    Added encoded_auth: It will be not None only for openwhisk
+    """
     jmx_template_path, jmx_output_path,jmx_output_filename = get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism,session_id,region)
+
     if 'azure' in csp:
        template_azure_jmx_file(rps, duration, execute_url, payload_size, jmx_template_path, jmx_output_path, session_id,payload)
+    elif 'openwhisk' in csp:
+        encoded_auth = base64.b64encode(execute_auth_creds.encode()).decode('utf-8')
+        template_openwhisk_jmx_file(rps, duration, execute_url, encoded_auth, jmx_template_path, jmx_output_path, session_id, payload)
+        add_jmeter_openwhisk_response_path(jmx_output_path, wf_user_directory, wf_deployment_id, run_id)
     else:
         template_aws_jmx_file(rps, duration, execute_url, state_machine_arn, payload_size, jmx_template_path, jmx_output_path, session_id,payload)
+
     send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration,is_localhost)
     dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region, wf_deployment_id,run_id)
-
 
 
 def dump_experiment_conf(jmx_output_filename, csp, rps, duration, payload_size, wf_name, dynamism, session_id, wf_user_directory, part_id, region,wf_deployment_id,run_id):
@@ -280,9 +342,8 @@ def load_payload(wf_user_directory,payload_size):
     return payload
 
 
-def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory, wf_deployment_id,run_id, is_localhost):
-
-    copy_provenance_artifacts(csp, region, part_id, wf_user_directory, wf_deployment_id,max_rps,run_id)
+def run_workload(csp, region, part_id, max_rps, duration, payload_size, dynamism, wf_name, wf_user_directory, wf_deployment_id, run_id, is_localhost):
+    copy_provenance_artifacts(csp, region, part_id, wf_user_directory, wf_deployment_id, max_rps,run_id)
     
     dynamism_data = read_dynamism_file(dynamism, duration, max_rps)
     if 'azure' in csp:
@@ -290,7 +351,9 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
         state_machine_arn = ''
     elif csp == 'aws':
         execute_url, state_machine_arn = get_aws_resources(csp,region,part_id,wf_user_directory)
-
+    elif csp == 'openwhisk':
+        execute_url, execute_auth_creds = get_openwhisk_resources(csp, region, part_id, wf_user_directory)
+        state_machine_arn = ''
 
     dynamism_updated = dynamism
 
@@ -314,24 +377,23 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
         # payload = load_payload(wf_user_directory,payload_size)
         ne_session_id = session_id + str(i)
         
-        make_jmx_file(csp, rps * 60.0, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id,payload,is_localhost)
+        make_jmx_file(csp, rps * 60.0, duration, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id, payload, is_localhost, execute_auth_creds)
         i += 1
-    generate_shell_script_and_scp(csp,payload_size, wf_name,   max_rps, duration,dynamism,region,is_localhost)
-    
+
+    generate_shell_script_and_scp(csp, payload_size, wf_name, max_rps, duration, dynamism, region, is_localhost)
 
 
 def copy_provenance_artifacts(csp, region, part_id, wf_user_directory,wf_deployment_id,rps,run_id):
-    
     global deployment_id
     
     os.makedirs(f"{wf_user_directory}/{wf_deployment_id}/{run_id}", exist_ok=True)
     provenance_artefacts_path = f"{wf_user_directory}/build/workflow/resources/provenance-artifacts-{csp}-{region}-{part_id}.json"
+
     with open(provenance_artefacts_path) as f:
         provenance_artifact = json.load(f)
-    deployment_id = provenance_artifact['deployment_id']
 
+    deployment_id = provenance_artifact['deployment_id']
     provenance_artefacts_updated_path = f"{wf_user_directory}/{wf_deployment_id}/{run_id}/{artifact_suffix}"
-   
     shutil.copyfile(provenance_artefacts_path, provenance_artefacts_updated_path)
         
 

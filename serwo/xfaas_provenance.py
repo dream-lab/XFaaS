@@ -109,9 +109,14 @@ def generate_provenance_artifacts(user_dir, wf_id, refactored_wf_id, wf_deployme
     resources_dir = pathlib.Path.joinpath(
         pathlib.Path(user_dir), "build/workflow/resources"
     )
-    resouces_file = f'{resources_dir}/{csp}-{region}-{part_id}.json'
-    ##load json from file
-    with open(resouces_file) as f:
+
+    if csp == 'openwhisk':
+        resources_file = f'{resources_dir}/{csp}-{part_id}.json'
+    else:
+        resources_file = f'{resources_dir}/{csp}-{region}-{part_id}.json'
+    
+    # load json from file
+    with open(resources_file) as f:
         resources = json.load(f)
 
     if csp == 'aws':
@@ -120,6 +125,8 @@ def generate_provenance_artifacts(user_dir, wf_id, refactored_wf_id, wf_deployme
                 app_name = r['OutputValue'] 
     elif csp == 'azure' or csp == 'azure_v2':
         app_name = resources['group']
+    elif csp == 'openwhisk':
+        app_name = resources['WorkflowEntrypoint']
 
     if queue_details is None:
        raise Exception("Queue details not found, Try a Fresh Deployment by clearing CollectLogs")

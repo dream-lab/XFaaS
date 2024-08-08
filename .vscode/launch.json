@@ -1,0 +1,47 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: XFaaS Run Benchmark",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "--csp", "aws", 
+                "--region", "ap-south-1",
+                "--max-rps", "2",
+                "--duration", "60",
+                "--payload-size", "small",
+                "--dynamism", "static",
+                "--wf-name", "test?",
+                "--wf-user-directory", "",
+                "--path-to-client-config", "./crack/client_config.json",
+                "--client-key", "debug",
+                "--dag-file-name", "",
+                "--teardown-flag", "",
+                "--is_singleton_wf", "0",
+                "--function-class", "graph",
+                "--function-name", "graph_bft",
+                "--function-code", "test_code",
+                "--node_name", "TestNode",
+                "--XFBENCH_DIR", "crack"
+            ]
+        },
+        {
+            "name": "Python Debugger: XFaaS Main",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["./crack/XFBench/workflows/custom_workflows/math_processing_wf",
+                "dag.json", 
+                "benchmark.json", 
+                "openwhisk", "ap-south-1"
+            ]
+        }
+    ]
+}

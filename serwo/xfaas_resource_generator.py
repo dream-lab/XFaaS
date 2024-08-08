@@ -4,6 +4,7 @@ import json
 from jinja2 import Environment, FileSystemLoader
 from botocore.exceptions import ClientError
 import os
+
 def generate(user_dir, partition_config, dag_definition_file):
     partition_config = list(reversed(partition_config))
 
@@ -36,8 +37,10 @@ def generate(user_dir, partition_config, dag_definition_file):
             part_id = partition_config[i].get_part_id()
             updated_user_dir = f"{user_dir}/partitions/{csp}-{region}-{part_id}"
             dag_path = f"{updated_user_dir}/{dag_definition_file}" 
+
             with open(dag_path, "r") as dag_file:
                 dag_from_file = json.load(dag_file)
+
             if downstream_csp == "aws":
                 function_id = "252"
                 function_name = "PushToSQS"
@@ -59,7 +62,6 @@ def generate(user_dir, partition_config, dag_definition_file):
                     "access_key_id": aws_access_key_id,
                     "secret_access_key": aws_secret_access_key,
                 }
-                
                 
                 template_dir = f"{root_dir}/python/src/faas-templates/aws/push-to-sqs-template/{function_name}"
                 output_path = f"{updated_user_dir}/"
@@ -85,8 +87,6 @@ def generate(user_dir, partition_config, dag_definition_file):
                 output_path = f"{updated_user_dir}/"
                 os.system(f"cp -r {template_dir} {output_path}")
                 template_push_to_queue(updated_user_dir, function_name, entry_point, resources, "azure")
-
-
             
             egress_node = {
                 "NodeId": function_id,
@@ -107,16 +107,12 @@ def generate(user_dir, partition_config, dag_definition_file):
         CSP(csp).build_resources(updated_user_dir, dag_definition_path,region,part_id,dag_definition_file,is_netherite)
 
 
-
-
-
 def template_push_to_queue(
     user_source_dir: str,
     egress_fn_name: str,
     egress_fn_entrypoint: str,
     resources: dict,
     csp:str
-    
 ):
     template_dir = f"{user_source_dir}/{egress_fn_name}"
     try:
