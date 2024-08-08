@@ -63,7 +63,7 @@ Resources:
                       input=message_body
                   )
             - {StateMachineArn: !Ref {{stepfunctionname}}} # templated here 
-      Runtime: "python3.10"
+      Runtime: "python3.9"
       Timeout: "30"
 
   # mostly static      
@@ -111,7 +111,7 @@ Resources:
     Properties:
       CodeUri: {{ function.uri }}
       Handler: {{ function.handler }}
-      Runtime: python3.10
+      Runtime: python3.9
       MemorySize: {{ function.memory }}
       Timeout: 300
       Architectures:

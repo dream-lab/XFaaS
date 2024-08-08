@@ -11,16 +11,17 @@ def push_user_dag(dag_definition_path):
     print(":" * 80, ' dynamo user_dag push')
     # print(f"Pushing workflow configuration to Dynamo DB")
     workflow_name = ""
-    try:
-        wf_id = str(uuid.uuid4())
-        js = open(dag_definition_path,'r').read()
-        user_workflow_item = json.loads(js)
-        user_workflow_item['wf_id'] = wf_id
-        dynPartiQLWrapper = PartiQLWrapper('workflow_user_table')
-        dynPartiQLWrapper.put(user_workflow_item)
+    wf_id = str(uuid.uuid4())
+    # try:
+        
+    #     js = open(dag_definition_path,'r').read()
+    #     user_workflow_item = json.loads(js)
+    #     user_workflow_item['wf_id'] = wf_id
+    #     dynPartiQLWrapper = PartiQLWrapper('workflow_user_table')
+    #     dynPartiQLWrapper.put(user_workflow_item)
 
-    except Exception as e:
-        print('here: ',e)
+    # except Exception as e:
+    #     print('here: ',e)
 
     return wf_id
 
@@ -50,11 +51,11 @@ def push_refactored_workflow(user_dag_file, user_dir, wf_id, csp):
 
     js_left["refactoring_strategy"] = "Single Cloud"
 
-    try:
-        dynPartiQLWrapper = PartiQLWrapper("workflow_refactored_table")
-        dynPartiQLWrapper.put(js_left)
-    except ClientError as e:
-        print("here",e)
+    # try:
+    #     dynPartiQLWrapper = PartiQLWrapper("workflow_refactored_table")
+    #     dynPartiQLWrapper.put(js_left)
+    # except ClientError as e:
+    #     print("here",e)
 
     return refactored_wf_id
 
@@ -90,11 +91,11 @@ def push_deployment_logs(user_dag_file, user_dir, wf_id, refactored_wf_id , csp)
 
     d["func_deployment_config"] = a
 
-    try:
-        dynPartiQLWrapper = PartiQLWrapper("workflow_deployment_table")
-        dynPartiQLWrapper.put(d)
-    except ClientError as e:
-        print(e)
+    # try:
+    #     dynPartiQLWrapper = PartiQLWrapper("workflow_deployment_table")
+    #     dynPartiQLWrapper.put(d)
+    # except ClientError as e:
+    #     print(e)
 
     return workflow_deployment_id
 

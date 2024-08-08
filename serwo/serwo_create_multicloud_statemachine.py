@@ -127,7 +127,6 @@ def template_push_to_queue(
             for resource in resources:
                 if resource["OutputKey"] == "SQSResource":
                     queue_url = resource["OutputValue"]
-
             if queue_url is None:
                 raise Exception(f"Invalid File parsing for {resource_dict['filename']}")
             else:

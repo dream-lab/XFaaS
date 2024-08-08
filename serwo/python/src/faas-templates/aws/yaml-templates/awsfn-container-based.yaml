@@ -98,7 +98,7 @@ Resources:
   #   Properties:
   #     CodeUri: {{ function.uri }}
   #     Handler: {{ function.handler }}
-  #     Runtime: python3.10
+  #     Runtime: python3.9
   #     MemorySize: {{ function.memory }}
   #     Timeout: 300
   #     Architectures:

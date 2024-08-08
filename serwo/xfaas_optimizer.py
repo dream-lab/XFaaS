@@ -28,8 +28,11 @@ def get_supported_cloud_ids():
 
 
 def translate(clouds,cloud_dictionary,valid_partition_points,user_dag):
+
     final_output = []
     i = 0
+    part_id = "0000"
+    kk = 0
     while(i < len(clouds)):
         j = i
         while j < len(clouds) and clouds[j] == clouds[i]:
@@ -39,9 +42,10 @@ def translate(clouds,cloud_dictionary,valid_partition_points,user_dag):
         out_degree = valid_partition_points[j]['out_degree']
         csp = CSP(cloud_dictionary[str(clouds[i])]['csp'])
         region = cloud_dictionary[str(clouds[i])]['region']
-        part_id = generate_random_string(PARTITION_ID_LENGTH)
         partition_point = PartitionPoint(function_name, out_degree, csp, None, part_id, region)
         final_output.append(partition_point)
+        kk += 1
+        part_id = str(kk).zfill(4)
         i = j+1
 
     return final_output
@@ -63,7 +67,9 @@ def partition_dag(user_dag,user_pinned_nodes,benchmark_path):
 
         if min_latency == sys.maxsize:
             print('DAG CANNOT BE PARTITIONED FOR GIVEN INPUT VALUES AND USER CONSTRAINTS')
+       
         print('Result from DP partitioner: \n clouds -> ',clouds,'\n Latency -> ',min_latency)
+       
 
         final_cloud_config = translate(clouds,cloud_dictionary,valid_partition_points,user_dag)
 

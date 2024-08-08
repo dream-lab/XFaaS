@@ -32,3 +32,6 @@ class PartitionPoint:
 
     def get_region(self):
         return self.__region
+    
+    def get_function_name(self):
+        return self.__function_name

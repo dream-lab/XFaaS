@@ -13,7 +13,11 @@ class UserDag:
     def __init__(self, user_config_path):
         # throw an exception if loading file has a problem
         try:
+            print("User config path - ", user_config_path)
             self.__dag_config_data = self.__load_user_spec(user_config_path)
+            print("Dag config data - ", self.__dag_config_data)
+            self.__nodeIDMap = {}
+            self.__dag = nx.DiGraph()
         except Exception as e:
             raise e
 
@@ -28,8 +32,6 @@ class UserDag:
             # nodeID = "n" + str(index)
             nodeID = node["NodeId"]
             self.__nodeIDMap[node["NodeName"]] = nodeID
-            # print(node)
-            # __dag.add_node(nodeID, NodeName=node["NodeName"], pre="", ret=["yield ", "context.call_activity(" + node["NodeName"]  + ",$var$)"], var=generate_random_variable_name(), machine_list=[nodeID])
             self.__dag.add_node(nodeID, NodeName=node["NodeName"], pre="", ret=["yield ", "context.call_activity(\"" + node["NodeName"]  + "\",$var$)"], var=self._generate_random_variable_name(), machine_list=[nodeID])
             index += 1
 

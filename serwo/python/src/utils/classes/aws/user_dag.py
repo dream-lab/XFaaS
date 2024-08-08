@@ -15,10 +15,15 @@ class UserDag:
     __functions = {}  # map: functionName -> functionObject
 
     # Constructor
+    
+    
     def __init__(self, user_config_path):
         # throw an exception if loading file has a problem
         try:
             self.__dag_config_data = self.__load_user_spec(user_config_path)
+            self.__nodeIDMap = {}
+            self.__dag = nx.DiGraph()
+            self.__functions = {}
         except Exception as e:
             raise e
 
@@ -243,6 +248,7 @@ class UserDag:
         # initialise graphs
         collapsed_dag = wf_dag
         output_dag = wf_dag
+        
         while len(output_dag.nodes()) != 1:
             linear_collapsed_dag = self._collapse_linear_chains(collapsed_dag)
             collapsed_dag = self._collapse_parallel_chains(linear_collapsed_dag)

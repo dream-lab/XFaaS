@@ -19,11 +19,16 @@ class CSP:
         if self.__name == 'azure':
             self.build_az(dag_definition_file, dag_definition_path, part_id, region, user_dir, is_netherite)
         if self.__name == 'aws':
-            aws_deployer = AWS(user_dir, dag_definition_file, "REST", part_id, region)
-            aws_deployer.build_resources()
-            aws_deployer.build_workflow()
-            aws_deployer.deploy_workflow()
-            pass
+            if part_id == "0000":
+                aws_deployer = AWS(user_dir, dag_definition_file, "REST", part_id, region)
+                aws_deployer.build_resources()
+                aws_deployer.build_workflow()
+                aws_deployer.deploy_workflow()
+            else:
+                aws_deployer = AWS(user_dir, dag_definition_file, "SQS", part_id, region)
+                aws_deployer.build_resources()
+                aws_deployer.build_workflow()
+                aws_deployer.deploy_workflow()
 
 
     def build_az(self, dag_definition_file, dag_definition_path, part_id, region, user_dir,is_netherite):

@@ -1,7 +1,7 @@
 from python.src.utils.classes.commons.serwo_objects import SerWOObject
 
 
-def function(serwoObject) -> SerWOObject:
+def user_function(serwoObject) -> SerWOObject:
     try:
         body = serwoObject.get_body()
         return SerWOObject(body=body)

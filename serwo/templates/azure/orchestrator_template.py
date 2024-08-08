@@ -7,7 +7,7 @@ from .python.src.utils.classes.commons.serwo_objects import SerWOObject, SerWOOb
 import time
 import os, psutil
 import uuid
-import cpuinfo
+# import cpuinfo
 import random
 import string
 from datetime import datetime, timedelta
@@ -103,7 +103,7 @@ def insert_end_stats_in_metadata(input):
                 mem_after = meta[fid]["mem_after"]
                 body_size_before = meta[fid]["in_payload_bytes"]
                 body_size_after = meta[fid]["out_payload_bytes"]
-                cid = meta[fid]["cid"]
+                # cid = meta[fid]["cid"]
             if fid == "0":
                 end_delta_local = end_delta
         func_json = {
@@ -114,7 +114,7 @@ def insert_end_stats_in_metadata(input):
                 "mem_after" : mem_after,
                 "in_payload_bytes" : body_size_before,
                 "out_payload_bytes" : body_size_after,
-                "cid" : cid
+                # "cid" : cid
             }
         }
         ne_list.append(func_json)

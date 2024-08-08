@@ -19,6 +19,7 @@ import json
 import pathlib
 import argparse
 import shutil
+import networkx as nx
 
 parser = argparse.ArgumentParser(
     prog="ProgramName",
@@ -59,7 +60,6 @@ def randomString(stringLength):
     """Generate a random string of fixed length """
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
-
 
 def add_collect_logs(dag_definition_path,user_wf_dir, xfaas_user_dag,region):
     # if region == 'us-east-1':
@@ -179,9 +179,9 @@ def add_collect_logs(dag_definition_path,user_wf_dir, xfaas_user_dag,region):
     node_name = node_dict['NodeName']
     sink_node_name = nx_dag.nodes[sink_node]['NodeName']
     dag['Edges'].append({f"{sink_node_name}":[f"{node_name}"]})
+    dag["WorkflowName"] = f"UserWf{part_id}"
     
-    
-    with open(f'{user_wf_dir}/refactored-dag.json', 'w') as file:
+    with open(f'{user_wf_dir}/dag.json', 'w') as file:
         file.write(json.dumps(dag, indent=4))
     nx_dag.add_node(node_dict['NodeId'], **node_dict)
     nx_dag.add_edge(sink_node,node_dict['NodeId'])
@@ -254,25 +254,174 @@ def add_collect_logs(dag_definition_path,user_wf_dir, xfaas_user_dag,region):
 #     with open(file_path, "w") as json_file:
 #         json_file.write(json_string)
 
+def swap(a,b):
+    return b,a
+def generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definition_path):
+    
+    src_node = None
+    sink_node = None
+    nx_dag = xfaas_user_dag.get_dag()
+    for node in nx_dag.nodes:
+        if nx_dag.in_degree(node) == 0:
+            src_node = nx_dag.nodes[node]['NodeName']
+        if nx_dag.out_degree(node) == 0:
+            sink_node = nx_dag.nodes[node]['NodeName']
+    
+    #first partition
+    start_node = src_node
+    end_node = partition_config[0].get_function_name()
+    ## subdag with start node and end node
+    start_node_id = None
+    end_node_id = None
+
+    for node in nx_dag.nodes:
+        if nx_dag.nodes[node]['NodeName'] == start_node:
+            start_node_id = node
+        if nx_dag.nodes[node]['NodeName'] == end_node:
+            end_node_id = node
+
+   
+    top_sort_nodes = list(nx.topological_sort(nx_dag))
+    
+    st_ind = top_sort_nodes.index(start_node_id)
+    en_ind = top_sort_nodes.index(end_node_id)
+
+    nodes_in_between = []
+    for i in range(st_ind, en_ind+1):
+        nodes_in_between.append(top_sort_nodes[i])
+
+    subdag = nx_dag.subgraph(nodes_in_between)
+    dagg = {}
+    part_id = partition_config[0].get_part_id()
+    dagg["WorkflowName"] = f"UserWf{part_id}"
+    dagg['Nodes'] = []
+    dagg['Edges'] = []
+    dagg['Nodes'] = [nx_dag.nodes[node] for node in nodes_in_between]
+    for edge in subdag.edges:
+        dagg['Edges'].append({nx_dag.nodes[edge[0]]['NodeName']:[nx_dag.nodes[edge[1]]['NodeName']]})
+    
+    csp = partition_config[0].get_left_csp().get_name()
+    region = partition_config[0].get_region()
+    write_dag_for_partition( user_wf_dir, dagg,part_id,csp,region)
+
+
+    for i in range(1, len(partition_config)):
+       
+        start_node = partition_config[i-1].get_function_name()
+        end_node = partition_config[i].get_function_name()
+        ## subdag with start node and end node
+        start_node_id = None
+        end_node_id = None
+
+        for node in nx_dag.nodes:
+            if nx_dag.nodes[node]['NodeName'] == start_node:
+                start_node_id = node
+            if nx_dag.nodes[node]['NodeName'] == end_node:
+                end_node_id = node
+
+        top_sort_nodes = list(nx.topological_sort(nx_dag))
+        
+        st_ind = top_sort_nodes.index(start_node_id)
+        en_ind = top_sort_nodes.index(end_node_id)
+
+        nodes_in_between = []
+        for j in range(st_ind+1, en_ind+1):
+            nodes_in_between.append(top_sort_nodes[j])
+
+        subdag = nx_dag.subgraph(nodes_in_between)
+        ## remove the first node from the subdag
+        out_degree = nx_dag.out_degree(start_node_id)
+        xfaas_root_dir = os.path.dirname(os.path.abspath(__file__))
+        part_id = partition_config[i].get_part_id()
+        dagg = {}
+        dagg["WorkflowName"] = f"UserWf{part_id}"
+        dagg['Nodes'] = []
+        dagg['Edges'] = []
+        if out_degree > 1:
+            forward_fn_template_path = (
+                f"{xfaas_root_dir}/python/src/faas-templates/commons/ForwardFunction"
+            )
+            forward_fn_dir = f"{user_wf_dir}/ForwardFunction"
+            if not os.path.exists(forward_fn_dir):
+                os.makedirs(forward_fn_dir)
+            for filename in os.listdir(forward_fn_template_path):
+                file_path = os.path.join(forward_fn_template_path, filename)
+                if os.path.isfile(file_path):
+                    shutil.copy(file_path, forward_fn_dir)
+            forward_fn_name = "ForwardFunction"
+            forward_fn_entry_point = "func.py"
+            forward_fn_memory = 128
+            forward_fn_csp = "NA"
+            forward_fn_node = {
+                "NodeId": "250",
+                "NodeName": forward_fn_name,
+                "Path": forward_fn_dir,
+                "EntryPoint": forward_fn_entry_point,
+                "CSP": forward_fn_csp,
+                "MemoryInMB": forward_fn_memory,
+            }
+            dagg['Nodes'].append(forward_fn_node)
+            out_edges = list(nx_dag.out_edges(start_node_id))
+            for edge in out_edges:
+                dagg['Edges'].append({forward_fn_name:[nx_dag.nodes[edge[1]]['NodeName']]})
+
+            print('add a new node to the subdag, forwarding node')
+
+        dagg['Nodes'] += [nx_dag.nodes[node] for node in nodes_in_between]
+        for edge in subdag.edges:
+            dagg['Edges'].append({nx_dag.nodes[edge[0]]['NodeName']:[nx_dag.nodes[edge[1]]['NodeName']]})
+        
+        csp = partition_config[i].get_left_csp().get_name()
+        region = partition_config[i].get_region()
+        
+        write_dag_for_partition( user_wf_dir, dagg,part_id,csp,region)
+
+def write_dag_for_partition(user_wf_dir, dagg, part_id, csp, region):
+    out_dag_name = "dag.json"
+    directory = f'{user_wf_dir}/partitions/{csp}-{region}-{part_id}'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    else:
+        shutil.rmtree(directory)
+        os.makedirs(directory)
+    with open(f'{directory}/{out_dag_name}', 'w') as file:
+        file.write(json.dumps(dagg, indent=4))
+        
+
 def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
     # user_wf_dir += "/workflow-gen"
     dag_definition_path = f"{user_wf_dir}/{dag_definition_file}"
+    rm_if_exists = f'{user_wf_dir}/partitions'
+    if os.path.exists(rm_if_exists):
+        shutil.rmtree(rm_if_exists)
     user_pinned_nodes = get_user_pinned_nodes()
     xfaas_user_dag = xfaas_init.init(dag_definition_path)
-    # partition_config = xfaas_optimizer.optimize(xfaas_user_dag,
-    #                                             user_pinned_nodes, benchmark_path)
+    partition_config = xfaas_optimizer.optimize(xfaas_user_dag,
+                                                user_pinned_nodes, benchmark_path)
 
-    partition_config = [PartitionPoint("function_name", 2, csp, None, part_id, region)]
+
+    generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definition_path)
+
+    
+    # partition_config = [PartitionPoint("function_name", 2, csp, None, part_id, region)]
+    
 
     wf_id = xfaas_provenance.push_user_dag(dag_definition_path)
-    queue_details = add_collect_logs(dag_definition_path,user_wf_dir,xfaas_user_dag,region)
-    dag_definition_path = f'{user_wf_dir}/refactored-{dag_definition_file}'
-    # add_async_waitXfn(dag_definition_path,user_wf_dir,dag_definition_path)  # print("Added Async update fn ality to dag.json")
-    refactored_wf_id = xfaas_provenance.push_refactored_workflow("refactored-dag.json", user_wf_dir, wf_id,csp)
-    wf_deployment_id = xfaas_provenance.push_deployment_logs("refactored-dag.json",user_wf_dir,wf_id,refactored_wf_id,csp)
-    xfaas_resource_generator.generate(user_wf_dir, dag_definition_path, partition_config,"refactored-dag.json")
-    xfaas_provenance.generate_provenance_artifacts(user_wf_dir,wf_id,refactored_wf_id,wf_deployment_id,csp,region,part_id,queue_details)
+    last_partition = partition_config[-1]
+    part_id = last_partition.get_part_id()
+    csp = last_partition.get_left_csp().get_name()
+    region = last_partition.get_region()
+    updated_dag_definition_path = f'{user_wf_dir}/partitions/{csp}-{region}-{part_id}/dag.json'
+    updated_wf_dir = f'{user_wf_dir}/partitions/{csp}-{region}-{part_id}'
+    queue_details = add_collect_logs(updated_dag_definition_path,updated_wf_dir,xfaas_user_dag,region,part_id)
+    # dag_definition_path = f'{user_wf_dir}/refactored-{dag_definition_file}'
+    # # add_async_waitXfn(dag_definition_path,user_wf_dir,dag_definition_path)  # print("Added Async update fn ality to dag.json")
+    refactored_wf_id = xfaas_provenance.push_refactored_workflow("dag.json", user_wf_dir, wf_id,csp)
+    wf_deployment_id = xfaas_provenance.push_deployment_logs("dag.json",user_wf_dir,wf_id,refactored_wf_id,csp)
+    xfaas_resource_generator.generate(user_wf_dir, partition_config,"dag.json")
+    # xfaas_provenance.generate_provenance_artifacts(user_wf_dir,wf_id,refactored_wf_id,wf_deployment_id,csp,region,part_id,queue_details)
 
+    return '', '', ''
     return wf_id, refactored_wf_id, wf_deployment_id
    
 

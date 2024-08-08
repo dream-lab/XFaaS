@@ -9,8 +9,6 @@
       "password": "check"
     }
   },
-  "user_pinned_nodes" : {
-      "1":"0",
-      "2":"0"
-  }
+  "user_pinned_nodes" : {}
+
 }

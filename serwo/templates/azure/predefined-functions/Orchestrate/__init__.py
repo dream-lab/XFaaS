@@ -8,7 +8,7 @@ import time
 import os
 import psutil
 import uuid
-import cpuinfo
+# import cpuinfo
 import random
 import string
 from datetime import datetime, timedelta
@@ -107,7 +107,7 @@ def insert_end_stats_in_metadata(input):
                 mem_after = meta[fid]["mem_after"]
                 body_size_before = meta[fid]["in_payload_bytes"]
                 body_size_after = meta[fid]["out_payload_bytes"]
-                cid = meta[fid]["cid"]
+                # cid = meta[fid]["cid"]
             if fid == "0":
                 end_delta_local = end_delta
         func_json = {
@@ -118,7 +118,7 @@ def insert_end_stats_in_metadata(input):
                 "mem_after": mem_after,
                 "in_payload_bytes": body_size_before,
                 "out_payload_bytes": body_size_after,
-                "cid": cid
+                # "cid" : cid
             }
         }
         ne_list.append(func_json)
@@ -159,19 +159,12 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    tsqp = yield context.call_activity("graphGen", serwoObject)
-    wtij = []
-    eiat = context.call_activity("graphBft", tsqp)
-    sqyt = context.call_activity("graphMst", tsqp)
-    fwdw = context.call_activity("pagerank", tsqp)
-    wtij.append(eiat)
-    wtij.append(sqyt)
-    wtij.append(fwdw)
-    nohk = yield context.task_all(wtij)
-    wwxd = yield context.call_activity("aggregate", nohk)
-    wwxd = insert_end_stats_in_metadata(wwxd)
-    jgmq = yield context.call_activity("CollectLogs", wwxd)
-    return jgmq
+    unzf = yield context.call_activity("TaskA", serwoObject)
+    iwui = yield context.call_activity("TaskB", unzf)
+    plrl = yield context.call_activity("TaskC", iwui)
+    plrl = insert_end_stats_in_metadata(plrl)
+    vmfr = yield context.call_activity("PushToSQS", plrl)
+    return vmfr
 
 
 main = df.Orchestrator.create(orchestrator_function)

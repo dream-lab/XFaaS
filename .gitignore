@@ -1,6 +1,7 @@
 serwo/examples/graphAws/build/workflow/aws
 serwo/examples/graphAws/build/workflow/azure
 archive/
+config/
 __pycache__
 sam-build/
 scratchpad/
@@ -40,3 +41,7 @@ deployments.txt
 *.pdf
 qutils/
 qsserializers/
+serwo/templates/azure/predefined-functions/Orchestrate/__init__.py
+serwo/templates/azure/predefined-functions/QueueTrigger/__init__.py
+serwo/benchmark_resources/aws-az-mmc.jmx
+serwo/benchmark_resources/az-aws-mmc.jmx

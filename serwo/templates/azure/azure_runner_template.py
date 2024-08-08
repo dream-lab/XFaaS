@@ -10,7 +10,7 @@ import uuid
 import psutil
 import azure.functions as az_func
 from .USER_FUNCTION_PLACEHOLDER import user_function as USER_FUNCTION_PLACEHOLDER_function
-import cpuinfo
+# import cpuinfo
 import sys
 import objsize
 import random
@@ -125,7 +125,8 @@ def main(serwoObject, context: az_func.Context) -> str:
             container_directory = f'/tmp/xfaas'
             
             container_id = fetch_or_make_container_id(container_directory)
-            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after, "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size,"cid":container_id}}
+            # func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after, "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size,"cid":container_id}}
+            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after, "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size}}
             new_meta.append(func_json)
             metadata["functions"] = new_meta
             
@@ -165,7 +166,8 @@ def main(serwoObject, context: az_func.Context) -> str:
             func_id = function_id
             end_delta = get_delta(metadata["workflow_start_time"])
             # cpu_brand = cpuinfo.get_cpu_info()["brand_raw"]
-            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after , "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size,"cid": container_id}}
+            # func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after , "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size,"cid": container_id}}
+            func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after , "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size}}
             metadata["functions"].append(func_json)
             metadata = metadata
             body = serwoObjectResponse.get_body()

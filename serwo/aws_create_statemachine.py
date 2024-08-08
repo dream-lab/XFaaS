@@ -36,11 +36,6 @@ class AWS:
         self.__trigger_type = TriggerType.get_trigger_type(trigger_type)
         self.__part_id = part_id
 
-        # file parent directory
-        """
-        TODO - change this parent directory accordingly if we plan to move
-        this file into another folder
-        """
         self.__parent_directory_path = pathlib.Path(__file__).parent
 
         # xfaas specfic directories
@@ -62,7 +57,9 @@ class AWS:
         self.__sam_build_dir = self.__aws_build_dir / f"sam-build"
 
         # DAG related parameters
+        print("User Path",self.__dag_definition_path)
         self.__user_dag = AWSUserDag(self.__dag_definition_path)
+        print("User Dag",self.__user_dag.get_dag())
         self.__networkxDag = copy.deepcopy(self.__user_dag.get_dag())
         self.__sam_stackname = (
             ##random 3 digit number
@@ -74,17 +71,8 @@ class AWS:
         self.__outputs_filepath = (
             self.__serwo_resources_dir / f"aws-{self.__region}-{self.__part_id}.json"
         )
-        # self.__is_containerbased = is_containerbased
+        
 
-    """
-    NOTE - This is a replacement for the create_env.sh file
-    Creates an environment within the build directory which stores all the files and 
-    deployment metadata within the build directory
-
-    TODO - delete the file under scripts/aws/create_env.sh
-    TODO - remove the "functions" hardcoded directory name and maybe 
-           read it from a config?
-    """
 
     def __create_environment(self):
         # Create functions directory

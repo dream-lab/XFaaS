@@ -24,7 +24,7 @@ queue_url = "{{queue_url}}"
 
 
 # Send message to SQS queue
-def function(serwoObject) -> SerWOObject:
+def user_function(serwoObject) -> SerWOObject:
     try:
         message = dict()
         data = serwoObject.get_body()

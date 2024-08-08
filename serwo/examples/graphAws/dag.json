@@ -1,10 +1,10 @@
 {
-    "WorkflowName": "graphDemo",
+    "WorkflowName": "graph",
     "Nodes": [
       {
         "NodeId": "1",
         "NodeName": "TaskA",
-        "Path": "examples/graphAws/graphGen",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAws/graphGen",
         "EntryPoint": "graphGen.py",
         "CSP": "NA",
         "MemoryInMB": 128
@@ -12,7 +12,7 @@
       {
         "NodeId": "2",
         "NodeName": "TaskB",
-        "Path": "examples/graphAws/graphBFT",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAws/graphBFT",
         "EntryPoint": "graphBFT.py",
         "CSP": "NA",
         "MemoryInMB": 128
@@ -20,7 +20,7 @@
       {
         "NodeId": "3",
         "NodeName": "TaskC",
-        "Path": "examples/graphAws/pagerank",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAws/pagerank",
         "EntryPoint": "pagerank.py",
         "CSP": "NA",
         "MemoryInMB": 128
@@ -28,7 +28,7 @@
       {
         "NodeId": "4",
         "NodeName": "TaskD",
-        "Path": "examples/graphAws/graphMST",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAws/graphMST",
         "EntryPoint": "graphMST.py",
         "CSP": "NA",
         "MemoryInMB": 128
@@ -36,16 +36,8 @@
       {
         "NodeId": "5",
         "NodeName": "TaskE",
-        "Path": "examples/graphAws/aggregate",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAws/aggregate",
         "EntryPoint": "aggregate.py",
-        "CSP": "NA",
-        "MemoryInMB": 128
-      },
-      {
-        "NodeId": "6",
-        "NodeName": "CollectLogsGraphAws",
-        "Path": "examples/graphAws/CollectLogsGraphAws",
-        "EntryPoint": "func.py",
         "CSP": "NA",
         "MemoryInMB": 128
       }
@@ -68,9 +60,6 @@
       },
       {
       	"TaskD": ["TaskE"]
-      },
-      {
-        "TaskE" : ["CollectLogsGraphAws"]
       }
     ]
   }

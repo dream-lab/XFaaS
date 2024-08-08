@@ -25,7 +25,7 @@ def calculate_sub_dag_latency(csp_id, nodes, sub_dag):
     for node in nodes:
         successors = sub_dag.successors(node)
         for succ in successors:
-            edge_latency = sub_dag.edges[(node, succ)]['EdgeBenchmark']['Latencies'][csp_id][csp_id]
+            edge_latency = sub_dag.edges[(node, succ)]['EdgeBenchmark']['Latencies'][int(csp_id)][int(csp_id)]
             node_latency = sub_dag.nodes[node]['NodeBenchmark'][csp_id]['Latency']
             val = edge_latency + node_latency
             sub_dag.edges[(node, succ)]['edge_latency'] = -1 * val
@@ -118,8 +118,8 @@ def populate_latanecy_benchmarks(bm_data, cloud_ids, edges, latency_map, user_da
     for edge_data in bm_data['EdgeBenchmarks']:
         src = edge_data
         for neighbors in bm_data['EdgeBenchmarks'][src]:
-            for dest in neighbors:
-                edges_data[(src, dest)] = neighbors[dest]
+            # for dest in neighbors:
+            edges_data[(src, neighbors)] = bm_data['EdgeBenchmarks'][src][neighbors]
     for ed in edges:
         user_dag_copy.edges[ed]['EdgeBenchmark'] = edges_data[ed]
     top_sort = list(nx.topological_sort(user_dag_copy))
@@ -156,7 +156,7 @@ def populate_data_transfer_benchmarks(cloud_ids, edges, user_dag_copy):
         for csp_id_outer in cloud_ids:
             temp = []
             for csp_id_inner in cloud_ids:
-                temp.append(edge_bm[csp_id_outer][csp_id_inner])
+                temp.append(edge_bm[int(csp_id_outer)][int(csp_id_inner)])
             data_transfer_benchmark.append(temp)
         break
 
