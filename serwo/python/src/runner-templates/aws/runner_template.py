@@ -16,7 +16,7 @@ from USER_FUNCTION_PLACEHOLDER import user_function as USER_FUNCTION_PLACEHOLDER
 from copy import deepcopy
 from python.src.utils.classes.commons.serwo_objects import build_serwo_object
 from python.src.utils.classes.commons.serwo_objects import build_serwo_list_object
-from python.src.utils.classes.commons.serwo_objects import SerWOObject
+from python.src.utils.classes.commons.serwo_objects import SerWOObject, SerWOObjectsList
 
 downstream = 0
 """
@@ -61,6 +61,8 @@ def lambda_handler(event, context):
             request_timestamp = event["body"].get("request_timestamp")
             session_id = event["body"].get("session_id") # NOTE - new variable to keep track of requests
             deployment_id = event["body"].get("deployment_id")
+            if request_timestamp==None:
+                request_timestamp=0
             overheads = start_time - request_timestamp
             event["metadata"] = dict(
                 workflow_instance_id=wf_instance_id,

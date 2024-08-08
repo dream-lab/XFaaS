@@ -17,7 +17,9 @@ def run(user_directory,user_dag_file_name):
     output_dir = f"{user_directory}"
     dag_definition_path = f"{user_directory}/{user_dag_file_name}"
     orchestrator_filepath = f"{user_directory}/orchestrator.py"
-
+    if os.path.exists(orchestrator_filepath):
+        os.remove(orchestrator_filepath)
+        print(f"File '{orchestrator_filepath}' already exists so removed successfully.")
     # load the dag
     user_dag = AzureUserDAG(dag_definition_path)
     orchestrator_code = user_dag.get_orchestrator_code()

@@ -27,7 +27,7 @@ analysis/
 stashed/
 serwo/examples/graphAwsFourRps
 serwo/examples/graphAwsMedium
-build
+build/
 *.jsonl
 log_files
 serwo/config
@@ -39,8 +39,8 @@ jmeter.log
 *.csv
 deployments.txt
 *.pdf
-qutils
-qsserializers
+qutils/
+qsserializers/
 serwo/templates/azure/predefined-functions/Orchestrate/__init__.py
 serwo/templates/azure/predefined-functions/QueueTrigger/__init__.py
 serwo/benchmark_resources/aws-az-mmc.jmx

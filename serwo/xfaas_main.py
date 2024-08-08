@@ -61,84 +61,93 @@ def randomString(stringLength):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
 
-
-def add_collect_logs(dag_definition_path,user_wf_dir, xfaas_user_dag,region,part_id):
-    if region == 'us-east-1':
-        region = 'eastus'
-    elif region == 'ap-southeast-1':
-        region = 'southeastasia'
-    else:
-        region = 'centralindia'
+def add_collect_logs(dag_definition_path,user_wf_dir, xfaas_user_dag,region):
+    # if region == 'us-east-1':
+    #     region = 'eastus'
+    # elif region == 'ap-southeast-1':
+    #     region = 'southeastasia'
+    # else:
+    #     region = 'centralindia'
     
     # region = 'centralindia'
     
-    collect_logs_dir = f'{project_dir}/templates/azure/predefined-functions/CollectLogs'
     new_collect_logs_dir = f'{user_wf_dir}/CollectLogs'
-   
-
-    print('creating xfaas logging queue')
-    resource_group_name = f"xfaasLog{region}"
-    storage_account_name = f"xfaaslog{region}"
-   
+    collect_logs_dir=''
     queue_name = randomString(5)
     
-    credential = DefaultAzureCredential()
-    subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
-    resource_client = ResourceManagementClient(credential, subscription_id)
-    try:
-        rg_result = resource_client.resource_groups.create_or_update(
-            f"{resource_group_name}", {"location": f"{region}"}
-        )
-    except Exception as e:
-        print(e)
+    if csp=="azure":
+        collect_logs_dir = f'{project_dir}/templates/azure/predefined-functions/CollectLogs'
+        print('creating xfaas logging queue')
+        resource_group_name = f"xfaasLog{region}"
+        storage_account_name = f"xfaaslog{region}"
     
-    try:
-        storage_client = StorageManagementClient(credential, subscription_id)
-        poller = storage_client.storage_accounts.begin_create(resource_group_name, storage_account_name,
-            {
-                "location" : region,
-                "kind": "StorageV2",
-                "sku": {"name": "Standard_LRS"}
-            }
-        )
-        account_result = poller.result()
-        # print(f"Provisioned storage account {account_result.name}")
-    except Exception as e:
-        print(e)
+        
+        credential = DefaultAzureCredential()
+        subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
+        resource_client = ResourceManagementClient(credential, subscription_id)
+        try:
+            rg_result = resource_client.resource_groups.create_or_update(
+                f"{resource_group_name}", {"location": f"{region}"}
+            )
+        except Exception as e:
+            print(e)
+        
+        try:
+            storage_client = StorageManagementClient(credential, subscription_id)
+            poller = storage_client.storage_accounts.begin_create(resource_group_name, storage_account_name,
+                {
+                    "location" : region,
+                    "kind": "StorageV2",
+                    "sku": {"name": "Standard_LRS"}
+                }
+            )
+            account_result = poller.result()
+            # print(f"Provisioned storage account {account_result.name}")
+        except Exception as e:
+            print(e)
 
-    try:
-        # queue_service_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credential)
-        # queue_service_client.create_queue(queue_name)
-        queue_creation_command=f"az storage queue create -n {queue_name} --account-name {storage_account_name}"
-        os.system(queue_creation_command)
-    except Exception as e:
-        print(e)
+        try:
+            # queue_service_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credential)
+            # queue_service_client.create_queue(queue_name)
+            queue_creation_command=f"az storage queue create -n {queue_name} --account-name {storage_account_name}"
+            os.system(queue_creation_command)
+        except Exception as e:
+            print(e)
 
-    try:
-        #TODO Need a native call to get connection string
-        stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource_group_name}')
-        json_str = stream.read()
+        try:
+            #TODO Need a native call to get connection string
+            stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource_group_name}')
+            json_str = stream.read()
+            stream.close()
+        except Exception as e:
+            print(e)
+
+        jsson = json.loads(json_str)
+        fin_dict = {'queue_name' : queue_name, 'connection_string' : jsson['connectionString'] , 'storage_account' : storage_account_name, 'group':resource_group_name}
+    
+    elif csp=="aws":
+        collect_logs_dir = f'{project_dir}/templates/aws/predefined-functions/CollectLogs'
+        queue_creation_command = f"aws sqs create-queue --queue-name {queue_name}"
+        stream = os.popen(queue_creation_command)
+        output = stream.read()
         stream.close()
-    except Exception as e:
-        print(e)
-
-    jsson = json.loads(json_str)
-    fin_dict = {'queue_name' : queue_name, 'connection_string' : jsson['connectionString'] , 'storage_account' : storage_account_name, 'group':resource_group_name}
-    
-    
+        queue_url = json.loads(output)["QueueUrl"]
+        print("queue created")
+        fin_dict = {"queue_name": queue_name, "connection_string": queue_url}
     ## copy collect_logs_dir to user_wf_dir using shutil copytree
 
     os.system(f'cp -r {collect_logs_dir} {user_wf_dir}')
     
     connection_string_template = 'CONNECTION_STRING'
     queue_name_template = 'QUEUE_NAME'
-    
+    # coll_csp_template="COLL_CSP"
     ##open the file and replace the connection string and queue name
     with open(f'{new_collect_logs_dir}/func.py', 'r') as file :
         filedata = file.read()
     
     filedata = filedata.replace(connection_string_template, fin_dict['connection_string'])
     filedata = filedata.replace(queue_name_template, fin_dict['queue_name'])
+    filedata = filedata.replace('COLL_CSP', csp.lower())
 
     with open(f'{new_collect_logs_dir}/func.py', 'w') as file:
         file.write(filedata)
