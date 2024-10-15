@@ -1,0 +1,9 @@
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf_aws/591e0085-1dbd-41c2-b566-05c1b68bfe31
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf_aws_eastusa/a2b12a48-e617-4cff-90b0-49b4aac9b81e
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf_aws/112a27a5-9d69-4ff2-8a57-22d1c1c504f5
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf/workflow-gen/f9310276-6420-44c7-b9da-46487742384f
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf_eastusa/workflow-gen/6a888388-e61b-439e-a61c-70a0b7cddcb4
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf/workflow-gen/bc77da3a-ca32-46c0-a5b0-311fea0e7e6d
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf/workflow-gen/09d6c4ee-8c88-4e27-90a4-f9c7fb966619
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf_eastusa/workflow-gen/99789960-fffc-4957-ad84-f357a10c770f
+/Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/custom_workflows/graph_processing_wf/6a29407e-ed25-4754-a12b-fb757ba62f2d

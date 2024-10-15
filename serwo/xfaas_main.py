@@ -393,7 +393,8 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
 
     generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definition_path)
 
-    
+    for p in partition_config:
+        print(p.get_function_name(), p.get_part_id(), p.get_left_csp().get_name(), p.get_region())
     # partition_config = [PartitionPoint("function_name", 2, csp, None, part_id, region)]
     
 
@@ -410,7 +411,7 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
     refactored_wf_id = xfaas_provenance.push_refactored_workflow("dag.json", user_wf_dir, wf_id,csp)
     wf_deployment_id = xfaas_provenance.push_deployment_logs("dag.json",user_wf_dir,wf_id,refactored_wf_id,csp)
     xfaas_resource_generator.generate(user_wf_dir, partition_config,"dag.json")
-    # xfaas_provenance.generate_provenance_artifacts(user_wf_dir,wf_id,refactored_wf_id,wf_deployment_id,csp,region,part_id,queue_details)
+    xfaas_provenance.generate_provenance_artifacts(user_wf_dir,wf_id,refactored_wf_id,wf_deployment_id,csp,region,part_id,queue_details)
 
     return '', '', ''
     return wf_id, refactored_wf_id, wf_deployment_id
