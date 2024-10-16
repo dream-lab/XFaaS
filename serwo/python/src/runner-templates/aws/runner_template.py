@@ -105,11 +105,11 @@ def lambda_handler(event, context):
                 metadata="None",
             )
         end_time_delta = get_delta(start_epoch_time)
-        # st_time = int(time.time()*1000)
-        # cpu_brand = cpuinfo.get_cpu_info()["brand_raw"]
-        # en_time = int(time.time()*1000)
-        # time_taken = en_time - st_time
-        # cpu_brand = f"{cpu_brand}_{time_taken}"
+        st_time = int(time.time()*1000)
+        cpu_brand = cpuinfo.get_cpu_info()["brand_raw"]
+        en_time = int(time.time()*1000)
+        time_taken = en_time - st_time
+        cpu_brand = f"{cpu_brand}_{time_taken}"
         # Get current metadata here
         metadata = serwo_request_object.get_metadata()
         function_metadata_list = metadata.get("functions")
@@ -123,7 +123,7 @@ def lambda_handler(event, context):
                     mem_after=memory_after,
                     in_payload_bytes=input_payload_size_bytes,
                     out_payload_bytes=objsize.get_deep_size(response_object.get_body()),
-                    # cpu=cpu_brand
+                    cpu=cpu_brand
 
                 )
             }

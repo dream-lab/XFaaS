@@ -233,7 +233,7 @@ def send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration,is_
 def get_jmx_paths(csp, rps, duration, payload_size, wf_name, dynamism, session_id,region):
     ## use pathlib to get the path of the current file
    
-    cur_path = os.getenv("XFBENCH_DIR")+ "/bin/serwo"
+    cur_path = os.getenv("XFAAS_DIR")+ "/serwo"
     jmx_template_path = f"{cur_path}/benchmark_resources/{csp.split('_')[0]}_jmx_template.jmx"
     jmx_output_filename = f"{csp}-{region}-{wf_name}-{payload_size}-{dynamism}-{int(rps/60)}-{int(duration)}-session-{session_id}.jmx"
     make_jmx_resources_dir = f"{cur_path}/benchmark_resources/generated_jmx_resources"
@@ -445,7 +445,7 @@ if __name__ == "__main__":
     
     ## write deployment id to a file create if not exists else append
     deps = []
-    xfaas_dir = os.getenv('XFBENCH_DIR')
+    xfaas_dir = os.getenv('XFAAS_DIR')
     deployment_id_file_path = f"{xfaas_dir}/deployments.txt"
     ## read the file if exists
     if not os.path.exists(deployment_id_file_path):
@@ -486,4 +486,4 @@ if __name__ == "__main__":
     if teardown_flag == True:
         remote_teardown(wf_user_directory,csp,region,part_id)
 
-    local_teardown(wf_user_directory)
+    # local_teardown(wf_user_directory)

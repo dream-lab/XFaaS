@@ -115,7 +115,7 @@ def main(serwoObject, context: az_func.Context) -> str:
             logging.info(
                 f"Memory After Function Call: fid: {function_id}, wf_instance_id: {workflow_instance_id}, memory:{memory}"
             )
-            # cpu_brand = cpuinfo.get_cpu_info()["brand_raw"]
+            cpu_brand = cpuinfo.get_cpu_info()["brand_raw"]
             memory_after = memory
             func_id = function_id
             end_delta = get_delta(metadata["workflow_start_time"])
@@ -124,7 +124,8 @@ def main(serwoObject, context: az_func.Context) -> str:
                 new_meta.append({key: meta_dict[key]})
             container_directory = f'/tmp/xfaas'
             
-            container_id = fetch_or_make_container_id(container_directory)
+            # container_id = fetch_or_make_container_id(container_directory)
+            container_id = ''
             func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after, "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size,"cid":container_id}}
             new_meta.append(func_json)
             metadata["functions"] = new_meta
@@ -137,10 +138,8 @@ def main(serwoObject, context: az_func.Context) -> str:
             metadata = serwoObject.get_metadata()
             container_directory = f'/tmp/xfaas'
             
-            container_id = fetch_or_make_container_id(container_directory)
-
-
-            
+            # container_id = fetch_or_make_container_id(container_directory)
+            container_id = ''
             
             start_delta = get_delta(metadata["workflow_start_time"])
             workflow_instance_id = metadata["workflow_instance_id"]
@@ -188,8 +187,10 @@ def fetch_or_make_container_id(container_directory):
         # en_time = int(time.time()*1000)
         # time_taken = en_time - st_time
         # container_id = f'{container_id}_{cpu_brand}_{time_taken}'
-        os.mkdir(container_directory)
-        os.mkdir(f'{container_directory}/{container_id}')
+        # os.mkdir(container_directory)
+        # os.mkdir(f'{container_directory}/{container_id}')
+
+        os.makedirs(f'{container_directory}/{container_id}', exist_ok=True)
         
     return container_id
 
