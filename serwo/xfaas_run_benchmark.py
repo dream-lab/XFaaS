@@ -90,7 +90,18 @@ def get_azure_resources(csp,region,part_id,wf_user_directory):
 
 
 def read_resources(csp, region, part_id, wf_user_directory):
-    resources_file_path = f'{wf_user_directory}/build/workflow/resources/{csp}-{region}-{part_id}.json'
+    breakpoint()
+    #Get last part_id of the partition. Need to add error handling?
+    with open(f"{wf_user_directory}/partitions/part-details.json" , 'r') as json_file:
+        part_details = json.load(json_file)
+
+    part_id = part_details.get("order", None)[0]
+    csp = part_details.get(part_id).get("csp")
+    region = part_details.get(part_id).get("region")
+    breakpoint()
+
+    resources_file_path = f'{wf_user_directory}/partitions/{csp}-{region}-{part_id}/build/workflow/resources/{csp}-{region}-{part_id}.json'
+    breakpoint()
     with open(resources_file_path) as f:
         resources = json.load(f)
     return resources
@@ -323,9 +334,19 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
 def copy_provenance_artifacts(csp, region, part_id, wf_user_directory,wf_deployment_id,rps,run_id):
     
     global deployment_id
-    
+    breakpoint()
+    #Get last part_id of the partition. Need to add error handling?
+    with open(f"{wf_user_directory}/partitions/part-details.json" , 'r') as json_file:
+        part_details = json.load(json_file)
+
+    part_id = part_details.get("order", None)[-1]
+    csp = part_details.get(part_id).get("csp")
+    region = part_details.get(part_id).get("region")
+    breakpoint()
+
     os.makedirs(f"{wf_user_directory}/{wf_deployment_id}/{run_id}", exist_ok=True)
-    provenance_artefacts_path = f"{wf_user_directory}/build/workflow/resources/provenance-artifacts-{csp}-{region}-{part_id}.json"
+    provenance_artefacts_path = f"{wf_user_directory}/partitions/{csp}-{region}-{part_id}/build/workflow/resources/provenance-artifacts-{csp}-{region}-{part_id}.json"
+    breakpoint()
     with open(provenance_artefacts_path) as f:
         provenance_artifact = json.load(f)
     deployment_id = provenance_artifact['deployment_id']
@@ -343,7 +364,8 @@ def build_workflow(user_wf_dir):
     os.system(f'python3 {wf_builder_code} {args_to_send}')
     
 def deploy_workflow(user_wf_dir,dag_filename, region,csp):
-    wf_id, refactored_wf_id, wf_deployment_id = xfaas_deployer(user_wf_dir, dag_filename ,'dag-benchmark-revised.json',csp,region)
+    breakpoint()
+    wf_id, refactored_wf_id, wf_deployment_id = xfaas_deployer(user_wf_dir, dag_filename ,'dag-benchmark.json',csp,region)
     return wf_id, refactored_wf_id, wf_deployment_id
 
 def plot_metrics(user_wf_dir, wf_deployment_id, run_id, wf_name,region):
@@ -393,9 +415,7 @@ def local_teardown(wf_user_directory):
     if os.path.exists(f"{wf_user_directory}/orchestrator.py"):
         os.system(remove_orchestrator_command)
 
-
 if __name__ == "__main__":
-    
     args = parser.parse_args()
     csp = args.csp
     region = args.region
@@ -485,6 +505,12 @@ if __name__ == "__main__":
     teardown_flag = bool(int(teardown_flag))
     
     if teardown_flag == True:
-        remote_teardown(wf_user_directory,csp,region,part_id)
+        with open(f"{wf_user_directory}/partitions/part-details.json" , 'r') as json_file:
+            part_details = json.load(json_file)
+
+        for part_id in part_details.get("order", None):
+            csp = part_details.get(part_id).get("csp")
+            region = part_details.get(part_id).get("region")
+            remote_teardown(wf_user_directory,csp,region,part_id)
 
     local_teardown(wf_user_directory)

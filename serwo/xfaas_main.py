@@ -21,32 +21,32 @@ import argparse
 import shutil
 import networkx as nx
 
-parser = argparse.ArgumentParser(
-    prog="ProgramName",
-    description="What the program does",
-    epilog="Text at the bottom of help",
-)
-parser.add_argument("--csp",dest='csp',type=str,help="CSP name")
-parser.add_argument("--region",dest='region',type=str,help="Region name")
-parser.add_argument("--wf-user-directory",dest='wf_user_directory',type=str,help="Workflow user directory")
-parser.add_argument("--dag-benchmark",dest='dag_benchmark',type=str,help="Path DAG Benchmark")
-parser.add_argument("--dag-file-name",dest='dag_filename',type=str,help="DAG FILE NAME")
-parser.add_argument("--is-async",dest='is_async',type=str,help="Is Async Fn",default=0)
-# parser.add_argument("--is-containerbased-aws",dest='is_containerbasedaws',type=str,help="Is Async Fn",default=0)
+# parser = argparse.ArgumentParser(
+#     prog="ProgramName",
+#     description="What the program does",
+#     epilog="Text at the bottom of help",
+# )
+# parser.add_argument("--csp",dest='csp',type=str,help="CSP name")
+# parser.add_argument("--region",dest='region',type=str,help="Region name")
+# parser.add_argument("--wf-user-directory",dest='wf_user_directory',type=str,help="Workflow user directory")
+# parser.add_argument("--dag-benchmark",dest='dag_benchmark',type=str,help="Path DAG Benchmark")
+# parser.add_argument("--dag-file-name",dest='dag_filename',type=str,help="DAG FILE NAME")
+# parser.add_argument("--is-async",dest='is_async',type=str,help="Is Async Fn",default=0)
+# # parser.add_argument("--is-containerbased-aws",dest='is_containerbasedaws',type=str,help="Is Async Fn",default=0)
 project_dir = pathlib.Path(__file__).parent.resolve()
 
 
-args = parser.parse_args()
+# args = parser.parse_args()
     
 # is_containerbasedaws = bool(int(args.is_containerbasedaws))
-USER_DIR = args.wf_user_directory
-DAG_DEFINITION_FILE =  args.dag_filename
+# USER_DIR = args.wf_user_directory
+# DAG_DEFINITION_FILE =  args.dag_filename
 
-DAG_DEFINITION_PATH = f"{USER_DIR}/{DAG_DEFINITION_FILE}"
-BENCHMARK_FILE =  args.dag_benchmark
-benchmark_path = f'{USER_DIR}/{BENCHMARK_FILE}'
-csp = args.csp
-region = args.region
+# DAG_DEFINITION_PATH = f"{USER_DIR}/{DAG_DEFINITION_FILE}"
+# BENCHMARK_FILE =  args.dag_benchmark
+# benchmark_path = f'{USER_DIR}/{BENCHMARK_FILE}'
+# csp = args.csp
+# region = args.region
 part_id = "test"
 def get_user_pinned_nodes():
 
@@ -377,11 +377,14 @@ def write_dag_for_partition(user_wf_dir, dagg, part_id, csp, region):
         os.makedirs(directory)
     with open(f'{directory}/{out_dag_name}', 'w') as file:
         file.write(json.dumps(dagg, indent=4))
-        
+
+ 
 
 def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
     # user_wf_dir += "/workflow-gen"
     dag_definition_path = f"{user_wf_dir}/{dag_definition_file}"
+    benchmark_path = f"{user_wf_dir}/{benchmark_file}"
+    breakpoint()
     rm_if_exists = f'{user_wf_dir}/partitions'
     if os.path.exists(rm_if_exists):
         shutil.rmtree(rm_if_exists)
@@ -393,10 +396,36 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
 
     generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definition_path)
 
+    print(user_wf_dir)
+    
+    # Writes part details to a Json file in user_wf_dir/partitions
+    part_details = {}
+    part_ids = []
     for p in partition_config:
+        part_id = p.get_part_id()
+        part_details.update(
+            {
+                part_id:
+                    {
+                        "csp": p.get_left_csp().get_name(),
+                        "region": p.get_region()
+                    }
+            }
+            )
+        part_ids.append(part_id)
+        breakpoint()
         print(p.get_function_name(), p.get_part_id(), p.get_left_csp().get_name(), p.get_region())
     # partition_config = [PartitionPoint("function_name", 2, csp, None, part_id, region)]
     
+    part_details.update(
+        {
+            "order": part_ids
+        }
+    )
+    breakpoint()
+    with open(f'{user_wf_dir}/partitions/part-details.json', 'w') as json_file:
+        json.dump(part_details, json_file, indent=4)
+    breakpoint()
 
     wf_id = xfaas_provenance.push_user_dag(dag_definition_path)
     last_partition = partition_config[-1]
@@ -417,7 +446,7 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
     return wf_id, refactored_wf_id, wf_deployment_id
    
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    wf_id, refactored_wf_id, wf_deployment_id = run(f'{USER_DIR}', DAG_DEFINITION_FILE, BENCHMARK_FILE, csp,region)
+#     wf_id, refactored_wf_id, wf_deployment_id = run(f'{USER_DIR}', DAG_DEFINITION_FILE, BENCHMARK_FILE, csp,region)
     

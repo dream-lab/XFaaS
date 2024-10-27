@@ -107,7 +107,7 @@ def generate_provenance_artifacts(user_dir, wf_id, refactored_wf_id, wf_deployme
     #     user_dir = f"serwo/{user_dir}"
 
     resources_dir = pathlib.Path.joinpath(
-        pathlib.Path(user_dir), "build/workflow/resources"
+        pathlib.Path(user_dir), f"partitions/{csp}-{region}-{part_id}/build/workflow/resources"
     )
     resouces_file = f'{resources_dir}/{csp}-{region}-{part_id}.json'
     ##load json from file
