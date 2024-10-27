@@ -384,7 +384,7 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
     # user_wf_dir += "/workflow-gen"
     dag_definition_path = f"{user_wf_dir}/{dag_definition_file}"
     benchmark_path = f"{user_wf_dir}/{benchmark_file}"
-    breakpoint()
+    
     rm_if_exists = f'{user_wf_dir}/partitions'
     if os.path.exists(rm_if_exists):
         shutil.rmtree(rm_if_exists)
@@ -413,7 +413,7 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
             }
             )
         part_ids.append(part_id)
-        breakpoint()
+        
         print(p.get_function_name(), p.get_part_id(), p.get_left_csp().get_name(), p.get_region())
     # partition_config = [PartitionPoint("function_name", 2, csp, None, part_id, region)]
     
@@ -422,10 +422,10 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
             "order": part_ids
         }
     )
-    breakpoint()
+    
     with open(f'{user_wf_dir}/partitions/part-details.json', 'w') as json_file:
         json.dump(part_details, json_file, indent=4)
-    breakpoint()
+    
 
     wf_id = xfaas_provenance.push_user_dag(dag_definition_path)
     last_partition = partition_config[-1]
