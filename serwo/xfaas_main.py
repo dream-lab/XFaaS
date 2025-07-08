@@ -325,10 +325,12 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
         shutil.rmtree(rm_if_exists)
     user_pinned_nodes = get_user_pinned_nodes()
     xfaas_user_dag = xfaas_init.init(dag_definition_path)
+    
+    
     partition_config = xfaas_optimizer.optimize(xfaas_user_dag, user_pinned_nodes)
 
     
-    breakpoint()
+    # breakpoint()
 
     generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definition_path)
 
