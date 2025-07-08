@@ -95,7 +95,7 @@ def ilp():
     # print('Final ILP Cloud Config: ',final_cloud_config)
 
 
-def optimize(user_dag,user_pinned_nodes,benchmark_path,is_math):
+def optimize(user_dag,user_pinned_nodes,benchmark_path,is_math=False):
 
     return partition_dag(user_dag,user_pinned_nodes,benchmark_path,is_math)
 
