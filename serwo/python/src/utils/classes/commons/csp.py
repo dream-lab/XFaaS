@@ -16,7 +16,9 @@ class CSP:
 
     #TODO: Factory pattern for csp
     def build_resources(self,user_dir, dag_definition_path, region, part_id, dag_definition_file, is_netherite):
-        if self.__name == 'azure':
+        if self.__name == 'azure' or self.__name == 'azure_v2':
+            if self.__name == 'azure_v2':
+                is_netherite = True
             self.build_az(dag_definition_file, dag_definition_path, part_id, region, user_dir, is_netherite)
         if self.__name == 'aws':
             if part_id == "0000":

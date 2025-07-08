@@ -14,12 +14,13 @@ def generate(user_dir, partition_config, dag_definition_file):
             part_id = partition_config[i].get_part_id()
             print(f"Building resources for {csp} in {region} with part_id {part_id}")
             csp_temp = csp.split('_')
+            main_csp = csp
             csp = csp_temp[0]
             if len(csp_temp) > 1:
                 is_netherite = True
             else:
                 is_netherite = False
-            updated_user_dir = f"{user_dir}/partitions/{csp}-{region}-{part_id}"
+            updated_user_dir = f"{user_dir}/partitions/{main_csp}-{region}-{part_id}"
             dag_definition_path = f"{updated_user_dir}/{dag_definition_file}"
             
         else:
@@ -67,7 +68,8 @@ def generate(user_dir, partition_config, dag_definition_file):
                 template_push_to_queue(updated_user_dir, function_name, entry_point, resources, "aws")
             
             
-            if downstream_csp == "azure":
+            if downstream_csp == "azure" or downstream_csp == "azure_v2":
+                root_dir = os.path.dirname(os.path.abspath(__file__))
                 function_id = "251"
                 function_name = "PushToStorageQueue"
                 entry_point = "push_to_azure_q.py"
@@ -84,7 +86,7 @@ def generate(user_dir, partition_config, dag_definition_file):
                 template_dir = f"{root_dir}/templates/azure/push-to-storage-queue-template/{function_name}"
                 output_path = f"{updated_user_dir}/"
                 os.system(f"cp -r {template_dir} {output_path}")
-                template_push_to_queue(updated_user_dir, function_name, entry_point, resources, "azure")
+                template_push_to_queue(updated_user_dir, function_name, entry_point, resources, downstream_csp)
 
 
             
@@ -128,7 +130,7 @@ def template_push_to_queue(
         raise Exception("Unable to load environment for PushToQueue templating")
 
     # templating for azure
-    if csp == "azure":
+    if csp == "azure" or csp == "azure_v2":
         queue_name = resources["queue_name"]
         connection_string = resources["connection_string"]
         try:
