@@ -7,7 +7,7 @@ import shutil
 import sys
 import time
 from datetime import datetime
-# from xfaas_main import run as xfaas_deployer
+from xfaas_main import run as xfaas_deployer
 import time
 from xfbench_plotter import XFBenchPlotter
 parser = argparse.ArgumentParser(
@@ -33,6 +33,7 @@ parser.add_argument("--function-name",dest='function_name',type=str,help="Functi
 parser.add_argument("--function-code",dest='function_code',type=str,help="Function code")
 parser.add_argument("--node_name",dest='node_name',type=str,help="Node name")
 parser.add_argument("--dag-benchmark",dest='dag_benchmark',type=str,help="Path DAG Benchmark")
+# parser.add_argument("--wf-deployment-id",dest='wf_deployment_id',type=str,help="Workflow deployment id")
 
 artifact_suffix = 'artifact.json'
 args = parser.parse_args()
@@ -79,6 +80,8 @@ def read_dynamism_file(dynamism,duration, max_rps):
         # size = d.split(",")[-1]
         
         final_data.append((vals[0],vals[1]))
+        # final_data.append((vals[0],vals[1],size))
+
     return final_data
 
 
@@ -470,8 +473,9 @@ if __name__ == "__main__":
     
     
     print('==================DEPLOYING WF===========================')
-    # wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
-    wf_deployment_id = "b898367e-b69f-4819-b7f1-8fca25442205"
+    wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
+    
+    # wf_deployment_id = args.wf_deployment_id
     ## write deployment id to a file create if not exists else append
     deps = []
     xfaas_dir = os.getenv('XFAAS_DIR')
@@ -493,7 +497,7 @@ if __name__ == "__main__":
     
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id,is_localhost)
-    time.sleep(600)
+    time.sleep(10)
     try:
         print('==================PLOTTING METRICS===========================')
         plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name,region)

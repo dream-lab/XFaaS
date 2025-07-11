@@ -2,8 +2,9 @@ import boto3
 import re
 
 # Set your pattern here
-PATTERN = r'^Serwo-Execute-API'  # regex: starts with 'UserWf', followed by 4 digits, dash, then alphanumeric chars
-
+PATTERN = r'^Serwo-Execute-API' 
+# PATTERN = r'UserWf.*'
+# PATTERN = r'Serwo-.*'
 # Initialize clients
 apigateway_client = boto3.client('apigateway')
 stepfunctions_client = boto3.client('stepfunctions')
@@ -27,7 +28,7 @@ def delete_step_functions(pattern):
     
     for sm in response['stateMachines']:
         name = sm['name']
-        
+        print(f'name === {name}, vkrules')
         if re.match(pattern, name):
             print(f"Deleting Step Function: {name} (ARN: {sm['stateMachineArn']})")
             stepfunctions_client.delete_state_machine(stateMachineArn=sm['stateMachineArn'])
