@@ -497,7 +497,7 @@ if __name__ == "__main__":
     
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id,is_localhost)
-    time.sleep(10)
+    time.sleep(300)
     try:
         print('==================PLOTTING METRICS===========================')
         plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name,region)

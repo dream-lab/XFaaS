@@ -12,7 +12,7 @@ def get_delta(start_time):
 
 func_id = 253
 
-app_name = 'xfaasUserWf0000279449'
+app_name = 'xfaasTextAnalytics839047'
 
 
 async def main(msg: func.QueueMessage,starter: str) -> None:

@@ -326,9 +326,13 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
     user_pinned_nodes = get_user_pinned_nodes()
     xfaas_user_dag = xfaas_init.init(dag_definition_path)
     
-    
-    partition_config = xfaas_optimizer.optimize(xfaas_user_dag, user_pinned_nodes)
+    disabled_pair = []
 
+    if len(disabled_pair) > 0:
+            partition_config = xfaas_optimizer.optimize(xfaas_user_dag, user_pinned_nodes,benchmark_path,disabled_pair=disabled_pair)
+    else:
+        partition_config = xfaas_optimizer.optimize(xfaas_user_dag, user_pinned_nodes,benchmark_path)
+    
     
     # breakpoint()
 
@@ -354,7 +358,8 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
         
         print(p.get_function_name(), p.get_part_id(), p.get_left_csp().get_name(), p.get_region())
     # partition_config = [PartitionPoint("function_name", 2, csp, None, part_id, region)]
-    
+    breakpoint()
+
     part_details.update(
         {
             "order": part_ids

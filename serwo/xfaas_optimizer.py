@@ -51,7 +51,7 @@ def translate(clouds,cloud_dictionary,valid_partition_points,user_dag):
     return final_output
 
 
-def partition_dag(user_dag,user_pinned_nodes,benchmark_path,is_math):
+def partition_dag(user_dag,user_pinned_nodes,benchmark_path,is_math,disabled_pair):
     valid_partition_points = user_dag.get_partition_points()
     cloud_ids,cloud_dictionary = get_supported_cloud_ids()
     if is_math:
@@ -68,7 +68,7 @@ def partition_dag(user_dag,user_pinned_nodes,benchmark_path,is_math):
             clouds,min_latency = dp_xfaas_partitioner.get_optimal_partitions(latencies_benchmark,
                                                                 data_transfers_benchmark,
                                                                 inter_cloud_data_tranfers,
-                                                                            is_fan_in)
+                                                                            is_fan_in,disabled_pair)
 
             if min_latency == sys.maxsize:
                 print('DAG CANNOT BE PARTITIONED FOR GIVEN INPUT VALUES AND USER CONSTRAINTS')
@@ -95,9 +95,9 @@ def ilp():
     # print('Final ILP Cloud Config: ',final_cloud_config)
 
 
-def optimize(user_dag,user_pinned_nodes,benchmark_path,is_math=False):
+def optimize(user_dag,user_pinned_nodes,benchmark_path,disabled_pair=[],is_math=False):
 
-    return partition_dag(user_dag,user_pinned_nodes,benchmark_path,is_math)
+    return partition_dag(user_dag,user_pinned_nodes,benchmark_path,is_math,disabled_pair)
 
 def fuse(user_dag, user_dag_input, user_dir):
     csp = "AWS"
