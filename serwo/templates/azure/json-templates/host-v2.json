@@ -22,11 +22,10 @@
           "maxConcurrentActivityFunctions": 1,
           "maxConcurrentOrchestratorFunctions": 8,
           "storageProvider": {
-            "type" : "Netherite",
-            "PartitionCount": "32",  
+            "type" : "Netherite", 
             "StorageConnectionName": "AzureWebJobsStorage",
             "EventHubsConnectionName": "EventHubsConnection",
-            "partitionCount": 1
+            "partitionCount": 32
             
         }
       }

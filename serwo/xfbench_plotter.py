@@ -167,7 +167,12 @@ class XFBenchPlotter:
 
                 # add session id to dynamo db
                 dynamo_item["session_id"] = str(metadata["session_id"])
-
+                if "llm_nw_latency1" in metadata:
+                    dynamo_item["llm_nw_latency1"] = metadata["llm_nw_latency1"]
+                if "llm_nw_latency2" in metadata:
+                    dynamo_item["llm_nw_latency2"] = metadata["llm_nw_latency2"]
+                if "object_push_latency" in metadata:
+                    dynamo_item["object_push_latency"] = metadata["object_push_latency"]
                 dynamo_item["functions"] = {}
                 for item in metadata["functions"]:
                     for key in item.keys():

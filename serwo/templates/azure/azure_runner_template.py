@@ -154,6 +154,12 @@ def main(serwoObject, context: az_func.Context) -> str:
             input_body_size = objsize.get_deep_size(body_before)
             serwoObjectResponse = USER_FUNCTION_PLACEHOLDER_function(serwoObject)
             body_after = serwoObjectResponse.get_body()
+            if "llm_nw_latency1" in body_after:
+                metadata["llm_nw_latency1"] = body_after["llm_nw_latency1"]
+            if "llm_nw_latency2" in body_after:
+                metadata["llm_nw_latency2"] = body_after["llm_nw_latency2"]
+            if "object_push_latency" in body_after:
+                metadata["object_push_latency"] = body_after["object_push_latency"]
             output_body_size = objsize.get_deep_size(body_after)
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss

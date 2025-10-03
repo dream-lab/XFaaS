@@ -158,11 +158,10 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    jzcb = yield context.call_activity("Source", serwoObject)
-    pxbl = yield context.call_activity("Sink", jzcb)
-    pxbl = insert_end_stats_in_metadata(pxbl)
-    micu = yield context.call_activity("CollectLogs", pxbl)
-    return micu
+    paeu = yield context.call_activity("student", serwoObject)
+    paeu = insert_end_stats_in_metadata(paeu)
+    hzmp = yield context.call_activity("CollectLogs", paeu)
+    return hzmp
 
 
 main = df.Orchestrator.create(orchestrator_function)

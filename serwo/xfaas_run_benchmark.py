@@ -269,7 +269,7 @@ def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynam
             os.system(f"ssh {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
     else:
         os.system(f"chmod +x {output_path}")
-        os.system(f"./{output_path}")
+        os.system(f"{output_path}")
     
 def load_payload(wf_user_directory,payload_size):
     payload_path = f"{wf_user_directory}/samples/{payload_size}/input/input.json"
@@ -443,7 +443,7 @@ if __name__ == "__main__":
     print('==================DEPLOYING WF===========================')
     wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
     
-    ## write deployment id to a file create if not exists else append
+    # write deployment id to a file create if not exists else append
     deps = []
     xfaas_dir = os.getenv('XFAAS_DIR')
     deployment_id_file_path = f"{xfaas_dir}/deployments.txt"
@@ -464,7 +464,7 @@ if __name__ == "__main__":
     
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id,is_localhost)
-    time.sleep(60)
+    time.sleep(100)
     try:
         print('==================PLOTTING METRICS===========================')
         plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name,region)

@@ -47,6 +47,8 @@ def add_collect_logs(dag_definition_path,user_wf_dir, xfaas_user_dag,region):
         region = 'eastus'
     elif region == 'ap-southeast-1':
         region = 'southeastasia'
+    elif region == 'ap-south-1':
+        region = 'centralindia'
     else:
         region = 'centralindia'
     

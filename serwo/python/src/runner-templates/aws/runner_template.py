@@ -11,7 +11,7 @@ import logging
 import os
 import psutil
 import objsize
-import cpuinfo
+# import cpuinfo
 # from USER_FUNCTION_PLACEHOLDER import function as USER_FUNCTION_PLACEHOLDER_function - NOTE - !!! TK - STANDARDISE THIS!!! IMPORTANT
 from USER_FUNCTION_PLACEHOLDER import user_function as USER_FUNCTION_PLACEHOLDER_function
 from copy import deepcopy
@@ -106,12 +106,21 @@ def lambda_handler(event, context):
             )
         end_time_delta = get_delta(start_epoch_time)
         st_time = int(time.time()*1000)
-        cpu_brand = cpuinfo.get_cpu_info()["brand_raw"]
+        # cpu_brand = cpuinfo.get_cpu_info()["brand_raw"]
         en_time = int(time.time()*1000)
         time_taken = en_time - st_time
-        cpu_brand = f"{cpu_brand}_{time_taken}"
+        # cpu_brand = f"{cpu_brand}_{time_taken}"
         # Get current metadata here
+        
+
         metadata = serwo_request_object.get_metadata()
+        body_dict = response_object.get_body()
+        if "llm_nw_latency1" in body_dict:
+            metadata["llm_nw_latency1"] = body_dict["llm_nw_latency1"]
+        if "llm_nw_latency2" in body_dict:
+            metadata["llm_nw_latency2"] = body_dict["llm_nw_latency2"]
+        if "object_push_latency" in body_dict:
+            metadata["object_push_latency"] = body_dict["object_push_latency"]
         function_metadata_list = metadata.get("functions")
         # NOTE - the template for generated function id
         function_metadata_list.append(
@@ -123,7 +132,7 @@ def lambda_handler(event, context):
                     mem_after=memory_after,
                     in_payload_bytes=input_payload_size_bytes,
                     out_payload_bytes=objsize.get_deep_size(response_object.get_body()),
-                    cpu=cpu_brand
+                    # cpu=cpu_brand
 
                 )
             }
