@@ -25,7 +25,7 @@ def calculate_sub_dag_latency(csp_id, nodes, sub_dag):
     for node in nodes:
         successors = sub_dag.successors(node)
         for succ in successors:
-            edge_latency = sub_dag.edges[(node, succ)]['EdgeBenchmark']['Latencies'][int(csp_id)][int(csp_id)]
+            edge_latency = sub_dag.edges[(node, succ)]['EdgeBenchmarks']['Latencies'][int(csp_id)][int(csp_id)]
             node_latency = sub_dag.nodes[node]['NodeBenchmark'][csp_id]['Latency']
             val = edge_latency + node_latency
             sub_dag.edges[(node, succ)]['edge_latency'] = -1 * val
@@ -58,10 +58,11 @@ def evaluate_node_and_edge_constraints(csp_id, sub_dag, user_pinned_nodes):
             if pinned_csp != csp_id:
                 flag = True
                 break
-    for ed in sub_dag.edges:
-        if sub_dag.edges[ed]['EdgeBenchmark']['DataTransferSize'] > 256 and csp_id == '0':
-            flag = True
-            break
+    #Added Large Payload Support
+    # for ed in sub_dag.edges:
+    #     if sub_dag.edges[ed]['EdgeBenchmark']['DataTransferSize'] > 256 and csp_id == '0':
+    #         flag = True
+    #         break
     return flag
 
 
@@ -107,7 +108,7 @@ def populate_inter_cloud_data_transfers(user_dag_copy, valid_partition_points):
         successors = list(user_dag_copy.successors(nd['node_id']))
         for sc in successors:
             inter_cloud_data_transfer.append(
-                user_dag_copy.edges[(nd['node_id'], sc)]['EdgeBenchmark']['DataTransferSize'])
+                user_dag_copy.edges[(nd['node_id'], sc)]['EdgeBenchmarks']['DataTransferSize'])
             break
     return inter_cloud_data_transfer
 
@@ -121,7 +122,7 @@ def populate_latanecy_benchmarks(bm_data, cloud_ids, edges, latency_map, user_da
             # for dest in neighbors:
             edges_data[(src, neighbors)] = bm_data['EdgeBenchmarks'][src][neighbors]
     for ed in edges:
-        user_dag_copy.edges[ed]['EdgeBenchmark'] = edges_data[ed]
+        user_dag_copy.edges[ed]['EdgeBenchmarks'] = edges_data[ed]
     top_sort = list(nx.topological_sort(user_dag_copy))
     for i in range(0, len(valid_partition_points)):
         sub_nodes = []
@@ -152,7 +153,7 @@ def populate_latanecy_benchmarks(bm_data, cloud_ids, edges, latency_map, user_da
 def populate_data_transfer_benchmarks(cloud_ids, edges, user_dag_copy):
     data_transfer_benchmark = []
     for ed in edges:
-        edge_bm = user_dag_copy.edges[ed]['EdgeBenchmark']['Latencies']
+        edge_bm = user_dag_copy.edges[ed]['EdgeBenchmarks']['Latencies']
         for csp_id_outer in cloud_ids:
             temp = []
             for csp_id_inner in cloud_ids:

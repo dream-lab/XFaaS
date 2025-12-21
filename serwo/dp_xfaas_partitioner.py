@@ -67,12 +67,13 @@ def get_data_transfer_value(data_transfers_benchmark, i, j, v, data_tranfers,is_
 
 def evaluate_inter_cloud_data_transfer_constraints(data_tranfers, i, j, v):
     flag = False
-    if v == 1 and j == 0 and data_tranfers[i - 1] > 64:
-        flag = True
-    if v == 0 and j == 1 and data_tranfers[i - 1] > 256:
-        flag = True
-    if v==0 and j==0 and data_tranfers[i-1] > 256:
-        flag = True
+    #Added Large payload support hence commenting this out
+    # if v == 1 and j == 0 and data_tranfers[i - 1] > 64:
+    #     flag = True
+    # if v == 0 and j == 1 and data_tranfers[i - 1] > 256:
+    #     flag = True
+    # if v==0 and j==0 and data_tranfers[i-1] > 256:
+    #     flag = True
 
     return flag
 

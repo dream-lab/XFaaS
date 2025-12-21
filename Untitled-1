@@ -1,0 +1,99 @@
+Export variables for XFaas conda environment:
+    export AZURE_SUBSCRIPTION_ID=9dc7b503-5f49-4742-8f12-07fad514c633
+    export XFAAS_DIR=/Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFaaS
+    export XFAAS_WF_DIR=/Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFBench
+    export XFBENCH_DIR=/Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFBench
+
+Running XFaaS main:
+
+    python xfaas_main.py --wf-user-directory /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFaaS/serwo/examples/static-qfanout-simulator-aws-optimized --dag-file-name dag.json --dag-benchmark dag-benchmark.json --csp aws  --region ap-south-1
+
+    python xfaas_main.py --wf-user-directory /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFaaS/serwo/examples/static-qfanout-hardware-aws  --dag-file-name dag.json --dag-benchmark dag-benchmark.json --csp aws  --region ap-south-1
+
+    python3 xfaas_main.py --wf-user-directory /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/qxfaas/serwo/examples/qmap-az --dag-file-name dag.json --dag-benchmark dag-benchmark.json --csp azure --region centralindia  
+
+    /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFaaS/serwo/examples/static-qfanout-hardware-aws 
+    /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFaaS/serwo/examples/static-qfanout-hardware-aws
+
+Running XFaaS benchmark:
+    python3 xfaas_run_benchmark.py --csp azure --region eastus --max-rps 1 --duration 300 --payload-size medium --dynamism static --wf-name grid --wf-user-directory /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFBench/workflows/custom_workflows/smart_grid_wf --path-to-client-config /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFaaS/serwo/config/client_config.json --dag-file-name dag.json --teardown-flag 0 --client-key localhost
+
+    python3 bin/serwo/xfbench_run.py --csp azure --region eastus --max-rps 1 --duration 300 --payload-size random --dynamism static --wf-name quantum --wf-user-directory /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFBench/workflows/custom_workflows/static-qfanout-hardware-aws --path-to-client-config /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFaaS/serwo/config/client_config.json --dag-file-name dag.json --teardown-flag 0 --client-key localhost
+
+    python3 bin/serwo/xfbench_run.py --csp aws --region ap-south-1 --max-rps 1 --duration 300 --payload-size random --dynamism static --wf-name quantum --wf-user-directory /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFBench/workflows/custom_workflows/static-qfanout-hardware-aws --path-to-client-config /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/XFaaS/serwo/config/client_config.json --dag-file-name dag.json --teardown-flag 0 --client-key localhost
+    disable quantum calls
+
+
+Running QXFaas workflows:
+    python xfaas_main.py --wf-user-directory /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/qxfaas/serwo/examples/qmap-aws --dag-file-name dag.json --dag-benchmark dag-benchmark.json --csp aws  --region ap-south-1
+
+    python3 xfaas_main.py --wf-user-directory /Users/vaibhavjha/Documents/IISc/xfbench_multicloud/qxfaas/serwo/examples/qmap-aws --dag-file-name dag.json --dag-benchmark dag-benchmark.json --csp aws  --region ap-south-1
+
+IP details for Lab:
+    DNS: 10.16.25.15
+    Netmask: 255.255.255.0
+    Gateway: 10.24.24.1
+
+Original IP Details of 10.24.24.30:
+    IP: 10.24.24.30
+    Netmask: 24
+    Gateway: 10.24.24.1
+    DNS: 10.16.25.15
+
+Original IP Details of 10.24.24.29 (3060):
+    IP: 10.24.24.29
+    Netmask: 255.255.255.0
+    Gateway: 10.24.24.1
+    DNS: 10.16.25.13
+
+Modified IP Details of 10.24.24.29:
+    IP: 172.23.244.2
+    Netmask: 255.255.255.248
+    Gateway: 172.23.244.1
+    DNS: 172.23.244.1
+    Should be connected to port on my desk which is 224.D22 (right side one)
+
+Command Triggering AWS State-Machine
+    aws stepfunctions start-execution \
+  --state-machine-arn arn:aws:states:ap-south-1:235319806087:stateMachine:UserWf0000-9nhHSEV7fGK7 \
+  --input '{\n  \"workflow_instance_id\": 1,\n  \"request_timestamp\": 12345,\n  \"session_id\": \"123\",\n  \"deployment_id\": \"dynamic-q10-d37-trotter\",\n  \"data\": {\n    \t\t\"circuit\": \"eJztW92K00AUziT9d/0H8WahXjWBKpsmW13wh7WuUnQFt3shikLdza6B2traXRARxIu+hO8h+Are9A30KbwQL3RbZzquNJuTDiYd58xFKaffN+c7Z84kZ0LzoN64W99cILpGB/G62jnPeHrwtaDxMfqdUMTa6HP95r3a86bfrvm9rT2/f9VeKhfd6xRNmeT96va2ub7XMuvtvrfr9cyKVS42Xr941mmZpeHg8dKTknVgOQJhhyIqoQgnFOGGIpZDEdVQxOVQxJVQxMpvxO1Wp9k3S3bVvbTiOFXbdWzHrbp2pVQuvux5W/4rv9O+tuxY1v7+oTUcr86nb1b5y+fV+x8K7xYXv36crPNwAEAfY4UCQi+w30Ho49RugNAnqD0FQp+k9jQIfYraMyD0aWrPgtBnqD0HQp+l9vxw8OZtd7QHCxohXe3wIH/NYrDcsKhZPEwp08Bmn8yUobMRbfrYeHSn2ffG/nfYJOcv3tr8ceH7jQhkMp2sHUFuPJyQxRyx4PUA8lptYxIjdweTFlsCA8ioMv56kqPqZSDrImRDJLmGmKMIlxSdu4NJ0+NKYAAZVc6yzIS7g0lLenujSqz6f6QyhhAFr99y3GVkIKdEyGmR5KbFHEW4tqe4O5i0VFwJDCCjylmW2eDuYNKS3t6oEhty9VTCHClR9TKEqMRdRoYQBfslObo6GcgZEXJWJLlZMUcRbrIZ7g4mLRNXAgPIqHKWZU5zdzBpSW9vVIkHYLVU4gFYDpVKFCO2unOkMoYQleiXZAhRsPOX43wiAzknQs6LJDcv5ihCH5Hj7mDScnElMICMKmdZ5ix3B5OW9PZGlfgoRy2V+ChHDpVKFCO2unOkMoYQleiXZAhRsPOX43ySHDnCTTbfHVvgSVHmzY1kyPhqkDIqYY6U+b97MmR8oUIOlcr8mTAGlUn3NagSn2GrpRKfYcuhUolixDP+HKnEM/4U8v+kMukCm3+Vmvbzj8EovwClFkX1\",\n\t\t\"observables\": [\n\t\t\t\"ZIIIIIIIII\",\n\t\t\t\"IZIIIIIIII\",\n\t\t\t\"IIZIIIIIII\",\n\t\t\t\"IIIZIIIIII\",\n\t\t\t\"IIIIZIIIII\",\n\t\t\t\"IIIIIZIIII\",\n\t\t\t\"IIIIIIZIII\",\n\t\t\t\"IIIIIIIZII\",\n\t\t\t\"IIIIIIIIZI\",\n\t\t\t\"IIIIIIIIIZ\"\n\t\t],\n\t\t\"metadata\": {\n\t\t\t\"depth\": 37,\n\t\t\t\"num_qubits\": 10\n\t\t}\n  },\n  \"credentials\": {\n    \"ibmq\": {\n      \"qtoken\": \"b7c27dd1a31636290b170b8330f98759c3927ba482ef07cff47ebd19814bbde4650c16eb625d377844ee5d5ff5310df14191f3e3768878ea2cec6616b346a5f7\"\n    }\n  },\n  \"devices\": [\n    {\n      \"backend\": \"ibm_brisbane\",\n      \"device\": \"aer\"\n    }\n  ]\n}'
+
+User Pinned Nodes (Merger, Poller, Reconstructor)
+    {
+        "6":"0",
+        "7":"0",
+        "8":"0"
+    }
+
+
+
+from fastapi import FastAPI
+from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
+from mangum import Mangum
+from fastmcp import FastMCP
+
+mcp = FastMCP("analyst")
+app = mcp.http_app()
+
+# Trust all X-Forwarded headers so scheme and host are correct
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+
+handler = Mangum(app, lifespan="off")
+
+
+from fastapi import FastAPI, Request
+from mangum import Mangum
+
+app = FastAPI()
+
+@app.middleware("http")
+async def forward_scheme(request: Request, call_next):
+    proto = request.headers.get("x-forwarded-proto")
+    if proto:
+        request.scope["scheme"] = proto
+    return await call_next(request)
+
+# mount or include your mcp.http_app here…
+
+
+

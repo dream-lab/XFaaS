@@ -24,6 +24,7 @@ class UserDag:
             self.__nodeIDMap = {}
             self.__dag = nx.DiGraph()
             self.__functions = {}
+            self.__conditional_branches = []
         except Exception as e:
             raise e
 
@@ -64,6 +65,10 @@ class UserDag:
             for key in edge:
                 for val in edge[key]:
                     self.__dag.add_edge(self.__nodeIDMap[key], self.__nodeIDMap[val])
+
+        #Parse conditional branches after edges
+        if "ConditionalBranches" in self.__dag_config_data:
+            self.__conditional_branches = self.__dag_config_data["ConditionalBranches"]
 
     def _get_state(self, nodename):
         state = AWSSfnBuilder.State.parse(
@@ -280,6 +285,11 @@ class UserDag:
     
     def get_user_dag_nodes(self):
         return self.__dag_config_data["Nodes"]
+
+    def get_conditional_branches(self):
+        """Returns conditional branches from DAG config"""
+        return self.__conditional_branches
+
     def get_user_dag_edges(self):
         return self.__dag_config_data["Edges"]
     def get_dag(self):

@@ -5,6 +5,7 @@ import json
 from time import time
 import azure.durable_functions as df
 
+
 def get_delta(start_time):
     curr_time = int(time() * 1000)
     return (curr_time-start_time)
@@ -12,14 +13,28 @@ def get_delta(start_time):
 
 func_id = 253
 
-app_name = 'xfaasUserWf0000434144'
+app_name = 'xfaasUserWf0000164304'
 
 
 async def main(msg: func.QueueMessage,starter: str) -> None:
     logging.info('Python queue trigger function processed a queue item: %s', msg.get_body().decode('utf-8'))
     URL = f'https://{app_name}.azurewebsites.net/api/orchestrators/Orchestrate'
-    metadata = json.loads(msg.get_body().decode('utf-8'))['metadata']
-    body = json.loads(msg.get_body().decode('utf-8'))['body']
+    msg_dict = json.loads(msg.get_body().decode('utf-8'))
+
+    # If the message is a pointer to a large payload, fetch it from Blob
+    if msg_dict.get('large_payload') == 1 and "azure" in msg_dict:
+        blob_url = msg_dict["azure"]["blob_url"]
+        resp = requests.get(blob_url)
+        if resp.status_code == 200:
+            payload = json.loads(resp.content) 
+            body = payload.get("body") 
+            metadata = payload.get("metadata")
+        else:
+            raise Exception(f"Could not retrieve blob from {blob_url} - status code: {resp.status_code}")
+        
+    else:
+        metadata = msg_dict['metadata']
+        body = msg_dict['body']
 
     start_delta = get_delta(metadata['workflow_start_time'])
     end_delta = get_delta(metadata['workflow_start_time'])

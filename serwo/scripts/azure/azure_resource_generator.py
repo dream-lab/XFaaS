@@ -64,7 +64,7 @@ def create_resources(resource_dir, out_file_path, region,is_netherite):
 
     jsson = json.loads(json_str)
     if is_netherite:
-        netherite_namespace = randomString(6)
+        netherite_namespace = randomString(8)
         ## create eventhubs namespace
         try:
             

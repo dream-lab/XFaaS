@@ -159,19 +159,41 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    oenu = yield context.call_activity("graphGen", serwoObject)
-    uxwf = []
-    rufp = context.call_activity("graphBft", oenu)
-    zzge = context.call_activity("graphMst", oenu)
-    rtyj = context.call_activity("pagerank", oenu)
-    uxwf.append(rufp)
-    uxwf.append(zzge)
-    uxwf.append(rtyj)
-    qmud = yield context.task_all(uxwf)
-    zbxu = yield context.call_activity("aggregate", qmud)
-    zbxu = insert_end_stats_in_metadata(zbxu)
-    frrb = yield context.call_activity("CollectLogs", zbxu)
-    return frrb
+    # Conditional branching loop
+    should_continue = True
+
+    while should_continue:
+        xvyi = yield context.call_activity("Planner", serwoObject)
+        urxb = yield context.call_activity("Actor", xvyi)
+        zupq = yield context.call_activity("Evaluator", urxb)
+        zupq = insert_end_stats_in_metadata(zupq)
+        pmbi = yield context.call_activity("CollectLogs", zupq)
+
+        # Check conditional branching condition
+        import json
+        try:
+            result_dict = json.loads(pmbi)
+            if '_body' in result_dict:
+                result_body = result_dict['_body']
+            else:
+                result_body = result_dict.get('body', {})
+
+            should_continue = result_body.get(
+                'body.needs_retry', False) == True
+
+            # Check iteration limit from user input
+            current_iter = result_body.get('iteration_count', 0)
+            max_iter = result_body.get('max_iterations', 1)
+            if current_iter >= max_iter:
+                should_continue = False
+
+        except Exception as e:
+            should_continue = False
+
+        if not should_continue:
+            break
+
+    return pmbi
 
 
 main = df.Orchestrator.create(orchestrator_function)

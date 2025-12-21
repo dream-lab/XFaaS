@@ -47,7 +47,7 @@ def get_client_login_details(config_path):
         data = json.load(f)
     data = data[args.client_key]
     server_ip = data['server_ip']
-    server_user_id = data['server_user_id']
+    server_user_id = data['server_user_id'] 
     if 'server_pem_file_path' in data:
         server_pem_file_path = data['server_pem_file_path']
 
@@ -70,12 +70,13 @@ def get_azure_payload(payload):
 
 def read_dynamism_file(dynamism,duration, max_rps):
     file_path = os.getenv("XFBENCH_DIR") + f"/workloads/{dynamism}-{max_rps}-{duration}.csv"
+    breakpoint()
     with open(file_path) as f:  
         data = f.readlines()
     data = [x.strip() for x in data]
     final_data = []
     for d in data:
-        vals = [float(x) for x in d.split(",") if x != "" ] # '''and 'KB' not in x'''
+        vals = [float(x) for x in d.split(",") if x != "" and 'KB' not in x ] # '''and 'KB' not in x'''
         # size = d.split(",")[-1]
         
         final_data.append((vals[0],vals[1]))
@@ -281,7 +282,8 @@ def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynam
             os.system(f"ssh {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
     else:
         os.system(f"chmod +x {output_path}")
-        os.system(f"./{output_path}")
+        os.system(f"{output_path}")
+        #os.system(f"./{output_path}") use when you don't have full path
     
 def load_payload(wf_user_directory,payload_size):
     payload_path = f"{wf_user_directory}/samples/{payload_size}/input/input.json"
@@ -322,10 +324,20 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
         duration = d[0]
         rps = d[1]
         # payload_size = d[2]
-        # payload = load_payload(wf_user_directory,payload_size)
         ne_session_id = session_id + str(i)
+        # payload = load_payload(wf_user_directory,payload_size)
+        breakpoint()
+        if dynamism == 'slow':  # Or match your exact dynamism string
+            duration_segment = 600.0  # Force ThreadGroup.duration=600s (10 min alive)
+            target_throughput = 1.0   # Force ConstantThroughputTimer throughput=1.0 (1 sample/minute)
+            # Pass target_throughput instead of rps * 60.0 to make_jmx_file
+            make_jmx_file(csp, target_throughput, duration_segment, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, wf_deployment_id, run_id, payload, is_localhost)
+        else:
+            # Original logic for other experiments
+            make_jmx_file(csp, rps * 60.0, duration, payload_size, wf_name, execute_url, state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region, wf_deployment_id, run_id, payload, is_localhost)
         
-        make_jmx_file(csp, rps * 60.0, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id,payload,is_localhost)
+        
+        #make_jmx_file(csp, rps * 60.0, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id,payload, is_localhost)
         i += 1
     generate_shell_script_and_scp(csp,payload_size, wf_name,   max_rps, duration,dynamism,region,is_localhost)
     
@@ -457,13 +469,14 @@ if __name__ == "__main__":
         wf_user_directory = os.getenv("XFBENCH_DIR") + f"/workflows/singleton_workflows/{function_class}/{function_name}"
     else:
         build_workflow(wf_user_directory)
+        breakpoint()
     
     wf_user_directory += "/workflow-gen"
     
     
     print('==================DEPLOYING WF===========================')
     wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
-    
+    breakpoint()
     ## write deployment id to a file create if not exists else append
     deps = []
     xfaas_dir = os.getenv('XFAAS_DIR')

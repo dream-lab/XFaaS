@@ -21,37 +21,40 @@ import argparse
 import shutil
 import networkx as nx
 
-# parser = argparse.ArgumentParser(
-#     prog="ProgramName",
-#     description="What the program does",
-#     epilog="Text at the bottom of help",
-# )
-# parser.add_argument("--csp",dest='csp',type=str,help="CSP name")
-# parser.add_argument("--region",dest='region',type=str,help="Region name")
-# parser.add_argument("--wf-user-directory",dest='wf_user_directory',type=str,help="Workflow user directory")
-# parser.add_argument("--dag-benchmark",dest='dag_benchmark',type=str,help="Path DAG Benchmark")
-# parser.add_argument("--dag-file-name",dest='dag_filename',type=str,help="DAG FILE NAME")
-# parser.add_argument("--is-async",dest='is_async',type=str,help="Is Async Fn",default=0)
-# # parser.add_argument("--is-containerbased-aws",dest='is_containerbasedaws',type=str,help="Is Async Fn",default=0)
+parser = argparse.ArgumentParser(
+    prog="ProgramName",
+    description="What the program does",
+    epilog="Text at the bottom of help",
+)
+parser.add_argument("--csp",dest='csp',type=str,help="CSP name")
+parser.add_argument("--region",dest='region',type=str,help="Region name")
+parser.add_argument("--wf-user-directory",dest='wf_user_directory',type=str,help="Workflow user directory")
+parser.add_argument("--dag-benchmark",dest='dag_benchmark',type=str,help="Path DAG Benchmark")
+parser.add_argument("--dag-file-name",dest='dag_filename',type=str,help="DAG FILE NAME")
+parser.add_argument("--is-async",dest='is_async',type=str,help="Is Async Fn",default=0)
+parser.add_argument("--is-containerbased-aws",dest='is_containerbasedaws',type=str,help="Is Async Fn",default=0)
 project_dir = pathlib.Path(__file__).parent.resolve()
 
 
-# args = parser.parse_args()
-    
-# is_containerbasedaws = bool(int(args.is_containerbasedaws))
-# USER_DIR = args.wf_user_directory
-# DAG_DEFINITION_FILE =  args.dag_filename
+args, unkown = parser.parse_known_args()
+print("Passed arguments to xfaas_main:",args)
 
-# DAG_DEFINITION_PATH = f"{USER_DIR}/{DAG_DEFINITION_FILE}"
-# BENCHMARK_FILE =  args.dag_benchmark
-# benchmark_path = f'{USER_DIR}/{BENCHMARK_FILE}'
-# csp = args.csp
-# region = args.region
+is_containerbasedaws = bool(int(args.is_containerbasedaws))
+USER_DIR = args.wf_user_directory
+DAG_DEFINITION_FILE =  args.dag_filename
+
+DAG_DEFINITION_PATH = f"{USER_DIR}/{DAG_DEFINITION_FILE}"
+BENCHMARK_FILE =  args.dag_benchmark
+benchmark_path = f'{USER_DIR}/{BENCHMARK_FILE}'
+csp = args.csp
+region = args.region
 part_id = "test"
 def get_user_pinned_nodes():
 
     config = json.loads(open(f'{project_dir}/config/xfaas_user_config.json', 'r').read())
     if "user_pinned_nodes" in config:
+        print("User Pinned Nodes Detected")
+        print(config['user_pinned_nodes'])
         return config['user_pinned_nodes']
     else:
         return None
@@ -248,6 +251,10 @@ def add_collect_logs(dag_definition_path,user_wf_dir, xfaas_user_dag,region,part
 def swap(a,b):
     return b,a
 def generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definition_path):
+
+    # Load original DAG config to preserve ConditionalBranches
+    with open(dag_definition_path, 'r') as file:
+        original_dag_config = json.load(file)
     
     src_node = None
     sink_node = None
@@ -280,7 +287,7 @@ def generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definit
     nodes_in_between = []
     for i in range(st_ind, en_ind+1):
         nodes_in_between.append(top_sort_nodes[i])
-
+    
     subdag = nx_dag.subgraph(nodes_in_between)
     dagg = {}
     part_id = partition_config[0].get_part_id()
@@ -293,11 +300,11 @@ def generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definit
     
     csp = partition_config[0].get_left_csp().get_name()
     region = partition_config[0].get_region()
-    write_dag_for_partition( user_wf_dir, dagg,part_id,csp,region)
+    write_dag_for_partition( user_wf_dir, dagg,part_id,csp,region, original_dag_config)
 
 
     for i in range(1, len(partition_config)):
-       
+
         start_node = partition_config[i-1].get_function_name()
         end_node = partition_config[i].get_function_name()
         ## subdag with start node and end node
@@ -365,9 +372,9 @@ def generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definit
         csp = partition_config[i].get_left_csp().get_name()
         region = partition_config[i].get_region()
         
-        write_dag_for_partition( user_wf_dir, dagg,part_id,csp,region)
+        write_dag_for_partition( user_wf_dir, dagg,part_id,csp,region, original_dag_config)
 
-def write_dag_for_partition(user_wf_dir, dagg, part_id, csp, region):
+def write_dag_for_partition(user_wf_dir, dagg, part_id, csp, region, original_dag_config=None):
     out_dag_name = "dag.json"
     directory = f'{user_wf_dir}/partitions/{csp}-{region}-{part_id}'
     if not os.path.exists(directory):
@@ -375,6 +382,11 @@ def write_dag_for_partition(user_wf_dir, dagg, part_id, csp, region):
     else:
         shutil.rmtree(directory)
         os.makedirs(directory)
+    
+    # Add ConditionalBranches if present in original DAG
+    if original_dag_config and "ConditionalBranches" in original_dag_config:
+        dagg["ConditionalBranches"] = original_dag_config["ConditionalBranches"]
+
     with open(f'{directory}/{out_dag_name}', 'w') as file:
         file.write(json.dumps(dagg, indent=4))
 
@@ -397,7 +409,7 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
     generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definition_path)
 
     print(user_wf_dir)
-    
+    #breaakpoint()
     # Writes part details to a Json file in user_wf_dir/partitions
     part_details = {}
     part_ids = []
@@ -414,6 +426,7 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
             )
         part_ids.append(part_id)
         
+        
         print(p.get_function_name(), p.get_part_id(), p.get_left_csp().get_name(), p.get_region())
     # partition_config = [PartitionPoint("function_name", 2, csp, None, part_id, region)]
     
@@ -425,8 +438,7 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
     
     with open(f'{user_wf_dir}/partitions/part-details.json', 'w') as json_file:
         json.dump(part_details, json_file, indent=4)
-    
-
+        
     wf_id = xfaas_provenance.push_user_dag(dag_definition_path)
     last_partition = partition_config[-1]
     part_id = last_partition.get_part_id()
@@ -442,11 +454,11 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp,region):
     xfaas_resource_generator.generate(user_wf_dir, partition_config,"dag.json")
     xfaas_provenance.generate_provenance_artifacts(user_wf_dir,wf_id,refactored_wf_id,wf_deployment_id,csp,region,part_id,queue_details)
 
-    return '', '', ''
+    #return '', '', ''
     return wf_id, refactored_wf_id, wf_deployment_id
    
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 
-#     wf_id, refactored_wf_id, wf_deployment_id = run(f'{USER_DIR}', DAG_DEFINITION_FILE, BENCHMARK_FILE, csp,region)
+    wf_id, refactored_wf_id, wf_deployment_id = run(f'{USER_DIR}', DAG_DEFINITION_FILE, BENCHMARK_FILE, csp,region)
     

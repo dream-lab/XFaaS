@@ -39,6 +39,13 @@ class SerWOUserDag:
                                 Path=node["Path"],
                                 EntryPoint=node["EntryPoint"],
                                 MemoryInMB=node["MemoryInMB"])
+            #Adding additional parameters for QXFaas workflows
+            if "IsAsync" in node:
+                self.__dag.add_node(nodeID,
+                                    IsAsync=node["IsAsync"])
+            if "IsContainerised" in node:
+                self.__dag.add_node(nodeID,
+                                    IsContainerised=node["IsContainerised"])
             index += 1
 
         # add edges in the dag

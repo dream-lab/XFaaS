@@ -1,2 +1,3 @@
 azure-storage-queue==2.1.0
 psutil
+azure-storage-blob==12.19.1

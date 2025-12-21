@@ -18,6 +18,8 @@ class UserDag:
             print("Dag config data - ", self.__dag_config_data)
             self.__nodeIDMap = {}
             self.__dag = nx.DiGraph()
+            self.__conditional_branches = []
+
         except Exception as e:
             raise e
 
@@ -43,6 +45,9 @@ class UserDag:
                     self.__dag.add_edge(
                         self.__nodeIDMap[key], self.__nodeIDMap[val])
 
+        # Conditional Branches after edges:
+        if "ConditionalBranches" in self.__dag_config_data:
+            self.__conditional_branches = self.__dag_config_data["ConditionalBranches"]
 
         start_node = [node for node in self.__dag.nodes if self.__dag.in_degree(node) == 0][0]
         self.__dag.nodes[start_node]['ret'] = ["yield ", "context.call_activity(\"" + self.__dag.nodes[start_node]["NodeName"]  + "\", serwoObject)"]
@@ -53,12 +58,84 @@ class UserDag:
         start_node = [node for node in self.__dag.nodes if self.__dag.in_degree(node) == 0][0]
         self.__dag.nodes[start_node]['ret'] = ["yield ", "context.call_activity(\"" + self.__dag.nodes[start_node]["NodeName"]  + "\", serwoObject)"]
        
+    def get_conditional_branches(self):
+        return self.__conditional_branches
+
+    def has_conditional_branches(self):
+        return len(self.__conditional_branches) > 0
 
     def __load_user_spec(self, user_config_path):
         with open(user_config_path, "r") as user_dag_spec:
             dag_data = json.load(user_dag_spec)
         return dag_data
     
+    def _wrap_with_conditional_logic(self, statements, result_var):
+        """
+        Generic wrapper for conditional branching using user input.
+        """
+        if not self.__conditional_branches:
+            return statements
+        
+        branch = self.__conditional_branches[0]
+        condition_var = branch['ConditionVariable']
+        condition_type = branch['ConditionType']
+        condition_value = branch['ConditionValue']
+        
+        json_path = condition_var.replace('$.', '')
+        
+        wrapped_statements = []
+        wrapped_statements.append("# Conditional branching loop")
+        wrapped_statements.append("should_continue = True")
+        wrapped_statements.append("")
+        wrapped_statements.append("while should_continue:")
+        
+        # Indent workflow statements (exclude return) - add 4 spaces for while body
+        for stmt in statements[:-1]:
+            wrapped_statements.append("    " + stmt)
+        
+        wrapped_statements.append("")
+        wrapped_statements.append("    # Check conditional branching condition")
+        wrapped_statements.append("    import json")
+        wrapped_statements.append("    try:")
+        wrapped_statements.append("        result_dict = json.loads({})".format(result_var))
+        wrapped_statements.append("        if '_body' in result_dict:")
+        wrapped_statements.append("            result_body = result_dict['_body']")
+        wrapped_statements.append("        else:")
+        wrapped_statements.append("            result_body = result_dict.get('body', {})")
+        wrapped_statements.append("")
+        
+        # Generate condition check
+        if condition_type == "BooleanEquals":
+            # FIX: Use capital True/False
+            condition_check = "result_body.get('{}', False) == {}".format(
+                json_path, str(condition_value).capitalize()
+            )
+        elif condition_type == "StringEquals":
+            condition_check = "result_body.get('{}', '') == '{}'".format(json_path, condition_value)
+        elif condition_type == "NumericEquals":
+            condition_check = "result_body.get('{}', 0) == {}".format(json_path, condition_value)
+        else:
+            condition_check = "result_body.get('{}', False)".format(json_path)
+        
+        wrapped_statements.append("        should_continue = {}".format(condition_check))
+        wrapped_statements.append("")
+        wrapped_statements.append("        # Check iteration limit from user input")
+        wrapped_statements.append("        current_iter = result_body.get('iteration_count', 0)")
+        wrapped_statements.append("        max_iter = result_body.get('max_iterations', 1)")
+        wrapped_statements.append("        if current_iter >= max_iter:")
+        wrapped_statements.append("            should_continue = False")
+        wrapped_statements.append("")
+        wrapped_statements.append("    except Exception as e:")
+        wrapped_statements.append("        should_continue = False")
+        wrapped_statements.append("")
+        wrapped_statements.append("    if not should_continue:")
+        wrapped_statements.append("        break")
+        
+        wrapped_statements.append("")
+        wrapped_statements.append(statements[-1])  # return statement
+        
+        return wrapped_statements
+   
     def _generate_random_variable_name(self, n=4):
         res = ''.join(random.choices(string.ascii_letters, k=n))
         return str(res).lower()
@@ -276,6 +353,12 @@ class UserDag:
             pre_statements.append(post_code)
             pre_statements.append(f"return {final_var}")
         
-        # TODO - for every taskall add the converstion from [serwo_objects] -> serwo_list_object
-        orchestrator_code = "\n".join([pre_statements[0]] + ["\t" + statement for statement in pre_statements[1:]])
+        # Apply conditional branching
+
+        if self.has_conditional_branches():
+            pre_statements = self._wrap_with_conditional_logic(pre_statements, final_var)
+
+        # Always add base indentation to be inside orchestrator_function
+        orchestrator_code = "\n".join(["    " + statement for statement in pre_statements])
+
         return orchestrator_code

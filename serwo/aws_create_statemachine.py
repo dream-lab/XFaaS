@@ -109,12 +109,14 @@ class AWS:
         runner_template_dir,
         runner_filename
     ):
+        
         # TODO - should this be taken in from the dag-description?
         fn_requirements_filename = "requirements.txt"
         fn_dir = serwo_fn_build_dir / f"{fn_name}"
 
         logger.info(f"Creating function directory for {fn_name}")
         if not os.path.exists(fn_dir):
+            print("Directory made")
             os.makedirs(fn_dir)
         pathlib.Path(fn_dir / "__init__.py").touch()
 
@@ -348,6 +350,40 @@ class AWS:
         # Statemachine.asl.josn should be changed here
         sfn_json_copy = copy.deepcopy(json.loads(sfn_json))
         data=add_async_afn_builder(sfn_json_copy,changing_fns_list)
+
+        # apply conditional branching logic AFTER async modifications
+        conditional_branches = self.__user_dag.get_conditional_branches()
+        if conditional_branches and len(conditional_branches) > 0:
+            for branch in conditional_branches:
+                source_node = branch['SourceNode']
+                
+                # Find the source state and modify its Next to point to Check state
+                if source_node in data['States']:
+                    check_state_name = f"Check{source_node}"
+                    data['States'][source_node]['Next'] = check_state_name
+                    
+                    # Remove 'End' if it exists
+                    data['States'][source_node].pop('End', None)
+                    
+                    # Add the Choice state
+                    data['States'][check_state_name] = {
+                        'Type': 'Choice',
+                        'Choices': [
+                            {
+                                'Variable': branch['ConditionVariable'],
+                                branch['ConditionType']: branch['ConditionValue'],
+                                'Next': branch['TargetNode']
+                            }
+                        ],
+                        'Default': branch['DefaultTarget']
+                    }
+                    
+                    # Add Success state if specified as default
+                    if branch['DefaultTarget'] == 'Success':
+                        data['States']['Success'] = {
+                            'Type': 'Succeed'
+                        }
+
         # print("Updated data of sfn builder after adding poll",data)
         with open(f"{self.__aws_build_dir}/{self.__json_file}", "w") as statemachinejson:
             statemachinejson.write(json.dumps(data))
@@ -404,15 +440,70 @@ class AWS:
     def build_workflow(self):
         logger.info(f"Starting SAM Build for {self.__user_dag.get_user_dag_name()}")
         os.system(
-            f"sam build --build-dir {self.__sam_build_dir} --template-file {self.__aws_build_dir / self.__yaml_file} "
+            f"DOCKER_DEFAULT_PLATFORM=linux/amd64 "
+            f"sam build --use-container "
+            f"--build-dir {self.__sam_build_dir} "
+            f"--template-file {self.__aws_build_dir / self.__yaml_file}"
         )
+
 
     """
     NOTE - deploy workflow
     """
 
+    def __check_and_cleanup_failed_stack(self):
+        """Check if stack exists in failed state and delete it"""
+        import subprocess
+        import time
+        
+        try:
+            # Check stack status
+            result = subprocess.run(
+                f'aws cloudformation describe-stacks --stack-name {self.__sam_stackname} --region {self.__region} --query "Stacks[0].StackStatus" --output text',
+                shell=True,
+                capture_output=True,
+                text=True
+            )
+            
+            stack_status = result.stdout.strip()
+            
+            # If stack is in a failed state, delete it
+            if stack_status in ['UPDATE_FAILED', 'CREATE_FAILED', 'ROLLBACK_FAILED', 'DELETE_FAILED', 'UPDATE_ROLLBACK_FAILED']:
+                logger.warning(f"Stack {self.__sam_stackname} is in {stack_status} state. Deleting...")
+                
+                # Delete the stack
+                os.system(f"aws cloudformation delete-stack --stack-name {self.__sam_stackname} --region {self.__region}")
+                
+                # Wait for deletion
+                logger.info("Waiting for stack deletion to complete...")
+                time.sleep(10)  # Initial wait
+                
+                # Poll until deleted
+                for _ in range(30):  # Max 5 minutes
+                    check_result = subprocess.run(
+                        f'aws cloudformation describe-stacks --stack-name {self.__sam_stackname} --region {self.__region}',
+                        shell=True,
+                        capture_output=True,
+                        text=True
+                    )
+                    if "does not exist" in check_result.stderr:
+                        logger.info("Stack successfully deleted")
+                        break
+                    time.sleep(10)
+                else:
+                    logger.warning("Stack deletion took longer than expected, continuing anyway...")
+                    
+        except Exception as e:
+            # Stack doesn't exist, which is fine
+            logger.info(f"No existing stack found or error checking: {e}")
+
+
     def deploy_workflow(self):
         logger.info(f"Starting SAM Deploy for {self.__user_dag.get_user_dag_name()}")
+        logger.info(f"Template file {self.__sam_build_dir / self.__yaml_file}")
+
+        self.__check_and_cleanup_failed_stack()
+        
         os.system(
             f"sam deploy \
               --template-file {self.__sam_build_dir / self.__yaml_file} \
@@ -435,7 +526,7 @@ class AWS:
         # print("Sam stack name",self.__sam_stackname)
         # print("Output File path",self.__outputs_filepath)
 
-        ## add sam stack name to ouput filepat
+        ## add sam stack name to ouput filepath
         with open(self.__outputs_filepath, "r") as f:
             data = json.load(f)
         data.append({"OutputKey": "SAMStackName", "OutputValue": self.__sam_stackname, "Description": "SAM Stack Name"})
@@ -446,9 +537,10 @@ class AWS:
 
 
 def add_async_afn_builder(data,list):
-
+    
     for i in range(0,len(list)):
         (fn_name,sub) =list[i]
+        
         poll_next=data["States"][fn_name]['Next']
         checkPollcondition='CheckPollCondition'+str(i)
         waitstate='WaitState'+str(i)
@@ -467,7 +559,7 @@ def add_async_afn_builder(data,list):
             }
         data["States"][waitstate]={
                 "Type": "Wait",
-                "Seconds": 100,
+                "SecondsPath": "$.body.waittime",
                 "Next": fn_name
             }
     return data
