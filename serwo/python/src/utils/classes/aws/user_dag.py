@@ -35,13 +35,16 @@ class UserDag:
             nodeID = "n" + str(index)
             self.__nodeIDMap[node["NodeName"]] = nodeID
             self.__nodeIDMap[node["NodeId"]] = nodeID
+            model_name = node.get("ModelName", "openai:gpt-4o-mini")
             self.__functions[node["NodeName"]] = Function(
                 node["NodeId"],
                 node["NodeName"],
                 node["Path"],
                 node["EntryPoint"],
-                node["MemoryInMB"]
+                node["MemoryInMB"],
+                model_name
             )
+            
 
             print("NodeKeys -", list(node.keys()))
             if "IsAsync" in node and node["IsAsync"]:

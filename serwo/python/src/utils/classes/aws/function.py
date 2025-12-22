@@ -1,5 +1,5 @@
 class Function:
-    def __init__(self, id, name, path, end_point, memory):
+    def __init__(self, id, name, path, end_point, memory, model_name=None):
         self._name = name
         self._id = id
         self._arn = name + "Arn"
@@ -10,6 +10,7 @@ class Function:
         self._uri = "functions/" + name
         self._module_name = end_point.split(".")[0]
         self._memory = memory
+        self._model_name = model_name or "openai:gpt-4o-mini"  # Default model
         # TODO - add function id
         self._isasync = False
         self._iscontainerised=False
@@ -34,6 +35,9 @@ class Function:
 
     def get_module_name(self):
         return self._module_name
+
+    def get_model_name(self):
+        return self._model_name
 
     def get_as_dict(self):
         return {

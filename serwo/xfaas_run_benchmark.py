@@ -326,7 +326,7 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
         # payload_size = d[2]
         ne_session_id = session_id + str(i)
         # payload = load_payload(wf_user_directory,payload_size)
-        breakpoint()
+        #breakpoint()
         if dynamism == 'slow':  # Or match your exact dynamism string
             duration_segment = 600.0  # Force ThreadGroup.duration=600s (10 min alive)
             target_throughput = 1.0   # Force ConstantThroughputTimer throughput=1.0 (1 sample/minute)

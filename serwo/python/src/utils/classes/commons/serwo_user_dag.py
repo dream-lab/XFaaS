@@ -46,6 +46,11 @@ class SerWOUserDag:
             if "IsContainerised" in node:
                 self.__dag.add_node(nodeID,
                                     IsContainerised=node["IsContainerised"])
+            
+            if "ModelName" in node:
+                self.__dag.add_node(nodeID,
+                                    ModelName=node["ModelName"])
+
             index += 1
 
         # add edges in the dag

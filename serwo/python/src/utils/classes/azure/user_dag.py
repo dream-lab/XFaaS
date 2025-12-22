@@ -33,8 +33,9 @@ class UserDag:
             # NOTE - this is different in AWS, being picked up from the user dag-description
             # nodeID = "n" + str(index)
             nodeID = node["NodeId"]
+            model_name = node.get("ModelName", "openai:gpt-4o-mini")
             self.__nodeIDMap[node["NodeName"]] = nodeID
-            self.__dag.add_node(nodeID, NodeName=node["NodeName"], pre="", ret=["yield ", "context.call_activity(\"" + node["NodeName"]  + "\",$var$)"], var=self._generate_random_variable_name(), machine_list=[nodeID])
+            self.__dag.add_node(nodeID, NodeName=node["NodeName"], ModelName=model_name, pre="", ret=["yield ", "context.call_activity(\"" + node["NodeName"]  + "\",$var$)"], var=self._generate_random_variable_name(), machine_list=[nodeID])
             index += 1
 
 
@@ -147,6 +148,16 @@ class UserDag:
         task_list_create = task_list_var_name + " = []\n"
         ret = ["yield ",  "context.task_all(" + task_list_var_name + ")"]
         pre = ""
+
+         # Use the first node's model_name
+        if nodes:
+            model_name = dag.nodes[nodes[0]].get('ModelName', 'openai:gpt-4o-mini')
+            pre += f"\n# Inject model_name for parallel execution"
+            pre += f"\nparallel_input = json.loads(serwoObject)"
+            pre += f"\nif 'body' in parallel_input:"
+            pre += f"\n    parallel_input['body']['model_name'] = '{model_name}'"
+            pre += f"\nserwoObject = json.dumps(parallel_input)"
+
         for node in nodes:
             # Remember No $var$ will be updated in parallel merge
             pre += "\n" + dag.nodes[node]['pre']
@@ -169,16 +180,84 @@ class UserDag:
         previous_var = None
         for node in nodes[:-1]:
             # $var$ will be updated in linear merge
+            # Get model_name for this node
+            model_name = dag.nodes[node].get('ModelName', 'openai:gpt-4o-mini')
+            node_name = dag.nodes[node].get('NodeName', 'unknown')
             
             if previous_var is not None:
+                # Inject model_name before calling activity
+                pre += f"\n# Inject model_name for {dag.nodes[node].get('NodeName')}"
+                pre += f"\nimport json"
+                pre += f"\n{previous_var}_dict = json.loads({previous_var})"
+                pre += f"\nif 'body' in {previous_var}_dict:"
+                pre += f"\n    body = {previous_var}_dict['body']"
+                pre += f"\n    if isinstance(body, str):"
+                pre += f"\n        body = json.loads(body)"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['body'] = json.dumps(body)"
+                pre += f"\n    else:"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['body'] = body"
+                pre += f"\nelif '_body' in {previous_var}_dict:"
+                pre += f"\n    body = {previous_var}_dict['_body']"
+                pre += f"\n    if isinstance(body, str):"
+                pre += f"\n        body = json.loads(body)"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['_body'] = json.dumps(body)"
+                pre += f"\n    else:"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['_body'] = body"
+                pre += f"\nelse:"
+                pre += f"\n    {previous_var}_dict['model_name'] = '{model_name}'"
+                pre += f"\n{previous_var} = json.dumps({previous_var}_dict)"
+
                 pre += "\n" + dag.nodes[node]['pre'].replace("$var$", previous_var)
                 var_substituted = dag.nodes[node]['ret'][1].replace("$var$", previous_var)
             else:
+                # Inject model_name for first node
+                pre += f"\n# Inject model_name for {dag.nodes[node].get('NodeName')}"
+                pre += f"\nimport json"
+                pre += f"\nserwoObject_dict = json.loads(serwoObject)"
+                pre += f"\nif 'body' in serwoObject_dict:"
+                pre += f"\n    serwoObject_dict['body']['model_name'] = '{model_name}'"
+                pre += f"\nelse:"
+                pre += f"\n    # Raw input - add model_name at top level"
+                pre += f"\n    serwoObject_dict['model_name'] = '{model_name}'"
+                pre += f"\nserwoObject = json.dumps(serwoObject_dict)"
+
                 pre += "\n" + dag.nodes[node]['pre']
                 var_substituted = dag.nodes[node]['ret'][1]
+
             pre += "\n" + dag.nodes[node]['var'] + " = " + dag.nodes[node]['ret'][0] + " " + var_substituted
             previous_var = dag.nodes[node]['var']
         
+        # Handle last node
+        model_name_last = dag.nodes[last].get('ModelName', 'openai:gpt-4o-mini')
+
+        pre += f"\n# Inject model_name for {dag.nodes[last].get('NodeName')}"
+        pre += f"\n{previous_var}_dict = json.loads({dag.nodes[nodes[-2]]['var']})"
+        pre += f"\nif 'body' in {previous_var}_dict:"
+        pre += f"\n    body = {previous_var}_dict['body']"
+        pre += f"\n    if isinstance(body, str):"
+        pre += f"\n        body = json.loads(body)"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['body'] = json.dumps(body)"
+        pre += f"\n    else:"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['body'] = body"
+        pre += f"\nelif '_body' in {previous_var}_dict:"
+        pre += f"\n    body = {previous_var}_dict['_body']"
+        pre += f"\n    if isinstance(body, str):"
+        pre += f"\n        body = json.loads(body)"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['_body'] = json.dumps(body)"
+        pre += f"\n    else:"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['_body'] = body"
+        pre += f"\nelse:"
+        pre += f"\n    {previous_var}_dict['model_name'] = '{model_name_last}'"
+        pre += f"\n{dag.nodes[nodes[-2]]['var']} = json.dumps({previous_var}_dict)"
+
         pre += "\n" + dag.nodes[last]['pre'].replace("$var$", dag.nodes[nodes[-2]]['var'])
         var = self._generate_random_variable_name()
         # $var$ will be updated in linear merge
