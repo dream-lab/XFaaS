@@ -54,27 +54,19 @@ def translate(clouds,cloud_dictionary,valid_partition_points,user_dag):
 def partition_dag(user_dag,user_pinned_nodes,benchmark_path,is_math,disabled_pair):
     valid_partition_points = user_dag.get_partition_points()
     cloud_ids,cloud_dictionary = get_supported_cloud_ids()
-    if is_math:
-        clouds = [0,0,0,0]
-        min_latency = 11204
-    else:
-        latencies_benchmark, data_transfers_benchmark, inter_cloud_data_tranfers, is_fan_in = \
-            xfaas_benchmark.populate_benchmarks_for_user_dag(user_dag,user_pinned_nodes,benchmark_path,
-                                                            valid_partition_points, cloud_ids)
-        opt = "DP"
+   
 
-        if opt != 'ILP':
-            print("pased this")
-            clouds,min_latency = dp_xfaas_partitioner.get_optimal_partitions(latencies_benchmark,
+    latencies_benchmark, data_transfers_benchmark, inter_cloud_data_tranfers, is_fan_in = \
+        xfaas_benchmark.populate_benchmarks_for_user_dag(user_dag,user_pinned_nodes,benchmark_path,
+                                                        valid_partition_points, cloud_ids)
+    opt = "DP"
+
+    clouds,min_latency = dp_xfaas_partitioner.get_optimal_partitions(latencies_benchmark,
                                                                 data_transfers_benchmark,
                                                                 inter_cloud_data_tranfers,
-                                                                            is_fan_in,disabled_pair)
+                                                                is_fan_in,disabled_pair)
 
-            if min_latency == sys.maxsize:
-                print('DAG CANNOT BE PARTITIONED FOR GIVEN INPUT VALUES AND USER CONSTRAINTS')
-       
-        print('Result from DP partitioner: \n clouds -> ',clouds,'\n Latency -> ',min_latency)
-       
+    return clouds,min_latency
 
     final_cloud_config = translate(clouds,cloud_dictionary,valid_partition_points,user_dag)
 
