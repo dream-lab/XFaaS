@@ -22,7 +22,7 @@ def get_user_workflow_name(dag_definition_path):
     user_app_name = data['WorkflowName']
     return user_app_name
 
-def create_resources(resource_dir, out_file_path, region,is_netherite):
+def create_resources(resource_dir, out_file_path, region,is_netherite,depl_dir):
     credential = DefaultAzureCredential()
     subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
     resource_client = ResourceManagementClient(credential, subscription_id)
@@ -89,7 +89,9 @@ def create_resources(resource_dir, out_file_path, region,is_netherite):
     if not os.path.exists(resource_dir):
         os.makedirs(resource_dir)
     with open(out_file_path, 'w') as f:
-        json.dump(fin_dict, f)
+        json.dump(fin_dict, f,indent=4)
+    with open(f'{depl_dir}/azure_resources.json', 'w') as f:
+        json.dump(fin_dict, f,indent=4)
 
 
 def randomString(stringLength):
@@ -98,10 +100,12 @@ def randomString(stringLength):
     return ''.join(random.choice(letters) for i in range(stringLength))
 
 
-def generate(user_dir, dag_definition_path,region,part_id, is_netherite):
+def generate(user_dir, dag_definition_path,region,part_id, is_netherite,wf_deployment_id):
     global resource_group_name, storage_account_name
 
     resource_dir = f"{user_dir}/build/workflow/resources"
+    depl_dir = f"{user_dir}/{wf_deployment_id}"
+    os.makedirs(depl_dir)
     if is_netherite:
         out_file_path = f'{resource_dir}/azure_v2-{region}-{part_id}.json'
     else:
@@ -116,6 +120,6 @@ def generate(user_dir, dag_definition_path,region,part_id, is_netherite):
     xd = randint(10000, 99999)
     storage_account_name = f'serwoa{xd}'
     try:
-        create_resources(resource_dir,out_file_path,region,is_netherite)
+        create_resources(resource_dir,out_file_path,region,is_netherite,depl_dir)
     except Exception as e:
         print(f'Exception thrown: {e}')

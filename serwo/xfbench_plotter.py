@@ -141,44 +141,46 @@ class XFBenchPlotter:
         return prefix
 
 
-    def __create_dynamo_db_items(self):
+    def __create_dynamo_db_items(self):       
         print("Creating DynamoDB items")
         dynamodb_item_list = []
 
         queue = QueueClient.from_connection_string(conn_str=self.__conn_str, queue_name=self.__queue_name)
-        response = queue.receive_messages(visibility_timeout=3000)
+        response = queue.receive_messages(visibility_timeout=300)
         print('Reading Queue')
         for message in response:
             queue_item = json.loads(message.content)
             metadata = queue_item["metadata"]
+            data = queue_item["data"]
             
             # Filtering based on workflow deployment id during creation itself
-            if metadata["deployment_id"].strip() == self.__workflow_deployment_id:
-                dynamo_item = {}
-                invocation_id = f"{metadata['workflow_instance_id']}-{metadata['session_id']}"
-                dynamo_item["workflow_deployment_id"] = metadata["deployment_id"]
-                dynamo_item["workflow_invocation_id"] = invocation_id
-                dynamo_item["client_request_time_ms"] = str(
-                    metadata["request_timestamp"]
-                )
-                dynamo_item["invocation_start_time_ms"] = str(
-                    metadata["workflow_start_time"]
-                )
+            # if True or metadata["deployment_id"].strip() == self.__workflow_deployment_id:
+            dynamo_item = {}
+            invocation_id = f"{metadata['workflow_instance_id']}-{metadata['session_id']}"
+            dynamo_item["workflow_deployment_id"] = metadata["deployment_id"]
+            dynamo_item["workflow_invocation_id"] = invocation_id
+            dynamo_item["client_request_time_ms"] = str(
+                metadata["request_timestamp"]
+            )
+            dynamo_item["invocation_start_time_ms"] = str(
+                metadata["workflow_start_time"]
+            )
+            dynamo_item["data"] = data
 
-                # add session id to dynamo db
-                dynamo_item["session_id"] = str(metadata["session_id"])
-                if "llm_nw_latency1" in metadata:
-                    dynamo_item["llm_nw_latency1"] = metadata["llm_nw_latency1"]
-                if "llm_nw_latency2" in metadata:
-                    dynamo_item["llm_nw_latency2"] = metadata["llm_nw_latency2"]
-                if "object_push_latency" in metadata:
-                    dynamo_item["object_push_latency"] = metadata["object_push_latency"]
-                dynamo_item["functions"] = {}
-                for item in metadata["functions"]:
-                    for key in item.keys():
-                        dynamo_item["functions"][key] = item[key]
+            # add session id to dynamo db
+            dynamo_item["session_id"] = str(metadata["session_id"])
+            if "llm_nw_latency1" in metadata:
+                dynamo_item["llm_nw_latency1"] = metadata["llm_nw_latency1"]
+            if "llm_nw_latency2" in metadata:
+                dynamo_item["llm_nw_latency2"] = metadata["llm_nw_latency2"]
+            if "object_push_latency" in metadata:
+                dynamo_item["object_push_latency"] = metadata["object_push_latency"]
+            dynamo_item["functions"] = {}
+            for item in metadata["functions"]:
+                for key in item.keys():
+                    dynamo_item["functions"][key] = item[key]
 
-                dynamodb_item_list.append(dynamo_item)
+            dynamodb_item_list.append(dynamo_item)
 
         return dynamodb_item_list
     
@@ -641,7 +643,7 @@ class XFBenchPlotter:
         
        
         ax.plot(timeline, e2e_time)
-        print(e2e_time[0:23])
+        # print(e2e_time[0:23])
         
 
         if is_overlay:
@@ -655,7 +657,7 @@ class XFBenchPlotter:
         # ax.set_xlim(xmin=0, xmax=max(ax.get_xticks()))
 
         # NOTE - plotting the container spawn times here
-        if self.__exp_desc.get("csp") == "azure" or self.__exp_desc.get("csp") == "azure_v2":
+        if self.__exp_desc.get("csp") == "azure" or self.__exp_desc.get("csp") == "azure_v2" or self.__exp_desc.get("csp") == "aws":
             container_spawn_times, _ = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
 
             ax.plot(container_spawn_times, [ax.get_ylim()[1]/2 for i in range(0, len(container_spawn_times))], color='green', marker='o', markersize=8, linestyle='None')
@@ -835,13 +837,13 @@ class XFBenchPlotter:
                                                                                 distribution_dict["edges"],
                                                                                 num_iters=len(self.__get_provenance_logs()))
 
-        print(cumm_compute_time[0:20])
-        print(cumm_comms_time[0:20])
-        print(cumm_e2e_time[0:20])
+        # print(cumm_compute_time[0:20])
+        # print(cumm_comms_time[0:20])
+        # print(cumm_e2e_time[0:20])
 
-        cumm_compute_time = cumm_compute_time[0:23]
-        cumm_comms_time = cumm_comms_time[0:23]
-        cumm_e2e_time = cumm_e2e_time[0:23]
+        cumm_compute_time = cumm_compute_time
+        cumm_comms_time = cumm_comms_time
+        cumm_e2e_time = cumm_e2e_time
 
         bplot2 = ax.boxplot([np.array(cumm_compute_time), np.array(cumm_comms_time), np.array(cumm_e2e_time)],
                              vert=True,
@@ -889,7 +891,7 @@ class XFBenchPlotter:
         logger.info(f"Plotting e2e boxplots for invocations wnwo containers")
         logs = self.__get_provenance_logs()
         
-        if csp == 'azure':
+        if csp == 'azure' or csp == 'aws':
             # NOTE - this returns a "set" of ids
             _ , container_wf_invocations_ids = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
         if csp == 'aws':
@@ -961,7 +963,7 @@ class XFBenchPlotter:
     def plot_cumm_e2e_container(self, csp,yticks: list):
         logs = self.__get_provenance_logs()
         distribution_dict = self.__get_timings_dict()
-        if csp == 'azure':
+        if csp == 'azure' or csp == 'aws':
             # NOTE - this returns a "set" of ids
             _ , container_wf_invocations_ids = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
         if csp == 'aws':
@@ -990,7 +992,7 @@ class XFBenchPlotter:
     '''
     def plot_stagewise_containers(self,csp, yticks: list, figwidth=None):
         logs = self.__get_provenance_logs()
-        if csp == 'azure':
+        if csp == 'azure' or csp == 'aws':
         # NOTE - this returns a "set" of ids
             _ , container_wf_invocations_ids = self.__get_azure_containers(log_items=sorted(logs, key=lambda k: int(k["invocation_start_time_ms"])))
         if csp == 'aws':

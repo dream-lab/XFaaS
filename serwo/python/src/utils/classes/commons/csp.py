@@ -15,9 +15,9 @@ class CSP:
 
 
     #TODO: Factory pattern for csp
-    def build_resources(self,user_dir, dag_definition_path, region, part_id, dag_definition_file, is_netherite):
+    def build_resources(self,user_dir, dag_definition_path, region, part_id, dag_definition_file, is_netherite,wf_deployment_id):
         if self.__name == 'azure':
-            self.build_az(dag_definition_file, dag_definition_path, part_id, region, user_dir, is_netherite)
+            self.build_az(dag_definition_file, dag_definition_path, part_id, region, user_dir, is_netherite,wf_deployment_id)
         if self.__name == 'aws':
             aws_deployer = AWS(user_dir, dag_definition_file, "REST", part_id, region)
             aws_deployer.build_resources()
@@ -26,11 +26,11 @@ class CSP:
             pass
 
 
-    def build_az(self, dag_definition_file, dag_definition_path, part_id, region, user_dir,is_netherite):
+    def build_az(self, dag_definition_file, dag_definition_path, part_id, region, user_dir,is_netherite,wf_deployment_id):
         print(':'*80, 'Azure resource generation')
-        azure_resource_generator.generate(user_dir, dag_definition_path, region, part_id,is_netherite)
+        azure_resource_generator.generate(user_dir, dag_definition_path, region, part_id,is_netherite,wf_deployment_id)
         print(':'*80, 'Azure Build')
-        azure_builder.build(user_dir, dag_definition_file, region, part_id, is_netherite)
+        azure_builder.build(user_dir, dag_definition_file, region, part_id, is_netherite,wf_deployment_id)
         print(':'*80, 'Azure Deploy')
         azure_deployer.deploy(user_dir, region, part_id,is_netherite)
         print(':'*80, 'Azure Deploy Done...')

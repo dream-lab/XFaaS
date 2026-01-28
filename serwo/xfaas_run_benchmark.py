@@ -365,7 +365,20 @@ def remote_teardown(wf_user_directory,csp,region,part_id):
         resource_path = f"{wf_user_directory}/build/workflow/resources/{csp}-{region}-{part_id}.json"
         with open(resource_path) as f:
             resource = json.load(f)
+        app_name = resource['app_name']
+
         resource_group_name = resource['group']
+        
+        print(f"Stopping Function App: {app_name} in group {resource_group_name} ...")
+        subprocess.run([
+            "az", "functionapp", "stop",
+            "--name", app_name,
+            "--resource-group", resource_group_name,
+            "--only-show-errors",
+            "-o", "none"
+        ], check=True)
+        print(f"  ✓ Stopped function app: {app_name}")
+        
         remove_resource_group_command = f"az group delete --name {resource_group_name} --yes"
         os.system(remove_resource_group_command)
 
@@ -451,6 +464,7 @@ if __name__ == "__main__":
     if not os.path.exists(deployment_id_file_path):
         with open(deployment_id_file_path, "w") as f:
             f.write(wf_deployment_id + "\n")
+            
     else:
         with open(deployment_id_file_path, "r") as f:
             deps = f.readlines()
@@ -462,28 +476,28 @@ if __name__ == "__main__":
 
     time.sleep(10)
     
-    print('==================RUNNING WF===========================')
-    run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id,is_localhost)
-    time.sleep(100)
-    try:
-        print('==================PLOTTING METRICS===========================')
-        plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name,region)
-    except Exception as e:
-        print('==================PLOTTING METRICS FAILED===========================')
-        print(e)
-        pass
+    # print('==================RUNNING WF===========================')
+    # run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id,is_localhost)
+    # time.sleep(60)
+    # try:
+    #     print('==================PLOTTING METRICS===========================')
+    #     plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name,region)
+    # except Exception as e:
+    #     print('==================PLOTTING METRICS FAILED===========================')
+    #     print(e)
+    #     pass
     
-    print('==================TEARING DOWN WF===========================')
-    timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-    exp_conf = f"{csp}-{region}-{max_rps}-{duration}-{payload_size}-{dynamism}-{timestamp}"
-    src = f"{wf_user_directory}/{wf_deployment_id}"
-    dst = f"{wf_user_directory}/{exp_conf}"
-    shutil.copytree(src, dst)
+    # print('==================TEARING DOWN WF===========================')
+    # timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+    # exp_conf = f"{csp}-{region}-{max_rps}-{duration}-{payload_size}-{dynamism}-{timestamp}"
+    # src = f"{wf_user_directory}/{wf_deployment_id}"
+    # dst = f"{wf_user_directory}/{exp_conf}"
+    # shutil.copytree(src, dst)
 
     
-    teardown_flag = bool(int(teardown_flag))
+    # teardown_flag = bool(int(teardown_flag))
     
-    if teardown_flag == True:
-        remote_teardown(wf_user_directory,csp,region,part_id)
+    # if teardown_flag == True:
+    #     remote_teardown(wf_user_directory,csp,region,part_id)
 
-    local_teardown(wf_user_directory)
+    # local_teardown(wf_user_directory)

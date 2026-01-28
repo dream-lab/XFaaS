@@ -12,7 +12,6 @@ import azure.functions as az_func
 from .USER_FUNCTION_PLACEHOLDER import user_function as USER_FUNCTION_PLACEHOLDER_function
 import cpuinfo
 import sys
-import objsize
 import random
 import string
 
@@ -72,6 +71,8 @@ def merge_containers_logs(metadata_list, metadata):
 
 def main(serwoObject, context: az_func.Context) -> str:
     try:
+        instance_id = os.getenv("WEBSITE_INSTANCE_ID", "unknown-instance")
+
         basepath = f"{str(context.function_directory)}/"
         if isinstance(serwoObject, list):
             serwo_list_object = SerWOObjectsList()
@@ -82,7 +83,7 @@ def main(serwoObject, context: az_func.Context) -> str:
             metadata_list = []
             for res in serwoObject:
                 serwo_object_res = unmarshall(json.loads(res))
-                input_body_size += objsize.get_deep_size(serwo_object_res.get_body())
+                input_body_size += len(json.dumps(serwo_object_res.get_body()).encode('utf-8'))
                 serwo_list_object.add_object(serwo_object_res.get_body())
                 metadata = serwo_object_res.get_metadata()
                 if start_delta == 0:
@@ -109,13 +110,13 @@ def main(serwoObject, context: az_func.Context) -> str:
 
             serwoObjectResponse = USER_FUNCTION_PLACEHOLDER_function(serwo_list_object)
             body_after = serwoObjectResponse.get_body()
-            output_body_size = objsize.get_deep_size(body_after)
+            output_body_size = len(json.dumps(body_after).encode('utf-8'))
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss
             logging.info(
                 f"Memory After Function Call: fid: {function_id}, wf_instance_id: {workflow_instance_id}, memory:{memory}"
             )
-            cpu_brand = cpuinfo.get_cpu_info()["brand_raw"]
+            # cpu_brand = cpuinfo.get_cpu_info()["brand_raw"]
             memory_after = memory
             func_id = function_id
             end_delta = get_delta(metadata["workflow_start_time"])
@@ -132,27 +133,34 @@ def main(serwoObject, context: az_func.Context) -> str:
             
 
             body = serwoObjectResponse.get_body()
+            metadata["instance_id"] = instance_id
             return SerWOObject(body=body, metadata=metadata).to_json()
         else:
             serwoObject = unmarshall(json.loads(serwoObject))
             metadata = serwoObject.get_metadata()
             container_directory = f'/tmp/xfaas'
             
-            # container_id = fetch_or_make_container_id(container_directory)
-            container_id = ''
+            container_id = fetch_or_make_container_id(container_directory)
+            # container_id = ''
             
             start_delta = get_delta(metadata["workflow_start_time"])
             workflow_instance_id = metadata["workflow_instance_id"]
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss
             memory_before = memory
+            time_before = time.time()
             logging.info(
                 f"Memory Before Function Call: fid: {function_id}, wf_instance_id: {workflow_instance_id}, memory:{memory}"
             )
+            logging.info(
+                f"Time Before Function Call: fid: {function_id}, wf_instance_id: {workflow_instance_id}, time:{time_before}"
+            )
             serwoObject.set_basepath(basepath=basepath)
             body_before = serwoObject.get_body()
-            input_body_size = objsize.get_deep_size(body_before)
+            input_body_size = len(json.dumps(body_before).encode('utf-8'))
             serwoObjectResponse = USER_FUNCTION_PLACEHOLDER_function(serwoObject)
+            time_after = time.time()
+            execution_time = time_after - time_before
             body_after = serwoObjectResponse.get_body()
             if "llm_nw_latency1" in body_after:
                 metadata["llm_nw_latency1"] = body_after["llm_nw_latency1"]
@@ -160,11 +168,14 @@ def main(serwoObject, context: az_func.Context) -> str:
                 metadata["llm_nw_latency2"] = body_after["llm_nw_latency2"]
             if "object_push_latency" in body_after:
                 metadata["object_push_latency"] = body_after["object_push_latency"]
-            output_body_size = objsize.get_deep_size(body_after)
+            output_body_size = len(json.dumps(body_after).encode('utf-8'))
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss
             logging.info(
                 f"Memory After Function Call: fid: {function_id}, wf_instance_id: {workflow_instance_id}, memory:{memory}"
+            )
+            logging.info(
+                f"Time After Function Call: fid: {function_id}, wf_instance_id: {workflow_instance_id}, time:{time_after}, execution_time:{execution_time}"
             )
             memory_after = memory
             func_id = function_id
@@ -174,6 +185,7 @@ def main(serwoObject, context: az_func.Context) -> str:
             metadata["functions"].append(func_json)
             metadata = metadata
             body = serwoObjectResponse.get_body()
+            metadata["instance_id"] = instance_id
             return SerWOObject(body=body, metadata=metadata).to_json()
     except Exception as e:
         logging.info("excep= " + str(e))

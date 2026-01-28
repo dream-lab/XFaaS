@@ -10,7 +10,6 @@ import string
 import logging
 import os
 import psutil
-import objsize
 # import cpuinfo
 # from USER_FUNCTION_PLACEHOLDER import function as USER_FUNCTION_PLACEHOLDER_function - NOTE - !!! TK - STANDARDISE THIS!!! IMPORTANT
 from USER_FUNCTION_PLACEHOLDER import user_function as USER_FUNCTION_PLACEHOLDER_function
@@ -30,6 +29,32 @@ NOTE - creating a serwo wrapper object from cloud events
 """
 
 
+def generate_random_string(N):
+    res = ''.join(random.choices(string.ascii_lowercase + string.ascii_uppercase +
+                                string.digits, k=N))
+ 
+    return res
+
+def fetch_or_make_container_id(container_directory):
+    if os.path.exists(container_directory):
+        files = os.listdir(container_directory)
+        for file in files:
+                filename = file
+        container_id = filename
+    else:
+        container_id = generate_random_string(3)
+        
+        # st_time = int(time.time()*1000)
+        # cpu_brand = cpuinfo.get_cpu_info()["brand_raw"]
+        # en_time = int(time.time()*1000)
+        # time_taken = en_time - st_time
+        # container_id = f'{container_id}_{cpu_brand}_{time_taken}'
+        # os.mkdir(container_directory)
+        # os.mkdir(f'{container_directory}/{container_id}')
+
+        os.makedirs(f'{container_directory}/{container_id}', exist_ok=True)
+        
+    return container_id
 # Get time delta function
 def get_delta(timestamp):
     return round(time.time() * 1000) - timestamp
@@ -41,13 +66,15 @@ def lambda_handler(event, context):
     # Unmarshal from lambda handler
     # capturing input payload size
     input_payload_size_bytes = None
-
+    container_directory = f'/tmp/xfaas'
+    container_id = fetch_or_make_container_id(container_directory)
+    # container_id = ''
     if isinstance(event, list):
         # TODO: exception handling
         serwo_request_object = build_serwo_list_object(event)
 
         # Calculate input payload size
-        input_payload_size_bytes = sum([objsize.get_deep_size(x.get_body()) for x in serwo_request_object.get_objects()])
+        input_payload_size_bytes = sum([len(json.dumps(x.get_body()).encode('utf-8')) for x in serwo_request_object.get_objects()])
     
     elif isinstance(event, dict):
         # # NOTE - this is a sample if condition for the pilot jobs
@@ -73,7 +100,7 @@ def lambda_handler(event, context):
                 functions=[],
             )
         serwo_request_object = build_serwo_object(event)
-        input_payload_size_bytes = objsize.get_deep_size(serwo_request_object.get_body())
+        input_payload_size_bytes = len(json.dumps(serwo_request_object.get_body()).encode('utf-8'))
     else:
         # TODO: Report error and return
         pass
@@ -131,7 +158,8 @@ def lambda_handler(event, context):
                     mem_before=memory_before,
                     mem_after=memory_after,
                     in_payload_bytes=input_payload_size_bytes,
-                    out_payload_bytes=objsize.get_deep_size(response_object.get_body()),
+                    out_payload_bytes=len(json.dumps(response_object.get_body()).encode('utf-8')),
+                    cid=container_id,
                     # cpu=cpu_brand
 
                 )

@@ -18,7 +18,7 @@ RUN sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft
 RUN apt-get update
 RUN apt-get install -y azure-functions-core-tools-4
 RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt install -y openjdk-11-jdk
-RUN curl -LO https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.5.tgz
-RUN tar xf apache-jmeter-5.5.tgz
-ENV PATH "$PATH:/apache-jmeter-5.5/bin"
+RUN curl -LO https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.2.tgz
+RUN tar xf apache-jmeter-5.6.2.tgz
+ENV PATH "$PATH:/apache-jmeter-5.6.2/bin"
 ENTRYPOINT ["tail", "-f", "/dev/null"]

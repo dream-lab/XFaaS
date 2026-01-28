@@ -1,7 +1,7 @@
 from python.src.utils.classes.commons.partition_point import PartitionPoint
 from python.src.utils.classes.commons.csp import CSP
 
-def generate(user_dir, dag_definition_path, partition_config, dag_definition_file):
+def generate(user_dir, dag_definition_path, partition_config, dag_definition_file,wf_deployment_id):
     for partition in partition_config:
         csp = partition.get_left_csp()
         region = partition.get_region()
@@ -12,6 +12,6 @@ def generate(user_dir, dag_definition_path, partition_config, dag_definition_fil
             is_netherite = True
         else:
             is_netherite = False
-        CSP(csp).build_resources(user_dir, dag_definition_path,region,part_id,dag_definition_file,is_netherite)
+        CSP(csp).build_resources(user_dir, dag_definition_path,region,part_id,dag_definition_file,is_netherite,wf_deployment_id)
         
 

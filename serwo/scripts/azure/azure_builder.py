@@ -317,7 +317,7 @@ def re_written_generator(user_fns_data):
         remove(f"{path}")
         remove(f"{runner_template_file_secondary}")
 
-def generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,region,part_id,is_netherite):
+def generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,region,part_id,is_netherite,wf_deployment_id):
     global resources_json
     if is_netherite:
         resources_json += f"azure_v2-{region}-{part_id}.json"
@@ -334,10 +334,14 @@ def generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,regi
         os.makedirs(resource_dir)
     with open(resources_json, 'w') as f:
         json.dump(data, f)
+    
+    depl_json = f"{USER_DIR}/{wf_deployment_id}/azure_resources.json"
+    with open(depl_json, 'w') as f:
+        json.dump(data, f,indent=4)
     return data['queue_name'],data['app_name']
 
 
-def build(user_dir, dag_definition_file, region, part_id,is_netherite):
+def build(user_dir, dag_definition_file, region, part_id,is_netherite,wf_deployment_id):
     global USER_DIR,DAG_DEFINITION_FILE
 
     USER_DIR = user_dir
@@ -345,7 +349,7 @@ def build(user_dir, dag_definition_file, region, part_id,is_netherite):
     init_paths()
     build_working_dir(region,part_id,is_netherite)
     user_fns_data, user_app_name = get_user_workflow_details()
-    ingress_queue_name, app_name = generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,region,part_id,is_netherite)
+    ingress_queue_name, app_name = generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,region,part_id,is_netherite,wf_deployment_id)
     build_user_fn_dirs(user_fns_data)
     copy_meta_files(user_fns_data,ingress_queue_name,app_name,is_netherite)
     gen_requirements(user_fns_data)
@@ -358,5 +362,6 @@ if __name__ == '__main__':
     region = sys.argv[3]
     part_id = sys.argv[4]
     is_netherite = sys.argv[5]
+    wf_deployment_id = sys.argv[6]
 
-    build(user_dir,dag_definition_file,region,part_id,is_netherite)
+    build(user_dir,dag_definition_file,region,part_id,is_netherite,wf_deployment_id)
