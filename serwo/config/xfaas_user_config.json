@@ -1,12 +1,12 @@
 {
   "credentials": {
     "aws": {
-      "username": "tuhink",
-      "password": "check"
+      "username": "Dunny_user",
+      "password": "dummy_pass123"
     },
     "azure": {
-      "username": "tuhin@dream-lab.in",
-      "password": "check"
+      "username": "dreamlabsadmin",
+      "password": "dummy_pass123"
     }
   },
   "user_pinned_nodes" : { 

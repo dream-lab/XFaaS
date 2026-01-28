@@ -277,6 +277,24 @@ class UserDag:
                     successor_node_names.append(sucessor)
         
         return successor_node_names
+
+    def get_predecessor_node_names(self, node_name):
+        # Get the node ID corresponding to the given node name
+        node_id = self.__nodeIDMap.get(node_name)
+        
+        if node_id is None:
+            # Handle case where node name is not found
+            return []
+        
+        predecessor_node_names = []
+        for node in self.__dag_config_data["Edges"]:
+            source_node = list(node.keys())[0]
+            targets = node[source_node]
+            if node_name in targets:
+                predecessor_node_names.append(source_node)
+        
+        return predecessor_node_names
+
     
     def get_user_dag_nodes(self):
         return self.__dag_config_data["Nodes"]

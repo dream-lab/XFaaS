@@ -2,6 +2,7 @@ import os
 import json
 import shutil
 import pathlib
+import subprocess
 from signal import signal, SIGPIPE, SIG_DFL
 signal(SIGPIPE,SIG_DFL)
 from random import randint
@@ -13,11 +14,12 @@ from azure.storage.queue import QueueServiceClient
 from azure.storage.blob import BlobServiceClient
 import string
 import random
+
 queue_name = 'serwo-ingress'
 
-
-
 def get_user_workflow_name(dag_definition_path):
+    if not os.path.exists(dag_definition_path):
+        raise FileNotFoundError(f"DAG definition file not found: {dag_definition_path}")
     data = json.load(open(dag_definition_path))
     user_app_name = data['WorkflowName']
     return user_app_name
@@ -64,7 +66,7 @@ def create_resources(resource_dir, out_file_path, region,is_netherite):
 
     jsson = json.loads(json_str)
     if is_netherite:
-        netherite_namespace = randomString(6)
+        netherite_namespace = randomString(12)
         ## create eventhubs namespace
         try:
             

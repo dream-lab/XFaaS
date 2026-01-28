@@ -74,6 +74,8 @@ def generate(user_dir, partition_config, dag_definition_file):
                 function_name = "PushToStorageQueue"
                 entry_point = "push_to_azure_q.py"
                 src = f"{updated_user_dir}/PushToStorageQueue"
+                if not os.path.exists(directory):
+                    raise FileNotFoundError(f"Downstream Azure resources file not found: {directory}. Ensure that the downstream partition was built successfully.")
                 with open(directory, "r") as file:
                     resources = json.load(file)
                 queue_name = resources["queue_name"]
