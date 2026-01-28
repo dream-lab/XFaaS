@@ -172,87 +172,87 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
             # Raw input - add model_name at top level
             serwoObject_dict['model_name'] = 'openai:gpt-4o-mini'
         serwoObject = json.dumps(serwoObject_dict)
-        isfi = yield context.call_activity("Planner", serwoObject)
+        oshm = yield context.call_activity("Planner", serwoObject)
         # Inject model_name for Actor
         import json
-        isfi_dict = json.loads(isfi)
-        if 'body' in isfi_dict:
-            body = isfi_dict['body']
+        oshm_dict = json.loads(oshm)
+        if 'body' in oshm_dict:
+            body = oshm_dict['body']
             if isinstance(body, str):
                 body = json.loads(body)
                 body['model_name'] = 'openai:gpt-4o-mini'
-                isfi_dict['body'] = json.dumps(body)
+                oshm_dict['body'] = json.dumps(body)
             else:
                 body['model_name'] = 'openai:gpt-4o-mini'
-                isfi_dict['body'] = body
-        elif '_body' in isfi_dict:
-            body = isfi_dict['_body']
+                oshm_dict['body'] = body
+        elif '_body' in oshm_dict:
+            body = oshm_dict['_body']
             if isinstance(body, str):
                 body = json.loads(body)
                 body['model_name'] = 'openai:gpt-4o-mini'
-                isfi_dict['_body'] = json.dumps(body)
+                oshm_dict['_body'] = json.dumps(body)
             else:
                 body['model_name'] = 'openai:gpt-4o-mini'
-                isfi_dict['_body'] = body
+                oshm_dict['_body'] = body
         else:
-            isfi_dict['model_name'] = 'openai:gpt-4o-mini'
-        isfi = json.dumps(isfi_dict)
-        memo = yield context.call_activity("Actor", isfi)
+            oshm_dict['model_name'] = 'openai:gpt-4o-mini'
+        oshm = json.dumps(oshm_dict)
+        jzsy = yield context.call_activity("Actor", oshm)
         # Inject model_name for Evaluator
         import json
-        memo_dict = json.loads(memo)
-        if 'body' in memo_dict:
-            body = memo_dict['body']
+        jzsy_dict = json.loads(jzsy)
+        if 'body' in jzsy_dict:
+            body = jzsy_dict['body']
             if isinstance(body, str):
                 body = json.loads(body)
                 body['model_name'] = 'openai:gpt-4o-mini'
-                memo_dict['body'] = json.dumps(body)
+                jzsy_dict['body'] = json.dumps(body)
             else:
                 body['model_name'] = 'openai:gpt-4o-mini'
-                memo_dict['body'] = body
-        elif '_body' in memo_dict:
-            body = memo_dict['_body']
+                jzsy_dict['body'] = body
+        elif '_body' in jzsy_dict:
+            body = jzsy_dict['_body']
             if isinstance(body, str):
                 body = json.loads(body)
                 body['model_name'] = 'openai:gpt-4o-mini'
-                memo_dict['_body'] = json.dumps(body)
+                jzsy_dict['_body'] = json.dumps(body)
             else:
                 body['model_name'] = 'openai:gpt-4o-mini'
-                memo_dict['_body'] = body
+                jzsy_dict['_body'] = body
         else:
-            memo_dict['model_name'] = 'openai:gpt-4o-mini'
-        memo = json.dumps(memo_dict)
-        kwjb = yield context.call_activity("Evaluator", memo)
+            jzsy_dict['model_name'] = 'openai:gpt-4o-mini'
+        jzsy = json.dumps(jzsy_dict)
+        rveh = yield context.call_activity("Evaluator", jzsy)
         # Inject model_name for CollectLogs
-        kwjb_dict = json.loads(kwjb)
-        if 'body' in kwjb_dict:
-            body = kwjb_dict['body']
+        rveh_dict = json.loads(rveh)
+        if 'body' in rveh_dict:
+            body = rveh_dict['body']
             if isinstance(body, str):
                 body = json.loads(body)
                 body['model_name'] = 'openai:gpt-4o-mini'
-                kwjb_dict['body'] = json.dumps(body)
+                rveh_dict['body'] = json.dumps(body)
             else:
                 body['model_name'] = 'openai:gpt-4o-mini'
-                kwjb_dict['body'] = body
-        elif '_body' in kwjb_dict:
-            body = kwjb_dict['_body']
+                rveh_dict['body'] = body
+        elif '_body' in rveh_dict:
+            body = rveh_dict['_body']
             if isinstance(body, str):
                 body = json.loads(body)
                 body['model_name'] = 'openai:gpt-4o-mini'
-                kwjb_dict['_body'] = json.dumps(body)
+                rveh_dict['_body'] = json.dumps(body)
             else:
                 body['model_name'] = 'openai:gpt-4o-mini'
-                kwjb_dict['_body'] = body
+                rveh_dict['_body'] = body
         else:
-            kwjb_dict['model_name'] = 'openai:gpt-4o-mini'
-        kwjb = json.dumps(kwjb_dict)
-        kwjb = insert_end_stats_in_metadata(kwjb)
-        jwjf = yield context.call_activity("CollectLogs", kwjb)
+            rveh_dict['model_name'] = 'openai:gpt-4o-mini'
+        rveh = json.dumps(rveh_dict)
+        rveh = insert_end_stats_in_metadata(rveh)
+        ktpc = yield context.call_activity("CollectLogs", rveh)
 
         # Check conditional branching condition
         import json
         try:
-            result_dict = json.loads(jwjf)
+            result_dict = json.loads(ktpc)
             if '_body' in result_dict:
                 result_body = result_dict['_body']
             else:
@@ -273,7 +273,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         if not should_continue:
             break
 
-    return jwjf
+    return ktpc
 
 
 main = df.Orchestrator.create(orchestrator_function)

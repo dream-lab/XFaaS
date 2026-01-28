@@ -281,6 +281,7 @@ def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynam
             os.system(f"ssh {server_user_id}@{server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
             os.system(f"ssh {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
     else:
+        breakpoint()
         os.system(f"chmod +x {output_path}")
         os.system(f"{output_path}")
         #os.system(f"./{output_path}") use when you don't have full path

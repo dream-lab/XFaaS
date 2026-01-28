@@ -153,6 +153,7 @@ class XFBenchPlotter:
         for message in response:
             queue_item = json.loads(message.content)
             metadata = queue_item["metadata"]
+            data = queue_item["data"]
             
             # Filtering based on workflow deployment id during creation itself
             if metadata["deployment_id"].strip() == self.__workflow_deployment_id:
@@ -166,7 +167,7 @@ class XFBenchPlotter:
                 dynamo_item["invocation_start_time_ms"] = str(
                     metadata["workflow_start_time"]
                 )
-
+                dynamo_item["data"] = data
                 # add session id to dynamo db
                 dynamo_item["session_id"] = str(metadata["session_id"])
 

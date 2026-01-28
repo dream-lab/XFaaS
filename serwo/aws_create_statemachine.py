@@ -383,42 +383,42 @@ class AWS:
                         data['States']['Success'] = {
                             'Type': 'Succeed'
                         }
-        
-        # NEW: Inject model_name Parameters for each Task state
-        function_object_map = self.__user_dag.get_node_object_map()
+        # Comment out when you need to inject Model names for Agentic workflows
+        # # NEW: Inject model_name Parameters for each Task state
+        # function_object_map = self.__user_dag.get_node_object_map()
 
-        # Define which nodes should NOT get Parameters injection
-        # - CollectLogs: system function
-        # - Start node: receives raw input without XFaaS wrapper
-        nodes_not_to_inject = ['CollectLogs']
-        start_node = data.get('StartAt')
-        if start_node:
-            nodes_not_to_inject.append(start_node)
+        # # Define which nodes should NOT get Parameters injection
+        # # - CollectLogs: system function
+        # # - Start node: receives raw input without XFaaS wrapper
+        # nodes_not_to_inject = ['CollectLogs']
+        # start_node = data.get('StartAt')
+        # if start_node:
+        #     nodes_not_to_inject.append(start_node)
 
-        for state_name, state_def in data['States'].items():
-            if state_def.get('Type') == 'Task' and state_name not in nodes_not_to_inject:
-                if state_name in function_object_map:
-                    model_name = function_object_map[state_name].get_model_name()
-                    state_def['Parameters'] = {
-                        "statusCode.$": "$.statusCode",
-                        "metadata.$": "$.metadata",
-                        "body": {
-                            "model_name": model_name,
-                            "_xfaas_wrapped_body.$": "$.body"
-                        }
-                    }
-                    print(f"Injected model_name '{model_name}' for state '{state_name}'")
-                else:
-                    print(f"DEBUG: State '{state_name}' not found in function_object_map, using default")
-                    # Still inject Parameters for consistency (with default model)
-                    state_def['Parameters'] = {
-                        "statusCode.$": "$.statusCode",
-                        "metadata.$": "$.metadata",
-                        "body": {
-                            "model_name": "openai:gpt-4o-mini",  # fallback default
-                            "_xfaas_wrapped_body.$": "$.body"
-                        }
-                    }
+        # for state_name, state_def in data['States'].items():
+        #     if state_def.get('Type') == 'Task' and state_name not in nodes_not_to_inject:
+        #         if state_name in function_object_map:
+        #             model_name = function_object_map[state_name].get_model_name()
+        #             state_def['Parameters'] = {
+        #                 "statusCode.$": "$.statusCode",
+        #                 "metadata.$": "$.metadata",
+        #                 "body": {
+        #                     "model_name": model_name,
+        #                     "_xfaas_wrapped_body.$": "$.body"
+        #                 }
+        #             }
+        #             print(f"Injected model_name '{model_name}' for state '{state_name}'")
+        #         else:
+        #             print(f"DEBUG: State '{state_name}' not found in function_object_map, using default")
+        #             # Still inject Parameters for consistency (with default model)
+        #             state_def['Parameters'] = {
+        #                 "statusCode.$": "$.statusCode",
+        #                 "metadata.$": "$.metadata",
+        #                 "body": {
+        #                     "model_name": "openai:gpt-4o-mini",  # fallback default
+        #                     "_xfaas_wrapped_body.$": "$.body"
+        #                 }
+        #             }
 
         # print("Updated data of sfn builder after adding poll",data)
         with open(f"{self.__aws_build_dir}/{self.__json_file}", "w") as statemachinejson:
