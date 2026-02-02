@@ -59,24 +59,6 @@ def translate(clouds, cloud_dictionary, valid_partition_points, user_dag):
 
 def partition_dag(user_dag, user_pinned_nodes, benchmark_path, is_math, disabled_pair):
     valid_partition_points = user_dag.get_partition_points()
-<<<<<<< HEAD
-    cloud_ids,cloud_dictionary = get_supported_cloud_ids()
-   
-
-    latencies_benchmark, data_transfers_benchmark, inter_cloud_data_tranfers, is_fan_in = \
-        xfaas_benchmark.populate_benchmarks_for_user_dag(user_dag,user_pinned_nodes,benchmark_path,
-                                                        valid_partition_points, cloud_ids)
-    opt = "DP"
-
-    clouds,min_latency = dp_xfaas_partitioner.get_optimal_partitions(latencies_benchmark,
-                                                                data_transfers_benchmark,
-                                                                inter_cloud_data_tranfers,
-                                                                is_fan_in,disabled_pair)
-
-    return clouds,min_latency
-
-    final_cloud_config = translate(clouds,cloud_dictionary,valid_partition_points,user_dag)
-=======
     cloud_ids, cloud_dictionary = get_supported_cloud_ids()
     latencies_benchmark, data_transfers_benchmark, inter_cloud_data_tranfers, is_fan_in = \
         xfaas_benchmark.populate_benchmarks_for_user_dag(user_dag, user_pinned_nodes, benchmark_path,
@@ -97,7 +79,6 @@ def partition_dag(user_dag, user_pinned_nodes, benchmark_path, is_math, disabled
           clouds, '\n Latency -> ', min_latency)
     final_cloud_config = translate(
         clouds, cloud_dictionary, valid_partition_points, user_dag)
->>>>>>> 39f97b162c0c619c4cba9f7c1506edecb1349511
 
     return final_cloud_config
 

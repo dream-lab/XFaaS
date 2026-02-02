@@ -22,3 +22,6 @@ RUN curl -LO https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.5.tgz
 RUN tar xf apache-jmeter-5.5.tgz
 ENV PATH "$PATH:/apache-jmeter-5.5/bin"
 ENTRYPOINT ["tail", "-f", "/dev/null"]
+
+# export AZURE_SUBSCRIPTION_ID=9dc7b503-5f49-4742-8f12-07fad514c633
+# export XFAAS_DIR=/Users/haseeb/Code/XFaaS
