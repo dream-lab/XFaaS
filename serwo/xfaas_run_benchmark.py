@@ -33,6 +33,7 @@ parser.add_argument("--function-name",dest='function_name',type=str,help="Functi
 parser.add_argument("--function-code",dest='function_code',type=str,help="Function code")
 parser.add_argument("--node_name",dest='node_name',type=str,help="Node name")
 parser.add_argument("--dag-benchmark",dest='dag_benchmark',type=str,help="Path DAG Benchmark")
+# parser.add_argument("--wf-deployment-id",dest='wf_deployment_id',type=str,help="Workflow deployment id")
 
 artifact_suffix = 'artifact.json'
 args = parser.parse_args()
@@ -80,6 +81,8 @@ def read_dynamism_file(dynamism,duration, max_rps):
         # size = d.split(",")[-1]
         
         final_data.append((vals[0],vals[1]))
+        # final_data.append((vals[0],vals[1],size))
+
     return final_data
 
 
@@ -102,7 +105,7 @@ def read_resources(csp, region, part_id, wf_user_directory):
     
 
     resources_file_path = f'{wf_user_directory}/partitions/{csp}-{region}-{part_id}/build/workflow/resources/{csp}-{region}-{part_id}.json'
-    
+    print(resources_file_path,'==========')
     with open(resources_file_path) as f:
         resources = json.load(f)
     return resources
@@ -236,6 +239,7 @@ def send_jmx_file_to_server(jmx_output_path,jmx_output_filename,rps,duration,is_
             shell_script_commands.append(cmd)
     else:
         if rps != 0:
+            print(jmx_output_path,'==========')
             experiment_begin_command = f"jmeter -n -t {jmx_output_path}  -l {jmx_output_path}.jtl"
             shell_script_commands.append(experiment_begin_command)
         else:
@@ -281,9 +285,9 @@ def generate_shell_script_and_scp(csp,payload_size, wf_name, rps, duration,dynam
             os.system(f"ssh {server_user_id}@{server_ip} 'chmod +x shell_scripts/{shell_file_name}'")
             os.system(f"ssh {server_user_id}@{server_ip} ./shell_scripts/{shell_file_name}")
     else:
-        breakpoint()
+        print(f'output_path: {output_path}')
         os.system(f"chmod +x {output_path}")
-        os.system(f"{output_path}")
+        os.system(f"/{output_path}")
         #os.system(f"./{output_path}") use when you don't have full path
     
 def load_payload(wf_user_directory,payload_size):
@@ -296,8 +300,8 @@ def load_payload(wf_user_directory,payload_size):
 
 def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory, wf_deployment_id,run_id, is_localhost):
 
-    copy_provenance_artifacts(csp, region, part_id, wf_user_directory, wf_deployment_id,max_rps,run_id)
-    
+    part_id,csp,region = copy_provenance_artifacts(csp, region, part_id, wf_user_directory, wf_deployment_id,max_rps,run_id)
+    print(part_id,csp,region,'==========')
     dynamism_data = read_dynamism_file(dynamism, duration, max_rps)
     if 'azure' in csp:
         execute_url = get_azure_resources(csp,region,part_id,wf_user_directory)
@@ -355,6 +359,10 @@ def copy_provenance_artifacts(csp, region, part_id, wf_user_directory,wf_deploym
     part_id = part_details.get("order", None)[-1]
     csp = part_details.get(part_id).get("csp")
     region = part_details.get(part_id).get("region")
+
+    part_id_f = part_details.get("order", None)[0]
+    csp_f = part_details.get(part_id_f).get("csp")
+    region_f = part_details.get(part_id_f).get("region")
     
 
     os.makedirs(f"{wf_user_directory}/{wf_deployment_id}/{run_id}", exist_ok=True)
@@ -367,6 +375,8 @@ def copy_provenance_artifacts(csp, region, part_id, wf_user_directory,wf_deploym
     provenance_artefacts_updated_path = f"{wf_user_directory}/{wf_deployment_id}/{run_id}/{artifact_suffix}"
    
     shutil.copyfile(provenance_artefacts_path, provenance_artefacts_updated_path)
+
+    return part_id_f,csp_f,region_f
         
 
 def build_workflow(user_wf_dir):
@@ -477,7 +487,7 @@ if __name__ == "__main__":
     
     print('==================DEPLOYING WF===========================')
     wf_id, refactored_wf_id, wf_deployment_id = deploy_workflow(wf_user_directory,dag_filename, region,csp)
-    breakpoint()
+    
     ## write deployment id to a file create if not exists else append
     deps = []
     xfaas_dir = os.getenv('XFAAS_DIR')
@@ -495,11 +505,11 @@ if __name__ == "__main__":
             for dep in deps:
                 f.write(dep + "\n")
 
-    time.sleep(10)
+    # time.sleep(10)
     
     print('==================RUNNING WF===========================')
     run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_name, wf_user_directory,wf_deployment_id,run_id,is_localhost)
-    time.sleep(60)
+    time.sleep(300)
     try:
         print('==================PLOTTING METRICS===========================')
         plot_metrics(wf_user_directory,wf_deployment_id,run_id,wf_name,region)
@@ -528,3 +538,10 @@ if __name__ == "__main__":
             remote_teardown(wf_user_directory,csp,region,part_id)
 
     local_teardown(wf_user_directory)
+
+
+
+
+'''
+python3 serwo/xfaas_run_benchmark.py --csp aws --region ap-southeast-1 --max-rps 1 --duration 2880 --payload-size medium --dynamism static --wf-name image --wf-user-directory /Users/varad.kulkarni/xfaas/xfaas-workloads/workflows/microbenchmarks/communication_stress_aws/ --path-to-client-config /Users/varad.kulkarni/xfaas/XFaaS/serwo/config/client_config.json --dag-file-name dag.json --teardown-flag 0 --client-key bibha   
+'''

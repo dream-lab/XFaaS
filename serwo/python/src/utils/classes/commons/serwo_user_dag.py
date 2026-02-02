@@ -47,9 +47,9 @@ class SerWOUserDag:
                 self.__dag.add_node(nodeID,
                                     IsContainerised=node["IsContainerised"])
             
-            if "ModelName" in node:
-                self.__dag.add_node(nodeID,
-                                    ModelName=node["ModelName"])
+            # if "ModelName" in node:
+            #     self.__dag.add_node(nodeID,
+            #                         ModelName=node["ModelName"])
 
             index += 1
 
@@ -84,7 +84,9 @@ class SerWOUserDag:
                         NodeName=new_node_params["NodeName"],
                         EntryPoint=new_node_params["EntryPoint"],
                         Path=new_node_params["Path"],
-                        MemoryInMB=128
+                        MemoryInMB=128,
+                        IsAsync=False,
+                        CSP="NA"
                     )
     
         # for u,v in list(outG.edges()):
@@ -109,7 +111,9 @@ class SerWOUserDag:
                 NodeName=forward_function_params["NodeName"],
                 EntryPoint=forward_function_params["EntryPoint"],
                 Path=forward_function_params["Path"],
-                MemoryInMB=128
+                MemoryInMB=128,
+                IsAsync=False,
+                CSP="NA"
             )
             outG.add_edge(egressNodeId, forwardFunctionId)
             for successor in successor_partition_point:

@@ -74,10 +74,10 @@ def read_dynamism_file(dynamism,duration, max_rps):
     data = [x.strip() for x in data]
     final_data = []
     for d in data:
-        vals = [float(x) for x in d.split(",") if x != "" ] # '''and 'KB' not in x'''
-        # size = d.split(",")[-1]
+        vals = [float(x) and 'KB' not in x for x in d.split(",") if x != "" ] # '''and 'KB' not in x'''
+        size = d.split(",")[-1]
         
-        final_data.append((vals[0],vals[1]))
+        final_data.append((vals[0],vals[1],size))
     return final_data
 
 
@@ -309,8 +309,8 @@ def run_workload(csp,region,part_id,max_rps,duration,payload_size,dynamism,wf_na
     for d in dynamism_data:
         duration = d[0]
         rps = d[1]
-        # payload_size = d[2]
-        # payload = load_payload(wf_user_directory,payload_size)
+        payload_size = d[2]
+        payload = load_payload(wf_user_directory,payload_size)
         ne_session_id = session_id + str(i)
         
         make_jmx_file(csp, rps * 60.0, duration, payload_size, wf_name, execute_url,state_machine_arn, dynamism, ne_session_id, wf_user_directory, part_id, region , wf_deployment_id, run_id,payload,is_localhost)

@@ -76,11 +76,14 @@ def generate(user_dir, partition_config, dag_definition_file):
                 template_push_to_queue(updated_user_dir, function_name, entry_point, resources, "aws")
             
             
-            if downstream_csp == "azure":
+            if downstream_csp == "azure" or downstream_csp == "azure_v2":
+                root_dir = os.path.dirname(os.path.abspath(__file__))
                 function_id = "251"
                 function_name = "PushToStorageQueue"
                 entry_point = "push_to_azure_q.py"
                 src = f"{updated_user_dir}/PushToStorageQueue"
+                if not os.path.exists(directory):
+                    raise FileNotFoundError(f"Downstream Azure resources file not found: {directory}. Ensure that the downstream partition was built successfully.")
                 with open(directory, "r") as file:
                     resources = json.load(file)
                 queue_name = resources["queue_name"]
@@ -93,7 +96,7 @@ def generate(user_dir, partition_config, dag_definition_file):
                 template_dir = f"{root_dir}/templates/azure/push-to-storage-queue-template/{function_name}"
                 output_path = f"{updated_user_dir}/"
                 os.system(f"cp -r {template_dir} {output_path}")
-                template_push_to_queue(updated_user_dir, function_name, entry_point, resources, "azure")
+                template_push_to_queue(updated_user_dir, function_name, entry_point, resources, downstream_csp)
 
 
             
@@ -137,7 +140,7 @@ def template_push_to_queue(
         raise Exception("Unable to load environment for PushToQueue templating")
 
     # templating for azure
-    if csp == "azure":
+    if csp == "azure" or csp == "azure_v2":
         queue_name = resources["queue_name"]
         connection_string = resources["connection_string"]
         try:
