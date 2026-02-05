@@ -1,0 +1,16 @@
+examples:
+  - name: asyncTester
+    path: examples/asyncTester
+    runs:
+      - csp: aws
+        region: ap-south-1
+      - csp: azure
+        region: centralindia
+  - name: graphAws
+    path: examples/graphAws
+    payload:
+      size: 10
+      edges: 5
+    runs:
+      - csp: aws
+        region: ap-south-1
