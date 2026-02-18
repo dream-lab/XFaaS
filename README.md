@@ -17,7 +17,7 @@ The original XFaaS implementation introduced cross-platform FaaS workflow orches
 - Partitioning and fusion applied individually
 - Support for AWS and Azure cloud platforms
 
-*XFaaS v1: [URL placeholder - to be added]*
+*XFaaS v1: https://github.com/dream-lab/XFaaS/tree/XFaaSV1.0*
 
 ### Enhanced XFaaS Features
 
@@ -37,7 +37,7 @@ The original XFaaS implementation introduced cross-platform FaaS workflow orches
 
 ## XFaaS Deployment processs
 
-For detailed setup instructions, please refer to [XFaaS v1 documentation]([URL placeholder - to be added]).
+For detailed setup instructions, please refer to [XFaaS v1 documentation](https://github.com/dream-lab/XFaaS/tree/XFaaSV1.0).
 
 ### Quick Start
 
