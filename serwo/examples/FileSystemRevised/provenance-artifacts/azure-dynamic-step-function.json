@@ -1,0 +1,52 @@
+{
+    "workflow_id": "00802faa-105b-402b-9f6b-200740389c95",
+    "refactored_workflow_id": "496200b2-0c53-4137-8178-ad4293c4fbdc",
+    "deployment_id": "a42840fc-462e-4415-bf95-4f16272379a9",
+    "experiment_conf": {
+        "step_functionmedium1": {
+            "jmx_output_filename": "azure-fileProcessing-medium-step_function-1-60-session-step_functionmedium1.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium2": {
+            "jmx_output_filename": "azure-fileProcessing-medium-step_function-4-60-session-step_functionmedium2.jmx",
+            "csp": "azure",
+            "rps": 4,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium3": {
+            "jmx_output_filename": "azure-fileProcessing-medium-step_function-8-60-session-step_functionmedium3.jmx",
+            "csp": "azure",
+            "rps": 8,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium4": {
+            "jmx_output_filename": "azure-fileProcessing-medium-step_function-4-60-session-step_functionmedium4.jmx",
+            "csp": "azure",
+            "rps": 4,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "step_function"
+        },
+        "step_functionmedium5": {
+            "jmx_output_filename": "azure-fileProcessing-medium-step_function-1-60-session-step_functionmedium5.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 60.0,
+            "payload_size": "medium",
+            "wf_name": "fileProcessing",
+            "dynamism": "step_function"
+        }
+    }
+}

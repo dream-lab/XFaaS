@@ -60,7 +60,7 @@ def aws_invoke(execute_url: str, state_machine_arn: str, payload: Optional[dict]
     return response.json()
 
 
-def aws_poll_status(execution_arn: str, timeout: int = 300, poll_interval: int = 5) -> str:
+def aws_poll_status(execution_arn: str, timeout: int = 1000, poll_interval: int = 5) -> str:
     """
     Poll AWS Step Functions execution until completion.
     
@@ -181,7 +181,7 @@ def azure_invoke(app_name: str, payload: Optional[dict] = None) -> dict:
     return response.json()
 
 
-def azure_poll_status(status_url: str, timeout: int = 300, poll_interval: int = 5) -> str:
+def azure_poll_status(status_url: str, timeout: int = 1000, poll_interval: int = 5) -> str:
     """
     Poll Azure Durable Functions status until completion.
     
@@ -194,15 +194,27 @@ def azure_poll_status(status_url: str, timeout: int = 300, poll_interval: int = 
         Final status: "Completed", "Failed", "Terminated", etc.
     """
     start_time = time.time()
+    max_retries = 3
     
     while time.time() - start_time < timeout:
-        response = requests.get(status_url, timeout=30)
-        response.raise_for_status()
-        data = response.json()
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(status_url, timeout=120)
+                response.raise_for_status()
+                data = response.json()
+                break
+            except requests.exceptions.ReadTimeout:
+                if attempt < max_retries - 1:
+                    print(f"[Azure Poll] Read timeout (attempt {attempt + 1}/{max_retries}), retrying...")
+                    time.sleep(2)
+                else:
+                    raise
         
         runtime_status = data.get("runtimeStatus", "")
         
         if runtime_status in ["Completed", "Failed", "Terminated", "Canceled"]:
+            if runtime_status == "Failed":
+                print(f"[Azure Poll] Workflow Failed. Output: {data.get('output', 'No output')}")
             return runtime_status
         
         time.sleep(poll_interval)

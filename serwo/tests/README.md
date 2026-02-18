@@ -85,3 +85,10 @@ pytest serwo/tests/test_workflow.py -n 4 -v
 ```
 
 **Note:** Always use `-n` (parallel workers) when testing multiple different examples to significantly reduce the total execution time.
+
+
+Examples:
+1. text workflow -aws, azure, default ( multi cloud ) - benchmark file do not touch
+2. asynctester -aws, azure, default ( multi cloud ) - modify benchmark
+Add the output expected v/s actual in the test file
+3. Looping feature XFaaS- add later 

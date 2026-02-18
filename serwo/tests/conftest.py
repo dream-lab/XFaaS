@@ -11,6 +11,7 @@ from tests.harness import (
     aws_teardown,
     azure_teardown,
     list_examples,
+    create_user_pinned_nodes
 )
 
 def pytest_addoption(parser):
@@ -67,9 +68,15 @@ def deployed_workflow(request, example_name):
         for run_config in example_config.get("runs", []):
             csp = run_config["csp"]
             region = run_config["region"]
-            success = deploy_example(example_name, csp, region)
+            pin = run_config.get("pin", -1)
+            if pin != -1:
+                user_pinned_nodes = create_user_pinned_nodes(example_name, pin)
+                print(str(user_pinned_nodes))
+                success, error = deploy_example(example_name, csp, region, user_pinned_nodes)
+            else:
+                success, error = deploy_example(example_name, csp, region)
             if not success:
-                pytest.fail(f"Deployment failed for {csp} in {region}")
+                pytest.fail(f"Deployment failed for {csp} in {region}: {error}")
     else:
         print(f"\n[Fixture] Skipping deployment for {example_name}...")
     

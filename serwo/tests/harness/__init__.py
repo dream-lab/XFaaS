@@ -5,6 +5,7 @@ from .loader import (
     list_examples,
     deploy_example,
     get_partition_details_path,
+    create_user_pinned_nodes
 )
 from .partition_parser import (
     Partition,
