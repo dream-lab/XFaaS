@@ -17,7 +17,7 @@ def user_function(serwoObject) -> SerWOObject:
         data = serwoObject.get_body()
         logging.info("Data to push - "+str(data))
         metadata = serwoObject.get_metadata()
-        data = {"body": "success: OK"}
+        data = {"body": data}
         fin_dict["data"] = data
         fin_dict["metadata"] = metadata
         logging.info("Fin dict - "+str(fin_dict))

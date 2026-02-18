@@ -63,7 +63,7 @@ Resources:
                       input=message_body
                   )
             - {StateMachineArn: !Ref {{stepfunctionname}}} # templated here 
-      Runtime: "python3.9"
+      Runtime: "python3.13"
       Timeout: "30"
 
   # mostly static      
@@ -107,13 +107,63 @@ Resources:
 
   {% for function in functions -%}
   {{function.name}}:
+    {% if function.iscontainer %}
     Type: AWS::Serverless::Function
     Properties:
+      Policies:
+        - Statement:
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:BatchGetItem
+            - dynamodb:BatchWriteItem
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: "*"
+      PackageType: Image
+      Architectures:
+        - x86_64
+      Timeout: 600
+      MemorySize: {{function.memory}}
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: ./functions/{{function.name}}
+      DockerTag: python3.13
+    {% else %}
+    Type: AWS::Serverless::Function
+    Properties:
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:BatchGetItem
+              - dynamodb:BatchWriteItem
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: "*"
       CodeUri: {{ function.uri }}
       Handler: {{ function.handler }}
-      Runtime: python3.9
+      Runtime: python3.13
       MemorySize: {{ function.memory }}
       Timeout: 300
       Architectures:
         - x86_64
+    {% endif%}
   {% endfor %}

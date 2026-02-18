@@ -1,3 +1,6 @@
+# TODO - !! MOVE THIS OUT TO A DIFFERENT MODULE #
+# SerwoObject - single one
+# SerwoListObject - [SerwoObject]
 import importlib
 import json
 import sys
@@ -8,13 +11,12 @@ import logging
 import os
 import psutil
 import objsize
-import uuid
-import boto3
-from copy import deepcopy
+# from USER_FUNCTION_PLACEHOLDER import function as USER_FUNCTION_PLACEHOLDER_function - NOTE - !!! TK - STANDARDISE THIS!!! IMPORTANT
 from USER_FUNCTION_PLACEHOLDER import user_function as USER_FUNCTION_PLACEHOLDER_function
+from copy import deepcopy
 from python.src.utils.classes.commons.serwo_objects import build_serwo_object
 from python.src.utils.classes.commons.serwo_objects import build_serwo_list_object
-from python.src.utils.classes.commons.serwo_objects import SerWOObject, SerWOObjectsList
+from python.src.utils.classes.commons.serwo_objects import SerWOObject
 
 downstream = 0
 """
@@ -25,48 +27,27 @@ NOTE - creating a serwo wrapper object from cloud events
     - objective is to create a list of common keys, access patterns which will be used to create a common object to pass around
     - 
 """
-# Long Message Support
-# Helper for S3 key generation and upload
-def generate_s3_key(prefix="xfaas", extension="json"):
-    """
-    Generate a unique S3 object key with the given prefix and extension.
-    """
-    if prefix == None:
-        prefix = "xfaas"
-    return f"{prefix}/{uuid.uuid4()}.{extension}"
 
-def upload_json_payload(bucket, payload, prefix="xfaas"):
-    """
-    Serializes and uploads the payload (dict/list) to the given S3 bucket.
-    Returns the key used.
-    """
-    key = generate_s3_key(prefix=prefix, extension="json")
-    s3 = boto3.client('s3')
-    data_bytes = json.dumps(payload).encode("utf-8")
-    s3.put_object(Bucket=bucket, Key=key, Body=data_bytes)
-    return key
 
 # Get time delta function
 def get_delta(timestamp):
     return round(time.time() * 1000) - timestamp
 
 
-
 # AWS Handler
 def lambda_handler(event, context):
     start_time = round(time.time() * 1000)
-    # Handle input payload size computation for monitoring
+    # Unmarshal from lambda handler
+    # capturing input payload size
     input_payload_size_bytes = None
 
-    # ----------- INPUT PARSING ---------------
     if isinstance(event, list):
         # TODO: exception handling
-        # Calculate input payload size
-        
-        input_payload_size_bytes = sum([objsize.get_deep_size(x.get("body")) for x in event])
-        #sum([objsize.get_deep_size(x.get_body()) for x in serwo_request_object.get_objects()])
-
         serwo_request_object = build_serwo_list_object(event)
+
+        # Calculate input payload size
+        input_payload_size_bytes = sum([objsize.get_deep_size(x.get_body()) for x in serwo_request_object.get_objects()])
+    
     elif isinstance(event, dict):
         # # NOTE - this is a sample if condition for the pilot jobs
         # if "body" in event:
@@ -90,16 +71,12 @@ def lambda_handler(event, context):
                 deployment_id=deployment_id,
                 functions=[],
             )
-        input_payload_size_bytes = objsize.get_deep_size(event.get("body"))
-
         serwo_request_object = build_serwo_object(event)
-
-        
+        input_payload_size_bytes = objsize.get_deep_size(serwo_request_object.get_body())
     else:
-        return dict(statusCode=500, body="Unrecognized input type", metadata="None")
+        # TODO: Report error and return
+        pass
     serwo_request_object.set_basepath("")
-
-    
     # user function exec
     status_code = 200
     try:
@@ -118,7 +95,7 @@ def lambda_handler(event, context):
         memory_after = process.memory_info().rss
         print(f"SerWOMemUsage::After::{wf_instance_id},{function_id},{memory_after}")
         
-        # Validation check for user function response
+        # Sanity check for user function response
         if not isinstance(response_object, SerWOObject):
             status_code = 500
             return dict(
@@ -161,45 +138,8 @@ def lambda_handler(event, context):
     # post function handler
     # NOTE - leaving empty for now and returning a response is.
     # Send service bus/ storage queue
-    deployment_id = metadata.get("deployment_id")    
     body = response_object.get_body()
     response = dict(statusCode=status_code, body=body, metadata=metadata)
-    output_bytes = json.dumps(response).encode("utf-8")
-    LONG_MESSAGE_THRESHOLD = 256 * 1024  # 256 KB in bytes
-    
-    if len(output_bytes) > LONG_MESSAGE_THRESHOLD:
-        user_bucket = None
-        # If output is large (autotrigger)
-        
-        if isinstance(event, dict):
-            event_body = event.get("body")
-            if "aws" in event_body:
-                aws_details = event_body.get("aws", {})
-                user_bucket = aws_details.get("bucket")
-        elif isinstance(event, list):
-            #We get a list in input event from a fan-in which are all assumed to be in the same csp
-            event_body = event[0].get("body")
-            if "aws" in event_body:
-                aws_details = event_body.get("aws", {})
-                user_bucket = aws_details.get("bucket") 
-        if not user_bucket:
-            raise ValueError("This workflow needs long payload size handling. Please provide a CSP AND valid storage details for each CSP in the event")
-        # --- Proceed to upload ---
-        key = upload_json_payload(user_bucket, body, prefix= deployment_id)
-        result = {
-            
-            "large_payload": 1,
-            "aws": {
-                "bucket": user_bucket,
-                "key": key
-            }
-        }
-        function_metadata_list[-1][function_id]['out_payload_bytes'] = objsize.get_deep_size(result)
-        metadata.update(dict(functions=function_metadata_list))
-
-        response = dict(statusCode=200, body=result, metadata=metadata)
-    
-    
     if downstream == 0:
         # TODO - change while doing egress
         return response

@@ -82,7 +82,7 @@ Resources:
     Properties:
       CodeUri: {{ function.uri }}
       Handler: x
-      Runtime: python3.9
+      Runtime: python3.13
       MemorySize: 1024
       Timeout: 300
       Architectures:

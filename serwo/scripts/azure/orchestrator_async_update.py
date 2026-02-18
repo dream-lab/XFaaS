@@ -22,6 +22,30 @@ def extract_var(input_str):
     first_argument = '"' + str(first_argument) + '"'
     return str(variable_name), first_argument, str(second_argument)
 
+def codegen(in_var,out_var,func_name):
+    # new_code ='\n'
+    # new_code ='\n\t'+ out_var +' = '+ in_var
+    # new_code +='\n\twhile True: '
+    # new_code +='\n\t\t' + out_var + ' = ' + 'yield context.call_activity(' + func_name + ','+ out_var +')'
+    # new_code +='\n\t\tbody = unmarshall(json.load(' + out_var + ')).get_body() ' 
+    # new_code +='\n\t\tif "results" in body["data"]: '
+    # new_code +='\n\t\t\tbreak '
+    # new_code +='\n\t\tdeadline = context.current_utc_datetime + timedelta(miniutes=15) '
+    # new_code +='\n\t\tyield context.create_timer(deadline)\n\n'
+    new_code ='\n'
+    new_code +='\n\t'+ out_var +' = '+ in_var
+    new_code +='\n\twhile True: '
+    new_code +='\n\t' + out_var + ' = ' + 'yield context.call_activity(' + func_name + ','+ out_var +')'
+    new_code +='\n\tbody = unmarshall(json.loads(' + out_var + ')).get_body() ' 
+    new_code +='\n\tif not body["Poll"] or body["Poll"]==False: '
+    new_code +='\n\t\tbreak '
+    new_code +='\n\telse:'
+    new_code +='\n\t\tdelta = 900 '
+    new_code +='\n\t\tif "waittime" in body : '
+    new_code +='\n\t\t\tdelta = body["waittime"] '
+    new_code +='\n\t\tdeadline = context.current_utc_datetime + timedelta(seconds=delta) '
+    new_code +='\n\t\tyield context.create_timer(deadline)\n\n'
+    return new_code
 
 def codegen_async_loop(in_var, out_var, func_name):
     """

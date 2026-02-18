@@ -64,6 +64,7 @@ def build_working_dir(region,part_id,is_netherite):
     else:
         build_dir += f"azure-{region}-{part_id}"
     az_functions_path=f"{build_dir}/{user_workflow_name}"
+    
     if not os.path.exists(az_functions_path):
         os.makedirs(az_functions_path)
 
@@ -240,7 +241,7 @@ def generate_function_id(f_id):
 
 
 def copy_all_dirs(fn_dir_path,fin_func_dir):
-
+    
     dirs = os.listdir(fn_dir_path)
 
     for dir in dirs:
@@ -354,8 +355,10 @@ def build(user_dir, dag_definition_file, region, part_id,is_netherite):
     USER_DIR = user_dir
     DAG_DEFINITION_FILE = dag_definition_file
     init_paths()
+    
     build_working_dir(region,part_id,is_netherite)
     user_fns_data, user_app_name = get_user_workflow_details()
+    
     ingress_queue_name, app_name = generate_app_name_and_populate_and_get_ingress_queue_name(user_app_name,region,part_id,is_netherite)
     build_user_fn_dirs(user_fns_data)
     copy_meta_files(user_fns_data,ingress_queue_name,app_name,is_netherite)

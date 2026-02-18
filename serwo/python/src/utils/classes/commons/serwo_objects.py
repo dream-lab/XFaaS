@@ -1,4 +1,5 @@
 import json
+import boto3
 
 
 class SerWOObject:
@@ -66,6 +67,22 @@ class SerWOObjectsList:
     def set_basepath(self, basepath):
         self._basepath = basepath
 
+def fetch_event_payload(body):
+    """Checks whether incoming input to lambda has large payload enabled and extracts exact payload from the pointer"""
+    if isinstance(body, dict) and body.get("large_payload") == 1:
+        csp_info = body.get("aws", {})
+        bucket = csp_info.get("bucket")
+        key = csp_info.get("key")
+        if bucket and key:
+            try:
+                s3 = boto3.client('s3')
+                obj = s3.get_object(Bucket=bucket, Key=key)
+                data = obj['Body'].read().decode('utf-8')
+                return json.loads(data)
+            except Exception as e:
+                print(f"[Large payload download error]: {e}")
+                return body
+    return body 
 
 def build_serwo_list_object(event):
     """
@@ -95,7 +112,7 @@ def build_serwo_list_object(event):
         for data in functions_metadata_list:
             for fid, fdata in data.items():
                 functions_metadata_dict[fid] = fdata
-        list_obj.add_object(body=record.get("body"))
+        list_obj.add_object(body=fetch_event_payload(record.get("body")))
     # convert the function metadata dict to a list to be added to collated metadata
     for fid, fdata in functions_metadata_dict.items():
         collated_functions_metadata_list.append({fid: fdata})
@@ -106,4 +123,4 @@ def build_serwo_list_object(event):
 
 
 def build_serwo_object(event):
-    return SerWOObject(body=event["body"], metadata=event["metadata"])
+    return SerWOObject(body=fetch_event_payload(event["body"]), metadata=event["metadata"])

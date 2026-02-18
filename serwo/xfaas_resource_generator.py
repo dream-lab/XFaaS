@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 import os
 def generate(user_dir, partition_config, dag_definition_file):
     partition_config = list(reversed(partition_config))
-
+    
     for i in range(len(partition_config)):
         if i==0:
             csp = partition_config[i].get_left_csp().get_name()
@@ -24,6 +24,7 @@ def generate(user_dir, partition_config, dag_definition_file):
             dag_definition_path = f"{updated_user_dir}/{dag_definition_file}"
             
         else:
+            
             downstream_csp = partition_config[i-1].get_left_csp().get_name()
             downstream_region = partition_config[i-1].get_region()
             downstream_part_id = partition_config[i-1].get_part_id()
@@ -36,6 +37,13 @@ def generate(user_dir, partition_config, dag_definition_file):
             region = partition_config[i].get_region()
             part_id = partition_config[i].get_part_id()
             updated_user_dir = f"{user_dir}/partitions/{csp}-{region}-{part_id}"
+            csp_temp = csp.split('_')
+            main_csp = csp
+            csp = csp_temp[0]
+            if len(csp_temp) > 1:
+                is_netherite = True
+            else:
+                is_netherite = False
             dag_path = f"{updated_user_dir}/{dag_definition_file}" 
             with open(dag_path, "r") as dag_file:
                 dag_from_file = json.load(dag_file)
@@ -84,7 +92,7 @@ def generate(user_dir, partition_config, dag_definition_file):
                     "queue_name": queue_name,
                     "connection_string": connection_string,
                 }
-
+                root_dir = os.path.dirname(os.path.abspath(__file__))
                 template_dir = f"{root_dir}/templates/azure/push-to-storage-queue-template/{function_name}"
                 output_path = f"{updated_user_dir}/"
                 os.system(f"cp -r {template_dir} {output_path}")

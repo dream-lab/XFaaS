@@ -81,6 +81,13 @@ Resources:
     {% if function.iscontainer %}
     Type: AWS::Serverless::Function
     Properties:
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+              Resource: arn:aws:s3:::*/*
       PackageType: Image
       Architectures:
         - x86_64
@@ -93,9 +100,16 @@ Resources:
     {% else %}
     Type: AWS::Serverless::Function
     Properties:
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+              Resource: arn:aws:s3:::*/*
       CodeUri: {{ function.uri }}
       Handler: {{ function.handler }}
-      Runtime: python3.9
+      Runtime: python3.13
       MemorySize: {{ function.memory }}
       Timeout: 300
       Architectures:

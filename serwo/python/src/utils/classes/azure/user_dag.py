@@ -18,6 +18,8 @@ class UserDag:
             print("Dag config data - ", self.__dag_config_data)
             self.__nodeIDMap = {}
             self.__dag = nx.DiGraph()
+            self.__conditional_branches = []
+
         except Exception as e:
             raise e
 
@@ -31,8 +33,9 @@ class UserDag:
             # NOTE - this is different in AWS, being picked up from the user dag-description
             # nodeID = "n" + str(index)
             nodeID = node["NodeId"]
+            model_name = node.get("ModelName", "openai:gpt-4o-mini")
             self.__nodeIDMap[node["NodeName"]] = nodeID
-            self.__dag.add_node(nodeID, NodeName=node["NodeName"], pre="", ret=["yield ", "context.call_activity(\"" + node["NodeName"]  + "\",$var$)"], var=self._generate_random_variable_name(), machine_list=[nodeID])
+            self.__dag.add_node(nodeID, NodeName=node["NodeName"], ModelName=model_name, pre="", ret=["yield ", "context.call_activity(\"" + node["NodeName"]  + "\",$var$)"], var=self._generate_random_variable_name(), machine_list=[nodeID])
             index += 1
 
 
@@ -43,6 +46,9 @@ class UserDag:
                     self.__dag.add_edge(
                         self.__nodeIDMap[key], self.__nodeIDMap[val])
 
+        # Conditional Branches after edges:
+        if "ConditionalBranches" in self.__dag_config_data:
+            self.__conditional_branches = self.__dag_config_data["ConditionalBranches"]
 
         start_node = [node for node in self.__dag.nodes if self.__dag.in_degree(node) == 0][0]
         self.__dag.nodes[start_node]['ret'] = ["yield ", "context.call_activity(\"" + self.__dag.nodes[start_node]["NodeName"]  + "\", serwoObject)"]
@@ -53,12 +59,84 @@ class UserDag:
         start_node = [node for node in self.__dag.nodes if self.__dag.in_degree(node) == 0][0]
         self.__dag.nodes[start_node]['ret'] = ["yield ", "context.call_activity(\"" + self.__dag.nodes[start_node]["NodeName"]  + "\", serwoObject)"]
        
+    def get_conditional_branches(self):
+        return self.__conditional_branches
+
+    def has_conditional_branches(self):
+        return len(self.__conditional_branches) > 0
 
     def __load_user_spec(self, user_config_path):
         with open(user_config_path, "r") as user_dag_spec:
             dag_data = json.load(user_dag_spec)
         return dag_data
     
+    def _wrap_with_conditional_logic(self, statements, result_var):
+        """
+        Generic wrapper for conditional branching using user input.
+        """
+        if not self.__conditional_branches:
+            return statements
+        
+        branch = self.__conditional_branches[0]
+        condition_var = branch['ConditionVariable']
+        condition_type = branch['ConditionType']
+        condition_value = branch['ConditionValue']
+        
+        json_path = condition_var.replace('$.', '')
+        
+        wrapped_statements = []
+        wrapped_statements.append("# Conditional branching loop")
+        wrapped_statements.append("should_continue = True")
+        wrapped_statements.append("")
+        wrapped_statements.append("while should_continue:")
+        
+        # Indent workflow statements (exclude return) - add 4 spaces for while body
+        for stmt in statements[:-1]:
+            wrapped_statements.append("    " + stmt)
+        
+        wrapped_statements.append("")
+        wrapped_statements.append("    # Check conditional branching condition")
+        wrapped_statements.append("    import json")
+        wrapped_statements.append("    try:")
+        wrapped_statements.append("        result_dict = json.loads({})".format(result_var))
+        wrapped_statements.append("        if '_body' in result_dict:")
+        wrapped_statements.append("            result_body = result_dict['_body']")
+        wrapped_statements.append("        else:")
+        wrapped_statements.append("            result_body = result_dict.get('body', {})")
+        wrapped_statements.append("")
+        
+        # Generate condition check
+        if condition_type == "BooleanEquals":
+            # FIX: Use capital True/False
+            condition_check = "result_body.get('{}', False) == {}".format(
+                json_path, str(condition_value).capitalize()
+            )
+        elif condition_type == "StringEquals":
+            condition_check = "result_body.get('{}', '') == '{}'".format(json_path, condition_value)
+        elif condition_type == "NumericEquals":
+            condition_check = "result_body.get('{}', 0) == {}".format(json_path, condition_value)
+        else:
+            condition_check = "result_body.get('{}', False)".format(json_path)
+        
+        wrapped_statements.append("        should_continue = {}".format(condition_check))
+        wrapped_statements.append("")
+        wrapped_statements.append("        # Check iteration limit from user input")
+        wrapped_statements.append("        current_iter = result_body.get('iteration_count', 0)")
+        wrapped_statements.append("        max_iter = result_body.get('max_iterations', 1)")
+        wrapped_statements.append("        if current_iter >= max_iter:")
+        wrapped_statements.append("            should_continue = False")
+        wrapped_statements.append("")
+        wrapped_statements.append("    except Exception as e:")
+        wrapped_statements.append("        should_continue = False")
+        wrapped_statements.append("")
+        wrapped_statements.append("    if not should_continue:")
+        wrapped_statements.append("        break")
+        
+        wrapped_statements.append("")
+        wrapped_statements.append(statements[-1])  # return statement
+        
+        return wrapped_statements
+   
     def _generate_random_variable_name(self, n=4):
         res = ''.join(random.choices(string.ascii_letters, k=n))
         return str(res).lower()
@@ -70,6 +148,16 @@ class UserDag:
         task_list_create = task_list_var_name + " = []\n"
         ret = ["yield ",  "context.task_all(" + task_list_var_name + ")"]
         pre = ""
+
+         # Use the first node's model_name
+        if nodes:
+            model_name = dag.nodes[nodes[0]].get('ModelName', 'openai:gpt-4o-mini')
+            pre += f"\n# Inject model_name for parallel execution"
+            pre += f"\nparallel_input = json.loads(serwoObject)"
+            pre += f"\nif 'body' in parallel_input:"
+            pre += f"\n    parallel_input['body']['model_name'] = '{model_name}'"
+            pre += f"\nserwoObject = json.dumps(parallel_input)"
+
         for node in nodes:
             # Remember No $var$ will be updated in parallel merge
             pre += "\n" + dag.nodes[node]['pre']
@@ -92,16 +180,84 @@ class UserDag:
         previous_var = None
         for node in nodes[:-1]:
             # $var$ will be updated in linear merge
+            # Get model_name for this node
+            model_name = dag.nodes[node].get('ModelName', 'openai:gpt-4o-mini')
+            node_name = dag.nodes[node].get('NodeName', 'unknown')
             
             if previous_var is not None:
+                # Inject model_name before calling activity
+                pre += f"\n# Inject model_name for {dag.nodes[node].get('NodeName')}"
+                pre += f"\nimport json"
+                pre += f"\n{previous_var}_dict = json.loads({previous_var})"
+                pre += f"\nif 'body' in {previous_var}_dict:"
+                pre += f"\n    body = {previous_var}_dict['body']"
+                pre += f"\n    if isinstance(body, str):"
+                pre += f"\n        body = json.loads(body)"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['body'] = json.dumps(body)"
+                pre += f"\n    else:"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['body'] = body"
+                pre += f"\nelif '_body' in {previous_var}_dict:"
+                pre += f"\n    body = {previous_var}_dict['_body']"
+                pre += f"\n    if isinstance(body, str):"
+                pre += f"\n        body = json.loads(body)"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['_body'] = json.dumps(body)"
+                pre += f"\n    else:"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['_body'] = body"
+                pre += f"\nelse:"
+                pre += f"\n    {previous_var}_dict['model_name'] = '{model_name}'"
+                pre += f"\n{previous_var} = json.dumps({previous_var}_dict)"
+
                 pre += "\n" + dag.nodes[node]['pre'].replace("$var$", previous_var)
                 var_substituted = dag.nodes[node]['ret'][1].replace("$var$", previous_var)
             else:
+                # Inject model_name for first node
+                pre += f"\n# Inject model_name for {dag.nodes[node].get('NodeName')}"
+                pre += f"\nimport json"
+                pre += f"\nserwoObject_dict = json.loads(serwoObject)"
+                pre += f"\nif 'body' in serwoObject_dict:"
+                pre += f"\n    serwoObject_dict['body']['model_name'] = '{model_name}'"
+                pre += f"\nelse:"
+                pre += f"\n    # Raw input - add model_name at top level"
+                pre += f"\n    serwoObject_dict['model_name'] = '{model_name}'"
+                pre += f"\nserwoObject = json.dumps(serwoObject_dict)"
+
                 pre += "\n" + dag.nodes[node]['pre']
                 var_substituted = dag.nodes[node]['ret'][1]
+
             pre += "\n" + dag.nodes[node]['var'] + " = " + dag.nodes[node]['ret'][0] + " " + var_substituted
             previous_var = dag.nodes[node]['var']
         
+        # Handle last node
+        model_name_last = dag.nodes[last].get('ModelName', 'openai:gpt-4o-mini')
+
+        pre += f"\n# Inject model_name for {dag.nodes[last].get('NodeName')}"
+        pre += f"\n{previous_var}_dict = json.loads({dag.nodes[nodes[-2]]['var']})"
+        pre += f"\nif 'body' in {previous_var}_dict:"
+        pre += f"\n    body = {previous_var}_dict['body']"
+        pre += f"\n    if isinstance(body, str):"
+        pre += f"\n        body = json.loads(body)"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['body'] = json.dumps(body)"
+        pre += f"\n    else:"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['body'] = body"
+        pre += f"\nelif '_body' in {previous_var}_dict:"
+        pre += f"\n    body = {previous_var}_dict['_body']"
+        pre += f"\n    if isinstance(body, str):"
+        pre += f"\n        body = json.loads(body)"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['_body'] = json.dumps(body)"
+        pre += f"\n    else:"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['_body'] = body"
+        pre += f"\nelse:"
+        pre += f"\n    {previous_var}_dict['model_name'] = '{model_name_last}'"
+        pre += f"\n{dag.nodes[nodes[-2]]['var']} = json.dumps({previous_var}_dict)"
+
         pre += "\n" + dag.nodes[last]['pre'].replace("$var$", dag.nodes[nodes[-2]]['var'])
         var = self._generate_random_variable_name()
         # $var$ will be updated in linear merge
@@ -276,6 +432,12 @@ class UserDag:
             pre_statements.append(post_code)
             pre_statements.append(f"return {final_var}")
         
-        # TODO - for every taskall add the converstion from [serwo_objects] -> serwo_list_object
-        orchestrator_code = "\n".join([pre_statements[0]] + ["\t" + statement for statement in pre_statements[1:]])
+        # Apply conditional branching
+
+        if self.has_conditional_branches():
+            pre_statements = self._wrap_with_conditional_logic(pre_statements, final_var)
+
+        # Always add base indentation to be inside orchestrator_function
+        orchestrator_code = "\n".join(["    " + statement for statement in pre_statements])
+
         return orchestrator_code

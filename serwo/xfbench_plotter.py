@@ -35,6 +35,7 @@ class XFBenchPlotter:
     plt.rcParams['legend.fontsize'] = 20
     
     def __init__(self, workflow_directory: str, workflow_deployment_id: str, run_id: str, format: str):
+        breakpoint()
         self.__workflow_directory = workflow_directory
         self.__workflow_deployment_id = workflow_deployment_id
         self.__run_id = run_id
@@ -142,15 +143,17 @@ class XFBenchPlotter:
 
 
     def __create_dynamo_db_items(self):
+        breakpoint()
         print("Creating DynamoDB items")
         dynamodb_item_list = []
 
         queue = QueueClient.from_connection_string(conn_str=self.__conn_str, queue_name=self.__queue_name)
-        response = queue.receive_messages(visibility_timeout=3000)
+        response = queue.receive_messages(visibility_timeout=180)
         print('Reading Queue')
         for message in response:
             queue_item = json.loads(message.content)
             metadata = queue_item["metadata"]
+            data = queue_item["data"]
             
             # Filtering based on workflow deployment id during creation itself
             if metadata["deployment_id"].strip() == self.__workflow_deployment_id:
@@ -164,7 +167,7 @@ class XFBenchPlotter:
                 dynamo_item["invocation_start_time_ms"] = str(
                     metadata["workflow_start_time"]
                 )
-
+                dynamo_item["data"] = data
                 # add session id to dynamo db
                 dynamo_item["session_id"] = str(metadata["session_id"])
 

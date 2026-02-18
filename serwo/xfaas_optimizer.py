@@ -37,7 +37,16 @@ def translate(clouds, cloud_dictionary, valid_partition_points, user_dag):
     i = 0
     part_id = "0000"
     kk = 0
-    while (i < len(clouds)):
+    #Adding a condition for pinned Single Node workflows:
+    if (len(valid_partition_points) == 1 and len(set(clouds)) == 1 and  len(user_dag.get_dag().edges) == 0):
+        function_name = (user_dag.get_dag()).nodes[valid_partition_points[0]['node_id']]['NodeName']
+        out_degree = valid_partition_points[0]['out_degree']
+        csp = CSP(cloud_dictionary[str(clouds[0])]['csp']) 
+        region = cloud_dictionary[str(clouds[0])]['region']
+        partition_point = PartitionPoint(function_name, out_degree, csp, None, part_id, region)
+        return [partition_point]
+
+    while(i < len(clouds)):
         j = i
         while j < len(clouds) and clouds[j] == clouds[i]:
             j += 1

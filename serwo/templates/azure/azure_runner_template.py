@@ -154,8 +154,13 @@ def main(serwoObject, context: az_func.Context) -> str:
             serwoObject.set_basepath(basepath=basepath)
             body_before = serwoObject.get_body()
             input_body_size = objsize.get_deep_size(body_before)
+            #TODO: Long Message: AWS details preserved in case of long message AND hybrid cloud partioner result
+            aws_config = body_before.get("aws") if isinstance(body_before, dict) else None
             serwoObjectResponse = USER_FUNCTION_PLACEHOLDER_function(serwoObject)
             body_after = serwoObjectResponse.get_body()
+            if isinstance(body_after, dict) and aws_config is not None:
+                body_after["aws"] = aws_config
+
             output_body_size = objsize.get_deep_size(body_after)
             process = psutil.Process(os.getpid())
             memory = process.memory_info().rss
@@ -170,7 +175,7 @@ def main(serwoObject, context: az_func.Context) -> str:
             func_json = {func_id: {"start_delta": start_delta, "end_delta": end_delta, "mem_before" : memory_before,  "mem_after" : memory_after , "in_payload_bytes" : input_body_size, "out_payload_bytes" : output_body_size}}
             metadata["functions"].append(func_json)
             metadata = metadata
-            body = serwoObjectResponse.get_body()
+            body = body_after
             return SerWOObject(body=body, metadata=metadata).to_json()
     except Exception as e:
         logging.info("excep= " + str(e))

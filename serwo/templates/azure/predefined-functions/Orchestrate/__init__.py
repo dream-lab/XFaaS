@@ -159,11 +159,121 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     serwoObject = build_serwo_object(inp_dict).to_json()
     # user dag execution
-    bgxe = yield context.call_activity("StartNode", serwoObject)
-    rdnj = yield context.call_activity("PollerNode", bgxe)
-    rdnj = insert_end_stats_in_metadata(rdnj)
-    tqzx = yield context.call_activity("EndNode", rdnj)
-    return tqzx
+    # Conditional branching loop
+    should_continue = True
+
+    while should_continue:
+        # Inject model_name for Planner
+        import json
+        serwoObject_dict = json.loads(serwoObject)
+        if 'body' in serwoObject_dict:
+            serwoObject_dict['body']['model_name'] = 'openai:gpt-4o-mini'
+        else:
+            # Raw input - add model_name at top level
+            serwoObject_dict['model_name'] = 'openai:gpt-4o-mini'
+        serwoObject = json.dumps(serwoObject_dict)
+        oshm = yield context.call_activity("Planner", serwoObject)
+        # Inject model_name for Actor
+        import json
+        oshm_dict = json.loads(oshm)
+        if 'body' in oshm_dict:
+            body = oshm_dict['body']
+            if isinstance(body, str):
+                body = json.loads(body)
+                body['model_name'] = 'openai:gpt-4o-mini'
+                oshm_dict['body'] = json.dumps(body)
+            else:
+                body['model_name'] = 'openai:gpt-4o-mini'
+                oshm_dict['body'] = body
+        elif '_body' in oshm_dict:
+            body = oshm_dict['_body']
+            if isinstance(body, str):
+                body = json.loads(body)
+                body['model_name'] = 'openai:gpt-4o-mini'
+                oshm_dict['_body'] = json.dumps(body)
+            else:
+                body['model_name'] = 'openai:gpt-4o-mini'
+                oshm_dict['_body'] = body
+        else:
+            oshm_dict['model_name'] = 'openai:gpt-4o-mini'
+        oshm = json.dumps(oshm_dict)
+        jzsy = yield context.call_activity("Actor", oshm)
+        # Inject model_name for Evaluator
+        import json
+        jzsy_dict = json.loads(jzsy)
+        if 'body' in jzsy_dict:
+            body = jzsy_dict['body']
+            if isinstance(body, str):
+                body = json.loads(body)
+                body['model_name'] = 'openai:gpt-4o-mini'
+                jzsy_dict['body'] = json.dumps(body)
+            else:
+                body['model_name'] = 'openai:gpt-4o-mini'
+                jzsy_dict['body'] = body
+        elif '_body' in jzsy_dict:
+            body = jzsy_dict['_body']
+            if isinstance(body, str):
+                body = json.loads(body)
+                body['model_name'] = 'openai:gpt-4o-mini'
+                jzsy_dict['_body'] = json.dumps(body)
+            else:
+                body['model_name'] = 'openai:gpt-4o-mini'
+                jzsy_dict['_body'] = body
+        else:
+            jzsy_dict['model_name'] = 'openai:gpt-4o-mini'
+        jzsy = json.dumps(jzsy_dict)
+        rveh = yield context.call_activity("Evaluator", jzsy)
+        # Inject model_name for CollectLogs
+        rveh_dict = json.loads(rveh)
+        if 'body' in rveh_dict:
+            body = rveh_dict['body']
+            if isinstance(body, str):
+                body = json.loads(body)
+                body['model_name'] = 'openai:gpt-4o-mini'
+                rveh_dict['body'] = json.dumps(body)
+            else:
+                body['model_name'] = 'openai:gpt-4o-mini'
+                rveh_dict['body'] = body
+        elif '_body' in rveh_dict:
+            body = rveh_dict['_body']
+            if isinstance(body, str):
+                body = json.loads(body)
+                body['model_name'] = 'openai:gpt-4o-mini'
+                rveh_dict['_body'] = json.dumps(body)
+            else:
+                body['model_name'] = 'openai:gpt-4o-mini'
+                rveh_dict['_body'] = body
+        else:
+            rveh_dict['model_name'] = 'openai:gpt-4o-mini'
+        rveh = json.dumps(rveh_dict)
+        rveh = insert_end_stats_in_metadata(rveh)
+        ktpc = yield context.call_activity("CollectLogs", rveh)
+
+        # Check conditional branching condition
+        import json
+        try:
+            result_dict = json.loads(ktpc)
+            if '_body' in result_dict:
+                result_body = result_dict['_body']
+            else:
+                result_body = result_dict.get('body', {})
+
+            should_continue = result_body.get(
+                'body.needs_retry', False) == True
+
+            # Check iteration limit from user input
+            current_iter = result_body.get('iteration_count', 0)
+            max_iter = result_body.get('max_iterations', 1)
+            if current_iter >= max_iter:
+                should_continue = False
+
+        except Exception as e:
+            should_continue = False
+
+        if not should_continue:
+            break
+
+    return ktpc
 
 
 main = df.Orchestrator.create(orchestrator_function)
