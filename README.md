@@ -52,7 +52,7 @@ python serwo/xfaas_main.py --wf-user-directory <path_to_workflow_directory> --da
 python serwo/xfaas_main.py --wf-user-directory serwo/examples/graphAws --dag-file-name dag.json --dag-benchmark dag-benchmark.json --csp aws --region ap-south-1
 ```
 
-For benchmarking experiments with load testing, you can use `xfaas_run_benchmark.py` or refer to example run commands in the `exp_runner*.py` scripts. For more information about our benchmarking suite, refer to XFBench: [GitHub URL placeholder - to be added]
+For benchmarking experiments with load testing, you can use `xfaas_run_benchmark.py` or refer to example run commands in the `exp_runner*.py` scripts. For more information about our benchmarking suite, refer to XFBench: https://github.com/dream-lab/XFBench
 
 *V. Kulkarni et al., "XFBench: A Cross-Cloud Benchmark Suite for Evaluating FaaS Workflow Platforms," 2024 IEEE 24th International Symposium on Cluster, Cloud and Internet Computing (CCGrid), Philadelphia, PA, USA, 2024, pp. 543-556, doi: 10.1109/CCGrid59990.2024.00067.*
 
