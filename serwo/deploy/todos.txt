@@ -1,0 +1,8 @@
+note - 
+1. creating a local zip package
+2. put option for s3
+3. service invocation. 
+ - package
+ - deploy -- arn, --credentials, --local option.
+
+ create a /temp folder uipp

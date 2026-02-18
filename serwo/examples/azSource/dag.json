@@ -1,0 +1,27 @@
+{
+    "WorkflowName": "AzSource",
+    "Nodes": [
+      {
+        "NodeId": "1",
+        "NodeName": "Source",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/azSource/Source",
+        "EntryPoint": "Source.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      },
+      {
+        "NodeId": "2",
+        "NodeName": "AwsEgress",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/azSource/AwsEgress",
+        "EntryPoint": "AwsEgress.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      }
+
+    ],
+    "Edges": [
+        {
+            "Source":["AwsEgress"]
+        }
+    ]
+}

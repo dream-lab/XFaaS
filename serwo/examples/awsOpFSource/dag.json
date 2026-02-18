@@ -1,0 +1,27 @@
+{
+    "WorkflowName": "AwsSource",
+    "Nodes": [
+      {
+        "NodeId": "1",
+        "NodeName": "Source",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/awsOpFSource/Source",
+        "EntryPoint": "Source.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      },
+      {
+        "NodeId": "2",
+        "NodeName": "OfEgress",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/awsOpFSource/OfEgress",
+        "EntryPoint": "OfEgress.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      }
+
+    ],
+    "Edges": [
+        {
+            "Source":["OfEgress"]
+        }
+    ]
+}

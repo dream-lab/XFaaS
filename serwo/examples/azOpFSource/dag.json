@@ -1,0 +1,27 @@
+{
+    "WorkflowName": "AzSource",
+    "Nodes": [
+      {
+        "NodeId": "1",
+        "NodeName": "Source",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/azOpFSource/Source",
+        "EntryPoint": "Source.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      },
+      {
+        "NodeId": "2",
+        "NodeName": "OfEgress",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/azOpFSource/OfEgress",
+        "EntryPoint": "OfEgress.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      }
+
+    ],
+    "Edges": [
+        {
+            "Source":["OfEgress"]
+        }
+    ]
+}

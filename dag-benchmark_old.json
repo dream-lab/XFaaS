@@ -1,0 +1,179 @@
+{
+  "NodeBenchmarks": {
+    "1": {
+      "0": {
+        "Latency": 512,
+        "Cost": 0
+      },
+      "1": {
+        "Latency": 802,
+        "Cost": 0
+      }
+    },
+    "2": {
+      "0": {
+        "Latency": 20028,
+        "Cost": 0
+      },
+      "1": {
+        "Latency": 14475,
+        "Cost": 0
+      }
+    },
+    "3": {
+      "0": {
+        "Latency": 20232,
+        "Cost": 0
+      },
+      "1": {
+        "Latency": 14054,
+        "Cost": 0
+      }
+    },
+    "4": {
+      "0": {
+        "Latency": 32596,
+        "Cost": 0
+      },
+      "1": {
+        "Latency": 47324,
+        "Cost": 0
+      }
+    },
+    "5": {
+      "0": {
+        "Latency": 31863,
+        "Cost": 0
+      },
+      "1": {
+        "Latency": 46279,
+        "Cost": 0
+      }
+    },
+    "6": {
+      "0": {
+        "Latency": 1,
+        "Cost": 0
+      },
+      "1": {
+        "Latency": 10,
+        "Cost": 0
+      }
+    },
+    "7": {
+      "0": {
+        "Latency": 127,
+        "Cost": 0
+      },
+      "1": {
+        "Latency": 361,
+        "Cost": 0
+      }
+    }
+  },
+  "EdgeBenchmarks": {
+    "1": {
+      "2": {
+        "DataTransferSize": 16599.0,
+        "Latencies": [
+          [
+            85,
+            0
+          ],
+          [
+            0,
+            1175448
+          ]
+        ]
+      },
+      "3": {
+        "DataTransferSize": 16599.0,
+        "Latencies": [
+          [
+            85,
+            0
+          ],
+          [
+            0,
+            490988
+          ]
+        ]
+      }
+    },
+    "2": {
+      "4": {
+        "DataTransferSize": 28479.0,
+        "Latencies": [
+          [
+            89,
+            0
+          ],
+          [
+            0,
+            821818
+          ]
+        ]
+      }
+    },
+    "3": {
+      "5": {
+        "DataTransferSize": 28589.0,
+        "Latencies": [
+          [
+            89,
+            0
+          ],
+          [
+            0,
+            1605943
+          ]
+        ]
+      }
+    },
+    "4": {
+      "6": {
+        "DataTransferSize": 43462.0,
+        "Latencies": [
+          [
+            125,
+            0
+          ],
+          [
+            0,
+            663975
+          ]
+        ]
+      }
+    },
+    "5": {
+      "6": {
+        "DataTransferSize": 43462.0,
+        "Latencies": [
+          [
+            554,
+            0
+          ],
+          [
+            0,
+            652349
+          ]
+        ]
+      }
+    },
+    "6": {
+      "7": {
+        "DataTransferSize": 43550.0,
+        "Latencies": [
+          [
+            91,
+            0
+          ],
+          [
+            0,
+            81610
+          ]
+        ]
+      }
+    }
+  }
+}

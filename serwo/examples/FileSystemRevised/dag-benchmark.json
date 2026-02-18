@@ -1,0 +1,758 @@
+{
+  "NodeBenchmarks": {
+    "1": {
+      "0": {
+        "Latency": 200,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "2": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "3": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "4": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "5": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "6": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "7": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "8": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "9": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "10": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "11": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "12": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "13": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "14": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "15": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "16": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "17": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "18": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "19": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "20": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "21": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "22": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "23": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "24": {
+      "0": {
+        "Latency": 100,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 800,
+        "Cost": 5
+      }
+    },
+    "25": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    },
+    "26": {
+      "0": {
+        "Latency": 800,
+        "Cost": 5
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 5
+      }
+    }
+  },
+  "EdgeBenchmarks": {
+    "1": {
+      "2": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      },
+      "3": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      },
+      "4": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      },
+      "5": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      },
+      "6": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      },
+      "7": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      },
+      "8": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      },
+      "9": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      },
+      "10": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      },
+      "11": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "2": {
+      "12": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "3": {
+      "13": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "4": {
+      "14": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "5": {
+      "15": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "6": {
+      "16": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "7": {
+      "17": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "8": {
+      "18": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "9": {
+      "19": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "10": {
+      "20": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "11": {
+      "21": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "12": {
+      "22": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "13": {
+      "22": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "14": {
+      "22": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "15": {
+      "22": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "16": {
+      "22": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "17": {
+      "22": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "18": {
+      "22": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "19": {
+      "22": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "20": {
+      "22": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "21": {
+      "22": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "22": {
+      "23": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "23": {
+      "24": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "24": {
+      "25": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    },
+    "25": {
+      "26": {
+        "DataTransferSize": 10,
+        "Latencies": [
+          [
+            10,
+            100
+          ],
+          [
+            100,
+            10
+          ]
+        ]
+      }
+    }
+  }
+}

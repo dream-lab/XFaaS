@@ -1,0 +1,443 @@
+import json
+import networkx as nx
+import random
+import string
+from collections import defaultdict
+
+class UserDag:
+    # private variables
+    __dag_config_data = dict() # dag configuration (picked up from user file)
+    __nodeIDMap = {} # map: nodeName -> nodeId (used internally) [NOTE [TK] - This map is changed from nodeName -> NodeId to UserGivenNodeId -> our internal nodeID ] (in azure we were already using this)
+    __dag = nx.DiGraph() # networkx directed graph
+
+    def __init__(self, user_config_path):
+        # throw an exception if loading file has a problem
+        try:
+            print("User config path - ", user_config_path)
+            self.__dag_config_data = self.__load_user_spec(user_config_path)
+            print("Dag config data - ", self.__dag_config_data)
+            self.__nodeIDMap = {}
+            self.__dag = nx.DiGraph()
+            self.__conditional_branches = []
+
+        except Exception as e:
+            raise e
+
+        # build the networkx DAG
+        # add nodes in the dag and populate the functions dict
+        # build the networkx DAG
+        # add nodes in the dag and populate the functions dict
+
+        index = 1
+        for node in self.__dag_config_data["Nodes"]:
+            # NOTE - this is different in AWS, being picked up from the user dag-description
+            # nodeID = "n" + str(index)
+            nodeID = node["NodeId"]
+            model_name = node.get("ModelName", "openai:gpt-4o-mini")
+            self.__nodeIDMap[node["NodeName"]] = nodeID
+            self.__dag.add_node(nodeID, NodeName=node["NodeName"], ModelName=model_name, pre="", ret=["yield ", "context.call_activity(\"" + node["NodeName"]  + "\",$var$)"], var=self._generate_random_variable_name(), machine_list=[nodeID])
+            index += 1
+
+
+        # add edges in the dag
+        for edge in self.__dag_config_data["Edges"]:
+            for key in edge:
+                for val in edge[key]:
+                    self.__dag.add_edge(
+                        self.__nodeIDMap[key], self.__nodeIDMap[val])
+
+        # Conditional Branches after edges:
+        if "ConditionalBranches" in self.__dag_config_data:
+            self.__conditional_branches = self.__dag_config_data["ConditionalBranches"]
+
+        start_node = [node for node in self.__dag.nodes if self.__dag.in_degree(node) == 0][0]
+        self.__dag.nodes[start_node]['ret'] = ["yield ", "context.call_activity(\"" + self.__dag.nodes[start_node]["NodeName"]  + "\", serwoObject)"]
+
+
+
+        
+        start_node = [node for node in self.__dag.nodes if self.__dag.in_degree(node) == 0][0]
+        self.__dag.nodes[start_node]['ret'] = ["yield ", "context.call_activity(\"" + self.__dag.nodes[start_node]["NodeName"]  + "\", serwoObject)"]
+       
+    def get_conditional_branches(self):
+        return self.__conditional_branches
+
+    def has_conditional_branches(self):
+        return len(self.__conditional_branches) > 0
+
+    def __load_user_spec(self, user_config_path):
+        with open(user_config_path, "r") as user_dag_spec:
+            dag_data = json.load(user_dag_spec)
+        return dag_data
+    
+    def _wrap_with_conditional_logic(self, statements, result_var):
+        """
+        Generic wrapper for conditional branching using user input.
+        """
+        if not self.__conditional_branches:
+            return statements
+        
+        branch = self.__conditional_branches[0]
+        condition_var = branch['ConditionVariable']
+        condition_type = branch['ConditionType']
+        condition_value = branch['ConditionValue']
+        
+        json_path = condition_var.replace('$.', '')
+        
+        wrapped_statements = []
+        wrapped_statements.append("# Conditional branching loop")
+        wrapped_statements.append("should_continue = True")
+        wrapped_statements.append("")
+        wrapped_statements.append("while should_continue:")
+        
+        # Indent workflow statements (exclude return) - add 4 spaces for while body
+        for stmt in statements[:-1]:
+            wrapped_statements.append("    " + stmt)
+        
+        wrapped_statements.append("")
+        wrapped_statements.append("    # Check conditional branching condition")
+        wrapped_statements.append("    import json")
+        wrapped_statements.append("    try:")
+        wrapped_statements.append("        result_dict = json.loads({})".format(result_var))
+        wrapped_statements.append("        if '_body' in result_dict:")
+        wrapped_statements.append("            result_body = result_dict['_body']")
+        wrapped_statements.append("        else:")
+        wrapped_statements.append("            result_body = result_dict.get('body', {})")
+        wrapped_statements.append("")
+        
+        # Generate condition check
+        if condition_type == "BooleanEquals":
+            # FIX: Use capital True/False
+            condition_check = "result_body.get('{}', False) == {}".format(
+                json_path, str(condition_value).capitalize()
+            )
+        elif condition_type == "StringEquals":
+            condition_check = "result_body.get('{}', '') == '{}'".format(json_path, condition_value)
+        elif condition_type == "NumericEquals":
+            condition_check = "result_body.get('{}', 0) == {}".format(json_path, condition_value)
+        else:
+            condition_check = "result_body.get('{}', False)".format(json_path)
+        
+        wrapped_statements.append("        should_continue = {}".format(condition_check))
+        wrapped_statements.append("")
+        wrapped_statements.append("        # Check iteration limit from user input")
+        wrapped_statements.append("        current_iter = result_body.get('iteration_count', 0)")
+        wrapped_statements.append("        max_iter = result_body.get('max_iterations', 1)")
+        wrapped_statements.append("        if current_iter >= max_iter:")
+        wrapped_statements.append("            should_continue = False")
+        wrapped_statements.append("")
+        wrapped_statements.append("    except Exception as e:")
+        wrapped_statements.append("        should_continue = False")
+        wrapped_statements.append("")
+        wrapped_statements.append("    if not should_continue:")
+        wrapped_statements.append("        break")
+        
+        wrapped_statements.append("")
+        wrapped_statements.append(statements[-1])  # return statement
+        
+        return wrapped_statements
+   
+    def _generate_random_variable_name(self, n=4):
+        res = ''.join(random.choices(string.ascii_letters, k=n))
+        return str(res).lower()
+
+    def _get_orchestrator_code_parallel_merge(self, dag, nodes):
+        # print("Dag nodes - ",list(dag.nodes()))
+        # print("Orchestrator code parallel merge - ", nodes)
+        task_list_var_name = self._generate_random_variable_name()
+        task_list_create = task_list_var_name + " = []\n"
+        ret = ["yield ",  "context.task_all(" + task_list_var_name + ")"]
+        pre = ""
+
+         # Use the first node's model_name
+        if nodes:
+            model_name = dag.nodes[nodes[0]].get('ModelName', 'openai:gpt-4o-mini')
+            pre += f"\n# Inject model_name for parallel execution"
+            pre += f"\nparallel_input = json.loads(serwoObject)"
+            pre += f"\nif 'body' in parallel_input:"
+            pre += f"\n    parallel_input['body']['model_name'] = '{model_name}'"
+            pre += f"\nserwoObject = json.dumps(parallel_input)"
+
+        for node in nodes:
+            # Remember No $var$ will be updated in parallel merge
+            pre += "\n" + dag.nodes[node]['pre']
+        pre += "\n" + task_list_create
+        for node in nodes:
+            pre += "\n" + dag.nodes[node]['var'] + " = " + dag.nodes[node]['ret'][1]
+        
+        # task.append()
+        for node in nodes:
+            pre += "\n" + task_list_var_name + ".append(" + dag.nodes[node]['var'] + ")"
+
+        var = self._generate_random_variable_name()
+        return pre, ret, var
+
+    def _get_orchestrator_code_linear_merge(self, dag, nodes):
+        # print("Dag nodes - ",list(dag.nodes()))
+        # print("Orchestrator code linear merge - ", nodes)
+        pre = ""
+        last = nodes[-1]
+        previous_var = None
+        for node in nodes[:-1]:
+            # $var$ will be updated in linear merge
+            # Get model_name for this node
+            model_name = dag.nodes[node].get('ModelName', 'openai:gpt-4o-mini')
+            node_name = dag.nodes[node].get('NodeName', 'unknown')
+            
+            if previous_var is not None:
+                # Inject model_name before calling activity
+                pre += f"\n# Inject model_name for {dag.nodes[node].get('NodeName')}"
+                pre += f"\nimport json"
+                pre += f"\n{previous_var}_dict = json.loads({previous_var})"
+                pre += f"\nif 'body' in {previous_var}_dict:"
+                pre += f"\n    body = {previous_var}_dict['body']"
+                pre += f"\n    if isinstance(body, str):"
+                pre += f"\n        body = json.loads(body)"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['body'] = json.dumps(body)"
+                pre += f"\n    else:"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['body'] = body"
+                pre += f"\nelif '_body' in {previous_var}_dict:"
+                pre += f"\n    body = {previous_var}_dict['_body']"
+                pre += f"\n    if isinstance(body, str):"
+                pre += f"\n        body = json.loads(body)"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['_body'] = json.dumps(body)"
+                pre += f"\n    else:"
+                pre += f"\n        body['model_name'] = '{model_name}'"
+                pre += f"\n        {previous_var}_dict['_body'] = body"
+                pre += f"\nelse:"
+                pre += f"\n    {previous_var}_dict['model_name'] = '{model_name}'"
+                pre += f"\n{previous_var} = json.dumps({previous_var}_dict)"
+
+                pre += "\n" + dag.nodes[node]['pre'].replace("$var$", previous_var)
+                var_substituted = dag.nodes[node]['ret'][1].replace("$var$", previous_var)
+            else:
+                # Inject model_name for first node
+                pre += f"\n# Inject model_name for {dag.nodes[node].get('NodeName')}"
+                pre += f"\nimport json"
+                pre += f"\nserwoObject_dict = json.loads(serwoObject)"
+                pre += f"\nif 'body' in serwoObject_dict:"
+                pre += f"\n    serwoObject_dict['body']['model_name'] = '{model_name}'"
+                pre += f"\nelse:"
+                pre += f"\n    # Raw input - add model_name at top level"
+                pre += f"\n    serwoObject_dict['model_name'] = '{model_name}'"
+                pre += f"\nserwoObject = json.dumps(serwoObject_dict)"
+
+                pre += "\n" + dag.nodes[node]['pre']
+                var_substituted = dag.nodes[node]['ret'][1]
+
+            pre += "\n" + dag.nodes[node]['var'] + " = " + dag.nodes[node]['ret'][0] + " " + var_substituted
+            previous_var = dag.nodes[node]['var']
+        
+        # Handle last node
+        model_name_last = dag.nodes[last].get('ModelName', 'openai:gpt-4o-mini')
+
+        pre += f"\n# Inject model_name for {dag.nodes[last].get('NodeName')}"
+        pre += f"\n{previous_var}_dict = json.loads({dag.nodes[nodes[-2]]['var']})"
+        pre += f"\nif 'body' in {previous_var}_dict:"
+        pre += f"\n    body = {previous_var}_dict['body']"
+        pre += f"\n    if isinstance(body, str):"
+        pre += f"\n        body = json.loads(body)"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['body'] = json.dumps(body)"
+        pre += f"\n    else:"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['body'] = body"
+        pre += f"\nelif '_body' in {previous_var}_dict:"
+        pre += f"\n    body = {previous_var}_dict['_body']"
+        pre += f"\n    if isinstance(body, str):"
+        pre += f"\n        body = json.loads(body)"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['_body'] = json.dumps(body)"
+        pre += f"\n    else:"
+        pre += f"\n        body['model_name'] = '{model_name_last}'"
+        pre += f"\n        {previous_var}_dict['_body'] = body"
+        pre += f"\nelse:"
+        pre += f"\n    {previous_var}_dict['model_name'] = '{model_name_last}'"
+        pre += f"\n{dag.nodes[nodes[-2]]['var']} = json.dumps({previous_var}_dict)"
+
+        pre += "\n" + dag.nodes[last]['pre'].replace("$var$", dag.nodes[nodes[-2]]['var'])
+        var = self._generate_random_variable_name()
+        # $var$ will be updated in linear merge
+        ret = ["yield ", dag.nodes[last]['ret'][1].replace("$var$", dag.nodes[nodes[-2]]['var'])]
+        return pre, ret, var
+
+    def _merge_linear_nodes(self, workflow_dag: nx.DiGraph, node_list: list) -> nx.DiGraph:
+        # Replaced nodeId -> userFnName
+        if (node_list == []):
+            return workflow_dag
+
+        outG = workflow_dag
+
+        new_node_machine_list = []
+    
+        for node in node_list:
+            new_node_machine_list.extend(outG.nodes[node]['machine_list'])
+
+        newNodeId = "n"+str(node_list)
+        pre, ret, var = self._get_orchestrator_code_linear_merge(outG, node_list)
+        outG.add_node(newNodeId, pre=pre, ret=ret, var=var ,machine_list=new_node_machine_list) # Add the 'merged' node
+        
+        for u, v in list(outG.edges()):
+            if v == node_list[0]:
+                # add edge from u -> new node id
+                outG.add_edge(u, newNodeId)
+            if u == node_list[len(node_list)-1]:
+                outG.add_edge(newNodeId, v)
+            
+        for n in node_list: # remove the individual nodes
+            outG.remove_node(n)
+
+        return outG
+
+    def _merge_parallel_nodes(self, workflow_dag: nx.DiGraph, node_list: list) -> nx.DiGraph: 
+        # write code here to merge the parallel nodes
+        # Replaced nodeId -> userFnName
+        if (node_list == []):
+            return workflow_dag
+
+        outG = workflow_dag
+
+        new_node_machine_list = []
+
+        for node in node_list:
+            new_node_machine_list.append(outG.nodes[node]['machine_list'])
+        
+        # since we are only merging diamonds (same predecessor, same successor) 
+        predecessor = list(outG.predecessors(node_list[0]))[0] # coz it returns a dict_iterator
+        successor = list(outG.successors(node_list[0]))[0]
+
+        # remove all parallel nodes and add edge pred -> collapsed_parallel -> succ
+        newNodeId = "n" + str(new_node_machine_list)
+
+        # add new node pre
+        pre, ret, var = self._get_orchestrator_code_parallel_merge(outG, node_list)
+        outG.add_node(newNodeId, pre=pre, ret=ret, var=var, machine_list=[new_node_machine_list])
+
+        for node in node_list:
+            outG.remove_node(node)
+
+        outG.add_edge(predecessor, newNodeId)
+        outG.add_edge(newNodeId, successor)
+
+        return outG
+
+
+    def _collapse_parallel_chains(self, workflow_graph: nx.DiGraph):
+        start_node = [node for node in workflow_graph.nodes if workflow_graph.in_degree(node) == 0][0]
+        dfs_nodes = list(nx.dfs_preorder_nodes(workflow_graph, source=start_node))
+
+        output_graph = workflow_graph
+
+        set_of_parallel_chains = set()
+        
+        for curr_node in dfs_nodes: 
+            # for each nodes get successors create a list of nodes with same predecessor 
+            curr_node_succ = list(output_graph.successors(curr_node))
+            diamond_forming_nodes = []
+
+            for succ in curr_node_succ:
+                if (output_graph.out_degree(succ) == 1):
+                    diamond_forming_nodes.append(succ)
+            
+            group_by_succ_dict = defaultdict(list)
+
+            for node in diamond_forming_nodes:
+                succ = list(output_graph.successors(node))[0]
+                group_by_succ_dict[succ].append(node)
+
+            for val in group_by_succ_dict.values():
+                if len(val) > 1:
+                    set_of_parallel_chains.add(tuple(val))
+        
+        for chain in set_of_parallel_chains:
+            chain_list = list(chain)
+            output_graph = self._merge_parallel_nodes(output_graph, chain_list)
+
+        return output_graph
+            
+
+    def _collapse_linear_chains(self, workflow_graph: nx.DiGraph):
+        # get from user workflow graph
+        start_node = [node for node in workflow_graph.nodes if workflow_graph.in_degree(node) == 0][0]
+        dfs_edges = list(nx.dfs_edges(workflow_graph, source=start_node))
+        output_graph = workflow_graph
+        linear_chain = []
+        set_of_linear_chains = set()
+        for u,v in dfs_edges:
+            if output_graph.out_degree(u) == 1  and output_graph.in_degree(v) == 1:
+                    if u not in linear_chain:
+                        linear_chain.append(u)
+                    if v not in linear_chain:
+                        linear_chain.append(v)
+            else:
+                if linear_chain:
+                    set_of_linear_chains.add(tuple(linear_chain))
+                linear_chain = []
+        
+        # for a -> b -> c (coz i never flush it out to set_of_linear_chains)
+        if linear_chain != []:
+            set_of_linear_chains.add(tuple(linear_chain))
+
+        # merge all linear chains  
+        # print("Set of linear chains", len(set_of_linear_chains))
+        for chain in set_of_linear_chains:
+            node_list = list(chain)
+            # print(node_list)
+            output_graph = self._merge_linear_nodes(output_graph, node_list)
+
+        return output_graph
+    
+    def get_orchestrator_code(self):
+        # load the dag
+        wf_dag = self.__dag
+        collapsed_dag = wf_dag
+        output_dag = wf_dag
+
+        # iterative linear and parallel merge
+        while len(output_dag.nodes()) != 1:
+            linear_collapsed_dag = self._collapse_linear_chains(collapsed_dag)
+            collapsed_dag = self._collapse_parallel_chains(linear_collapsed_dag)
+        output_dag = collapsed_dag
+
+        # generated code
+        final_var = self._generate_random_variable_name()
+        end_node = list(output_dag.nodes())[0]
+        # added a check if the graph contains only a single node
+        if len(output_dag.nodes[end_node]['pre']) == 0:
+            post_code = final_var + " = " + output_dag.nodes[end_node]['ret'][0] + " " + output_dag.nodes[end_node]['ret'][1]
+            post_code = post_code.split("\n")
+            pre_statements = [statement for statement in post_code if statement != '']
+
+            # NOTE - !HACK!
+            # adding insert_end_stats_in_metadata (Temporary and this is a very hacky way of doing it, could capture information from the
+            # network structure in some way and append)
+            variable_for_insert_metadata = pre_statements[-1].split("=")[0].strip()
+            insert_metadata_statement = variable_for_insert_metadata + " = " + f"insert_end_stats_in_metadata({variable_for_insert_metadata})"
+            pre_statements.append(insert_metadata_statement)
+            pre_statements.append(f"return {final_var}")
+        else:
+            pre_code = output_dag.nodes[end_node]['pre'].split("\n")
+            post_code = final_var + " = " + output_dag.nodes[end_node]['ret'][0] + " " + output_dag.nodes[end_node]['ret'][1]
+            pre_statements = [statement for statement in pre_code if statement != '']
+
+            # NOTE - !HACK!
+            # adding insert_end_stats_in_metadata (Temporary and this is a very hacky way of doing it, could capture information from the
+            # network structure in some way and append)
+            variable_for_insert_metadata = pre_statements[-1].split("=")[0].strip()
+            insert_metadata_statement = variable_for_insert_metadata + " = " + f"insert_end_stats_in_metadata({variable_for_insert_metadata})"
+            pre_statements.append(insert_metadata_statement)
+            pre_statements.append(post_code)
+            pre_statements.append(f"return {final_var}")
+        
+        # Apply conditional branching
+
+        if self.has_conditional_branches():
+            pre_statements = self._wrap_with_conditional_logic(pre_statements, final_var)
+
+        # Always add base indentation to be inside orchestrator_function
+        orchestrator_code = "\n".join(["    " + statement for statement in pre_statements])
+
+        return orchestrator_code

@@ -1,0 +1,14 @@
+{
+    "WorkflowName": "AzSink",
+    "Nodes": [
+      {
+        "NodeId": "1",
+        "NodeName": "Sink",
+        "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/azSink/Sink",
+        "EntryPoint": "Sink.py",
+        "CSP": "NA",
+        "MemoryInMB": 128
+      }
+    ],
+    "Edges": []
+}

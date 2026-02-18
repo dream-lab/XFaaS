@@ -1,0 +1,259 @@
+{
+    "workflow_id": "d428116d-9930-43bf-9ef1-66935ca31f35",
+    "refactored_workflow_id": "3f2fb818-4715-4e0e-86cc-1764feca9f41",
+    "deployment_id": "3848cb96-382a-4eeb-a482-f89d7b0511f6",
+    "experiment_conf": {
+        "amedium1": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-1-session-amedium1.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 1.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium2": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-7-4-session-amedium2.jmx",
+            "csp": "azure",
+            "rps": 7,
+            "duration": 4.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium3": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-10-7-session-amedium3.jmx",
+            "csp": "azure",
+            "rps": 10,
+            "duration": 7.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium4": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-5-6-session-amedium4.jmx",
+            "csp": "azure",
+            "rps": 5,
+            "duration": 6.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium5": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-20-session-amedium5.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 20.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium6": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-8-session-amedium6.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 8.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium7": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-6-session-amedium7.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 6.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium8": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-20-session-amedium8.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 20.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium9": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-3-session-amedium9.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 3.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium10": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-6-1-session-amedium10.jmx",
+            "csp": "azure",
+            "rps": 6,
+            "duration": 1.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium11": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-3-session-amedium11.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 3.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium12": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-1-session-amedium12.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 1.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium13": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-7-session-amedium13.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 7.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium14": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-50-session-amedium14.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 50.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium15": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-2-5-session-amedium15.jmx",
+            "csp": "azure",
+            "rps": 2,
+            "duration": 5.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium16": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-3-28-session-amedium16.jmx",
+            "csp": "azure",
+            "rps": 3,
+            "duration": 28.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium17": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-14-26-session-amedium17.jmx",
+            "csp": "azure",
+            "rps": 14,
+            "duration": 26.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium18": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-17-3-session-amedium18.jmx",
+            "csp": "azure",
+            "rps": 17,
+            "duration": 3.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium19": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-4-1-session-amedium19.jmx",
+            "csp": "azure",
+            "rps": 4,
+            "duration": 1.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium20": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-2-1-session-amedium20.jmx",
+            "csp": "azure",
+            "rps": 2,
+            "duration": 1.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium21": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-8-1-session-amedium21.jmx",
+            "csp": "azure",
+            "rps": 8,
+            "duration": 1.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium22": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-1-session-amedium22.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 1.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium23": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-5-session-amedium23.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 5.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium24": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-1-session-amedium24.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 1.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium25": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-6-9-session-amedium25.jmx",
+            "csp": "azure",
+            "rps": 6,
+            "duration": 9.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium26": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-2-session-amedium26.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 2.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium27": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-9-session-amedium27.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 9.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        },
+        "amedium28": {
+            "jmx_output_filename": "azure-imageProcessing-medium-alibaba-1-11-session-amedium28.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 11.0,
+            "payload_size": "medium",
+            "wf_name": "imageProcessing",
+            "dynamism": "alibaba"
+        }
+    }
+}

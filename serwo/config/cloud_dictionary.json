@@ -1,0 +1,10 @@
+{
+  "0": {
+    "csp": "aws",
+    "region": "ap-south-1"
+  },
+  "1": {
+    "csp": "azure_v2",
+    "region": "centralindia"
+  }
+}

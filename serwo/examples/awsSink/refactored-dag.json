@@ -1,0 +1,28 @@
+{
+    "WorkflowName": "AwsSink",
+    "Nodes": [
+        {
+            "NodeId": "1",
+            "NodeName": "Sink",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/awsSink/Sink",
+            "EntryPoint": "Sink.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        },
+        {
+            "NodeId": "253",
+            "NodeName": "CollectLogs",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/awsSink/CollectLogs",
+            "EntryPoint": "func.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        }
+    ],
+    "Edges": [
+        {
+            "Sink": [
+                "CollectLogs"
+            ]
+        }
+    ]
+}

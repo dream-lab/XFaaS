@@ -1,0 +1,34 @@
+openapi: "3.0.1"
+info:
+  title: "Serwo-Execute-API"
+  version: "2022-06-20T05:39:09Z"
+servers:
+  variables:
+    basePath:
+      default: "/serwo"
+paths:
+  /execute:
+    post:
+      responses:
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+      x-amazon-apigateway-integration:
+        type: "aws"
+        credentials: 
+          Fn::Sub: "${ExecuteApiRole.Arn}" # template based rolename generation
+        httpMethod: "POST"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        uri: 
+          "arn:aws:apigateway:${AWS::Region}:states:action/StartExecution" # template based action generation
+components:
+  schemas:
+    Empty:
+      title: "Empty Schema"
+      type: "object"

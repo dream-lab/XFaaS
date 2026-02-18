@@ -1,0 +1,3 @@
+azure-storage-queue==2.1.0
+psutil
+objsize

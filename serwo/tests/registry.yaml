@@ -1,0 +1,49 @@
+examples:
+  - name: asyncTester
+    path: examples/asyncTester
+    runs:
+      - csp: azure
+        region: centralindia
+  - name: asyncTesterAws
+    path: examples/asyncTesterAws
+    runs:
+      - csp: aws
+        region: ap-south-1
+        pin: 0
+  - name: asyncTesterAzure
+    path: examples/asyncTesterAzure
+    runs:
+      - csp: azure
+        region: centralindia
+        pin: 1
+  - name: FileSystemRevisedAws
+    path: examples/FileSystemRevisedAws
+    runs:
+      - csp: aws
+        region: ap-south-1
+        pin: 0
+    payload:
+      numLines: 10
+      numChars: 120
+      numofiterations: 10
+  - name: FileSystemRevisedAz
+    path: examples/FileSystemRevisedAz
+    runs:
+      - csp: azure
+        region: centralindia
+        pin: 1
+    payload:
+      numLines: 10
+      numChars: 120
+      numofiterations: 10
+  - name: FileSystemRevised
+    path: examples/FileSystemRevised
+    runs:
+      - csp: azure
+        region: centralindia
+    payload:
+      numLines: 10
+      numChars: 120
+      numofiterations: 10
+
+    

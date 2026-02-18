@@ -1,0 +1,324 @@
+{
+  "NodeBenchmarks" : {
+    "1": {
+      "AWS": {
+        "Latency": 33,
+        "Cost": 3
+      },
+      "Azure": {
+        "Latency": 10,
+        "Cost": 10
+      }
+    },
+    "2": {
+      "AWS": {
+        "Latency": 4139,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 514,
+        "Cost": 10
+      }
+    },
+    "3": {
+      "AWS": {
+        "Latency": 3095,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 1473,
+        "Cost": 10
+      }
+    },
+    "4": {
+      "AWS": {
+        "Latency": 1738,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 179,
+        "Cost": 10
+      }
+    },
+    "5": {
+      "AWS": {
+        "Latency": 4139,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 514,
+        "Cost": 10
+      }
+    },
+    "6": {
+      "AWS": {
+        "Latency": 33,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 10,
+        "Cost": 10
+      }
+    },
+    "7": {
+      "AWS": {
+        "Latency": 1738,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 179,
+        "Cost": 10
+      }
+    },
+    "8": {
+      "AWS": {
+        "Latency": 3095,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 1473,
+        "Cost": 10
+      }
+    },
+    "9": {
+      "AWS": {
+        "Latency": 4139,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 514,
+        "Cost": 10
+      }
+    },
+    "10": {
+      "AWS": {
+        "Latency": 1738,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 179,
+        "Cost": 10
+      }
+    },
+    "11": {
+      "AWS": {
+        "Latency": 4139,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 514,
+        "Cost": 10
+      }
+    },
+    "12": {
+      "AWS": {
+        "Latency": 3095,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 1473,
+        "Cost": 10
+      }
+    },
+    "13": {
+      "AWS": {
+        "Latency": 33,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 10,
+        "Cost": 10
+      }
+    },
+    "14": {
+      "AWS": {
+        "Latency": 1738,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 179,
+        "Cost": 10
+      }
+    },
+    "15": {
+      "AWS": {
+        "Latency": 4139,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 514,
+        "Cost": 10
+      }
+    },
+    "16": {
+      "AWS": {
+        "Latency": 3095,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 1473,
+        "Cost": 10
+      }
+    },
+    "17": {
+      "AWS": {
+        "Latency": 33,
+        "Cost": 10
+      },
+      "Azure": {
+        "Latency": 10,
+        "Cost": 10
+      }
+    }
+  },
+  "EdgeBenchmarks": {
+    "1": [
+      {
+        "2": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "2": [
+      {
+        "3": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "3": [
+      {
+        "4": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      },
+      {
+        "5": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "4": [
+      {
+        "13": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "5": [
+      {
+        "6": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "6" : [
+      {
+        "7": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      },
+      {
+        "8": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      },
+      {
+        "9": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "7": [
+      {
+        "11": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "8": [
+      {
+        "11": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "9": [
+      {
+        "10": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "10": [
+      {
+        "11": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "11": [
+      {
+        "12": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "12":[
+      {
+        "16": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "13":[
+      {
+        "14": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "14": [
+      {
+        "15": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "15": [
+      {
+        "12": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ],
+    "16": [
+      {
+        "17": {
+          "DataTransferSize": 25,
+          "Latencies" : [{"AWS":115.67}, {"Azure": 2458} , {"AWSToAzure": 1558},{"AzureToAWS" : 692.85}]
+        }
+      }
+    ]
+
+
+  }
+}

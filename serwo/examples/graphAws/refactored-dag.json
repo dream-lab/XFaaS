@@ -1,0 +1,90 @@
+{
+    "WorkflowName": "graph",
+    "Nodes": [
+        {
+            "NodeId": "1",
+            "NodeName": "TaskA",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAws/graphGen",
+            "EntryPoint": "graphGen.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        },
+        {
+            "NodeId": "2",
+            "NodeName": "TaskB",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAws/graphBFT",
+            "EntryPoint": "graphBFT.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        },
+        {
+            "NodeId": "3",
+            "NodeName": "TaskC",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAws/pagerank",
+            "EntryPoint": "pagerank.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        },
+        {
+            "NodeId": "4",
+            "NodeName": "TaskD",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAws/graphMST",
+            "EntryPoint": "graphMST.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        },
+        {
+            "NodeId": "5",
+            "NodeName": "TaskE",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAws/aggregate",
+            "EntryPoint": "aggregate.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        },
+        {
+            "NodeId": "253",
+            "NodeName": "CollectLogs",
+            "Path": "/Users/varad.kulkarni/xfaas/XFaaS/serwo/examples/graphAws/CollectLogs",
+            "EntryPoint": "func.py",
+            "CSP": "NA",
+            "MemoryInMB": 128
+        }
+    ],
+    "Edges": [
+        {
+            "TaskA": [
+                "TaskB"
+            ]
+        },
+        {
+            "TaskA": [
+                "TaskC"
+            ]
+        },
+        {
+            "TaskA": [
+                "TaskD"
+            ]
+        },
+        {
+            "TaskB": [
+                "TaskE"
+            ]
+        },
+        {
+            "TaskC": [
+                "TaskE"
+            ]
+        },
+        {
+            "TaskD": [
+                "TaskE"
+            ]
+        },
+        {
+            "TaskE": [
+                "CollectLogs"
+            ]
+        }
+    ]
+}

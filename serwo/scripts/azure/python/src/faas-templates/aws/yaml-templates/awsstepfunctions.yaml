@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  stepfunctions-template
+  Sample SAM Template for stepfunctions-template
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Tracing: Active
+  Api:
+    TracingEnabled: True
+Outputs:
+  {{stepfunctionarn}}:
+    Description: "Serwo CLI State machine ARN"
+    Value: !Ref {{stepfunctionname}}
+  {{stepfunctionrolearn}}:
+    Description: "IAM Role created for Serwo CLI State machine based on the specified SAM Policy Templates"
+    Value: !GetAtt {{stepfunctionrolearn_attribute}}
+Resources:
+  {{stepfunctionname}}:
+    Type: AWS::Serverless::StateMachine # More info about State Machine Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-statemachine.html
+    Properties:
+      DefinitionUri: {{serwouri}}
+      DefinitionSubstitutions:
+        {% for arn in arns -%}
+        {{ arn.name }}: {{ arn.ref }}
+        {% endfor %}
+
+      Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        {% for policy in policies -%}
+        - LambdaInvokePolicy:
+            FunctionName: !Ref {{policy.name}}
+        {% endfor %}
+
+  {% for function in functions -%}
+  {{function.name}}:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: {{ function.uri }}
+      Handler: {{ function.handler }}
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+  {% endfor %}

@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  stepfunctions-template
+  Sample SAM Template for stepfunctions-template
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Tracing: Active
+  Api:
+    TracingEnabled: True
+Outputs:
+  {{stepfunctionarn}}:
+    Description: "Serwo CLI State machine ARN"
+    Value: !Ref {{stepfunctionname}}
+  {{stepfunctionrolearn}}:
+    Description: "IAM Role created for Serwo CLI State machine based on the specified SAM Policy Templates"
+    Value: !GetAtt {{stepfunctionrolearn_attribute}}
+  ## Output SQS Resource ##
+  SQSResource:
+    Value:
+      Ref: SQSQueue
+
+Resources:
+  {{stepfunctionname}}:
+    Type: AWS::Serverless::StateMachine # More info about State Machine Resource: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-statemachine.html
+    Properties:
+      DefinitionUri: {{serwouri}}
+      DefinitionSubstitutions:
+        {% for arn in arns -%}
+        {{ arn.name }}: {{ arn.ref }}
+        {% endfor %}
+
+      Policies: # Find out more about SAM policy templates: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html
+        {% for policy in policies -%}
+        - LambdaInvokePolicy:
+            FunctionName: !Ref {{policy.name}}
+        {% endfor %}
+
+  # static
+  SQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      FifoQueue: True
+      DelaySeconds: 0
+
+  TriggerOnSQSQueueLambda: 
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: "index.lambda_handler"
+      Role: !GetAtt [ SQSLambdaExecutionRole, Arn ]
+      Code:
+        ZipFile:
+          !Sub
+            - |-
+              import boto3
+
+              def lambda_handler(event, context):
+                  message_body = event['Records'][0]['body']
+                  client = boto3.client('stepfunctions')
+                  response = client.start_execution(
+                      stateMachineArn='${StateMachineArn}',
+                      input=message_body
+                  )
+            - {StateMachineArn: !Ref {{stepfunctionname}}} # templated here 
+      Runtime: "python3.7"
+      Timeout: "30"
+
+  # mostly static      
+  SQSLambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: LambdaSQSQueuePermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                Resource: !GetAtt SQSQueue.Arn
+        - PolicyName: LambdaStateMachinePermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "states:StartExecution"
+                Resource: !Ref {{stepfunctionname}}
+
+  EventSourceMappingForSQSQueueLambda:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties: 
+      BatchSize: 1
+      Enabled: True
+      EventSourceArn: !GetAtt [ SQSQueue, Arn ]
+      FunctionName: !Ref TriggerOnSQSQueueLambda # 
+
+  {% for function in functions -%}
+  {{function.name}}:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: {{ function.uri }}
+      Handler: {{ function.handler }}
+      Runtime: python3.9
+      MemorySize: {{ function.memory }}
+      Timeout: 300
+      Architectures:
+        - x86_64
+  {% endfor %}
