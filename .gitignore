@@ -32,7 +32,7 @@ build
 log_files
 serwo/config
 recents
-examples
+# examples
 exp_runner*
 trash-files
 jmeter.log
@@ -50,3 +50,10 @@ apache-jmeter-5.5/
 *.sh
 *.docx
 Untitled-1.md
+*.tgz
+*.env
+.vscode
+.venv
+assets/
+open-notebook-local.code-workspace
+serwo/examples/**/partitions/

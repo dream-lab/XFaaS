@@ -20,7 +20,7 @@ def init_paths(user_workflow_dir, region , part_id,is_netherite):
         resources_path = f'{user_workflow_dir}/build/workflow/resources/azure-{region}-{part_id}.json'
     runtime = 'python'
     functions_version = 4
-    runtime_version = 3.12
+    runtime_version = 3.11
     os_type = 'linux'
 
 

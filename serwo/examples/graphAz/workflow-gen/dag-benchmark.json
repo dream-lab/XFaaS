@@ -1,0 +1,142 @@
+{
+  "NodeBenchmarks": {
+    "1": {
+      "0": {
+        "Latency": 500,
+        "Cost": 50
+      },
+      "1": {
+        "Latency": 50,
+        "Cost": 3
+      }
+    },
+    "2": {
+      "0": {
+        "Latency": 1500,
+        "Cost": 50
+      },
+      "1": {
+        "Latency": 150,
+        "Cost": 5
+      }
+    },
+    "3": {
+      "0": {
+        "Latency": 2000,
+        "Cost": 50
+      },
+      "1": {
+        "Latency": 200,
+        "Cost": 7
+      }
+    },
+    "4": {
+      "0": {
+        "Latency": 1800,
+        "Cost": 50
+      },
+      "1": {
+        "Latency": 180,
+        "Cost": 6
+      }
+    },
+    "5": {
+      "0": {
+        "Latency": 1000,
+        "Cost": 50
+      },
+      "1": {
+        "Latency": 100,
+        "Cost": 4
+      }
+    }
+  },
+  "EdgeBenchmarks": {
+    "1": {
+      "2": {
+        "DataTransferSize": 25,
+        "Latencies": [
+          [
+            900,
+            850
+          ],
+          [
+            800,
+            10
+          ]
+        ]
+      },
+      "3": {
+        "DataTransferSize": 25,
+        "Latencies": [
+          [
+            900,
+            850
+          ],
+          [
+            800,
+            10
+          ]
+        ]
+      },
+      "4": {
+        "DataTransferSize": 25,
+        "Latencies": [
+          [
+            900,
+            850
+          ],
+          [
+            800,
+            10
+          ]
+        ]
+      }
+    },
+    "2": {
+      "5": {
+        "DataTransferSize": 25,
+        "Latencies": [
+          [
+            900,
+            850
+          ],
+          [
+            800,
+            10
+          ]
+        ]
+      }
+    },
+    "3": {
+      "5": {
+        "DataTransferSize": 25,
+        "Latencies": [
+          [
+            900,
+            850
+          ],
+          [
+            800,
+            10
+          ]
+        ]
+      }
+    },
+    "4": {
+      "5": {
+        "DataTransferSize": 25,
+        "Latencies": [
+          [
+            900,
+            850
+          ],
+          [
+            800,
+            10
+          ]
+        ]
+      }
+    }
+  }
+}

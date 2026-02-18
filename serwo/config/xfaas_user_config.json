@@ -9,5 +9,6 @@
       "password": "dummy_pass123"
     }
   },
-  "user_pinned_nodes" : {}
+  "user_pinned_nodes" : { 
+  }
 }

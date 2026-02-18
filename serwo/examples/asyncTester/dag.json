@@ -1,0 +1,40 @@
+{
+    "WorkflowName": "asyncTester",
+    "Nodes": [
+      {
+        "NodeId": "1",
+        "NodeName": "StartNode",
+        "Path": "/Users/haseeb/Code/iisc/XFaaS/serwo/examples/asyncTester/StartNode",
+        "EntryPoint": "start.py",
+        "CSP": "NA",
+        "MemoryInMB": 256,
+        "IsAsync": false
+      },
+      {
+        "NodeId": "2",
+        "NodeName": "PollerNode",
+        "Path": "/Users/haseeb/Code/iisc/XFaaS/serwo/examples/asyncTester/PollerNode",
+        "EntryPoint": "poller.py",
+        "CSP": "NA",
+        "MemoryInMB": 256,
+        "IsAsync": true
+      },
+      {
+        "NodeId": "3",
+        "NodeName": "EndNode",
+        "Path": "/Users/haseeb/Code/iisc/XFaaS/serwo/examples/asyncTester/EndNode",
+        "EntryPoint": "end.py",
+        "CSP": "NA",
+        "MemoryInMB": 256,
+        "IsAsync": false
+      }
+    ],
+    "Edges": [
+      {
+        "StartNode": ["PollerNode"]
+      },
+      {
+        "PollerNode": ["EndNode"]
+      }
+    ]
+  }

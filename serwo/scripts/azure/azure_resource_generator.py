@@ -14,6 +14,7 @@ from azure.storage.queue import QueueServiceClient
 from azure.storage.blob import BlobServiceClient
 import string
 import random
+import time
 
 queue_name = 'serwo-ingress'
 
@@ -29,60 +30,65 @@ def create_resources(resource_dir, out_file_path, region,is_netherite):
     subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
     resource_client = ResourceManagementClient(credential, subscription_id)
     # print('Creating resources for ingress azure ')
-    try:
-        rg_result = resource_client.resource_groups.create_or_update(
-            f"{resource_group_name}", {"location": f"{region}"}
-        )
-    except Exception as e:
-        print(e)
 
-    try:
-        storage_client = StorageManagementClient(credential, subscription_id)
-        poller = storage_client.storage_accounts.begin_create(resource_group_name, storage_account_name,
-            {
-                "location" : region,
-                "kind": "StorageV2",
-                "sku": {"name": "Standard_LRS"}
-            }
-        )
-        account_result = poller.result()
-        # print(f"Provisioned storage account {account_result.name}")
-    except Exception as e:
-        print(e)
+    rg_result = resource_client.resource_groups.create_or_update(
+        f"{resource_group_name}", {"location": f"{region}"}
+    )
 
-    try:
-        queue_service_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credential)
-        queue_service_client.create_queue(queue_name)
-    except Exception as e:
-        print(e)
+    storage_client = StorageManagementClient(credential, subscription_id)
+    poller = storage_client.storage_accounts.begin_create(resource_group_name, storage_account_name,
+        {
+            "location" : region,
+            "kind": "StorageV2",
+            "sku": {"name": "Standard_LRS"}
+        }
+    )
+    account_result = poller.result()
+    # print(f"Provisioned storage account {account_result.name}")
 
-    try:
-        #TODO Need a native call to get connection string
-        stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource_group_name}')
+    # Retry logic for queue creation (DNS propagation delay)
+    max_retries = 10
+    for attempt in range(max_retries):
+        try:
+            queue_service_client = QueueServiceClient(account_url=f"https://{storage_account_name}.queue.core.windows.net", credential=credential)
+            queue_service_client.create_queue(queue_name)
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"Queue creation failed (attempt {attempt+1}/{max_retries}). Retrying in 10s...")
+                time.sleep(10)
+            else:
+                raise e
+
+    # Retry logic for connection string
+    json_str = ""
+    for attempt in range(max_retries):
+        stream = os.popen(f'az storage account show-connection-string --name {storage_account_name} --resource-group {resource_group_name} --subscription {subscription_id}')
         json_str = stream.read()
-        stream.close()
-    except Exception as e:
-        print(e)
+        ret_code = stream.close()
+        if ret_code is None and json_str.strip(): # Success
+            break
+        
+        print(f"Failed to get connection string (attempt {attempt+1}/{max_retries}). Retrying in 5s...")
+        time.sleep(5)
+    
+    if not json_str.strip():
+        raise Exception("Failed to retrieve storage account connection string after multiple attempts.")
 
     jsson = json.loads(json_str)
     if is_netherite:
         netherite_namespace = randomString(12)
         ## create eventhubs namespace
-        try:
-            
-            stream = os.popen(f'az eventhubs namespace create --name {netherite_namespace} --resource-group {resource_group_name} --location {region}')
-            json_str = stream.read()
-            stream.close()
-        except Exception as e:
-            print(e)
+        
+        stream = os.popen(f'az eventhubs namespace create --name {netherite_namespace} --resource-group {resource_group_name} --location {region} --subscription {subscription_id}')
+        json_str = stream.read()
+        stream.close()
 
         ## get connection string for eventhubs namespace
-        try:
-            stream = os.popen(f'az eventhubs namespace authorization-rule keys list --name RootManageSharedAccessKey --namespace-name {netherite_namespace} --resource-group {resource_group_name}')
-            json_str = stream.read()
-            stream.close()
-        except Exception as e:
-            print(e)
+        stream = os.popen(f'az eventhubs namespace authorization-rule keys list --name RootManageSharedAccessKey --namespace-name {netherite_namespace} --resource-group {resource_group_name} --subscription {subscription_id}')
+        json_str = stream.read()
+        stream.close()
+        
         event_hubs_connection_string = json.loads(json_str)['primaryConnectionString']
         fin_dict = {'queue_name' : queue_name, 'connection_string' : jsson['connectionString'] , 'storage_account' : storage_account_name, 'group':resource_group_name,'event_hub_namespace':netherite_namespace,'event_hubs_connection_string': event_hubs_connection_string}
     else:
@@ -117,7 +123,4 @@ def generate(user_dir, dag_definition_path,region,part_id, is_netherite):
     resource_group_name = f'{user_app_name}{st}SerwoTest'
     xd = randint(10000, 99999)
     storage_account_name = f'serwoa{xd}'
-    try:
-        create_resources(resource_dir,out_file_path,region,is_netherite)
-    except Exception as e:
-        print(f'Exception thrown: {e}')
+    create_resources(resource_dir,out_file_path,region,is_netherite)
