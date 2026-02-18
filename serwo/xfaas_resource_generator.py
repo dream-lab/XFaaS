@@ -4,6 +4,7 @@ import json
 from jinja2 import Environment, FileSystemLoader
 from botocore.exceptions import ClientError
 import os
+import boto3
 def generate(user_dir, partition_config, dag_definition_file):
     partition_config = list(reversed(partition_config))
     
@@ -59,10 +60,20 @@ def generate(user_dir, partition_config, dag_definition_file):
                         queue_url = resource["OutputValue"]
                 root_dir = os.path.dirname(os.path.abspath(__file__))
                 creds_file  = f"{root_dir}/config/aws_creds.json"
-                with open(creds_file, "r") as file:
-                    aws_credentials = json.load(file)
-                aws_access_key_id = aws_credentials["access_key_id"]
-                aws_secret_access_key = aws_credentials["secret_access_key"]
+                try:
+                    with open(creds_file, "r") as file:
+                        aws_credentials = json.load(file)
+                    aws_access_key_id = aws_credentials["access_key_id"]
+                    aws_secret_access_key = aws_credentials["secret_access_key"]
+                except FileNotFoundError:
+                    print(f"AWS Creds file not found at {creds_file}, attempting to use boto3 session credentials...")
+                    session = boto3.Session()
+                    creds = session.get_credentials()
+                    if creds:
+                        aws_access_key_id = creds.access_key
+                        aws_secret_access_key = creds.secret_key
+                    else:
+                        raise Exception("Could not find AWS credentials in file or environment.")
                 resources = {
                     "queue_url": queue_url,
                     "access_key_id": aws_access_key_id,

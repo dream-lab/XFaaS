@@ -42,6 +42,8 @@ parser.add_argument("--is-async", dest='is_async',
                     type=str, help="Is Async Fn", default=0)
 parser.add_argument("--is-containerbased-aws", dest='is_containerbasedaws',
                     type=str, help="Is Async Fn", default=0)
+parser.add_argument("--user-pinned-nodes", dest='user_pinned_nodes',
+                    type=str, help="User pinned nodes", default=None)
 project_dir = pathlib.Path(__file__).parent.resolve()
 
 
@@ -57,6 +59,7 @@ BENCHMARK_FILE =  args.dag_benchmark
 benchmark_path = f'{USER_DIR}/{BENCHMARK_FILE}'
 csp = args.csp
 region = args.region
+user_pinned_nodes = args.user_pinned_nodes
 part_id = "test"
 
 
@@ -70,6 +73,7 @@ def get_user_pinned_nodes():
         return config['user_pinned_nodes']
     else:
         return None
+
 
 
 def randomString(stringLength):
@@ -358,7 +362,7 @@ def write_dag_for_partition(user_wf_dir, dagg, part_id, csp, region, original_da
         file.write(json.dumps(dagg, indent=4))
 
 
-def run(user_wf_dir, dag_definition_file, benchmark_file, csp, region):
+def run(user_wf_dir, dag_definition_file, benchmark_file, csp, region, user_pinned_nodes=None):
     # user_wf_dir += "/workflow-gen"
     dag_definition_path = f"{user_wf_dir}/{dag_definition_file}"
     benchmark_path = f"{user_wf_dir}/{benchmark_file}"
@@ -366,7 +370,15 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp, region):
     # rm_if_exists = f'{user_wf_dir}/partitions'
     # if os.path.exists(rm_if_exists):
     #     shutil.rmtree(rm_if_exists)
-    user_pinned_nodes = get_user_pinned_nodes()
+
+    if user_pinned_nodes is None:
+        user_pinned_nodes = get_user_pinned_nodes()
+    else: 
+        try:
+            user_pinned_nodes = json.loads(user_pinned_nodes)
+        except Exception as e:
+            print(f"Invalid user pinned nodes format. Using default. Error: {e}")
+            user_pinned_nodes = get_user_pinned_nodes()
     xfaas_user_dag = xfaas_init.init(
         dag_definition_path)  # What is servoUserDag ? Is this the XFaaSObject from the paper ?
 
@@ -454,7 +466,7 @@ def run(user_wf_dir, dag_definition_file, benchmark_file, csp, region):
 if __name__ == '__main__':
 
     wf_id, refactored_wf_id, wf_deployment_id = run(
-        f'{USER_DIR}', DAG_DEFINITION_FILE, BENCHMARK_FILE, csp, region)
+        f'{USER_DIR}', DAG_DEFINITION_FILE, BENCHMARK_FILE, csp, region, user_pinned_nodes)
 
 # To Run Xfaas
 # python xfaas_main.py --wf-user-directory serwo/examples/graphAws --dag-file-name dag.json --dag-benchmark dag-benchmark.json --csp aws --region ap-south-1

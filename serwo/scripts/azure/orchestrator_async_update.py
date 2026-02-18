@@ -72,7 +72,7 @@ def codegen_async_loop(in_var, out_var, func_name):
     new_code += '\n' + indent * 2 + 'if not body.get("Poll", True) or body.get("Poll") == False:'
     new_code += '\n' + indent * 3 + 'break'
     new_code += '\n' + indent * 2 + 'else:'
-    new_code += '\n' + indent * 3 + 'deadline = context.current_utc_datetime + timedelta(seconds=100)'
+    new_code += '\n' + indent * 3 + 'deadline = context.current_utc_datetime + timedelta(seconds=20)'
     new_code += '\n' + indent * 3 + 'yield context.create_timer(deadline)'
     new_code += '\n'
     return new_code

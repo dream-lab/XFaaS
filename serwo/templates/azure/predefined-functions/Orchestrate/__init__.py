@@ -274,6 +274,10 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
             break
 
     return ktpc
+    xtze = yield context.call_activity("Encrypt", serwoObject)
+    xtze = insert_end_stats_in_metadata(xtze)
+    huyz = yield context.call_activity("CollectLogsFileAz", xtze)
+    return huyz
 
 
 main = df.Orchestrator.create(orchestrator_function)

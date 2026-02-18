@@ -1,0 +1,16 @@
+{
+    "workflow_id": "a3e47971-73be-40d7-877e-36bea6652fb3",
+    "refactored_workflow_id": "66a585fd-69bc-47fd-9ab9-6d2e1271f44e",
+    "deployment_id": "92407566-fa01-4301-b9f2-300c7bf5e8db",
+    "experiment_conf": {
+        "staticsmall1": {
+            "jmx_output_filename": "azure-fileProcessing-small-static-1-300-session-staticsmall1.jmx",
+            "csp": "azure",
+            "rps": 1,
+            "duration": 300.0,
+            "payload_size": "small",
+            "wf_name": "fileProcessing",
+            "dynamism": "static"
+        }
+    }
+}

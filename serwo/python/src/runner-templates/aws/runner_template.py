@@ -78,6 +78,8 @@ def lambda_handler(event, context):
             event = dict(body=new_event)
             wf_instance_id = event["body"].get("workflow_instance_id")
             request_timestamp = event["body"].get("request_timestamp")
+            if request_timestamp is None:
+                request_timestamp = start_time
             session_id = event["body"].get("session_id") # NOTE - new variable to keep track of requests
             deployment_id = event["body"].get("deployment_id")
             overheads = start_time - request_timestamp
