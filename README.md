@@ -35,6 +35,9 @@ The original XFaaS implementation introduced cross-platform FaaS workflow orches
 5. **Conditional Looping in Workflows**: Support for conditional branching and looping constructs in workflows for both AWS and Azure platforms.
    - *To appear in proceedings*
 
+6. **Test Harness**: Automated testing framework for XFaaS multi-cloud workflows (AWS & Azure) that enables comprehensive testing of all features including deployment, execution, and teardown across different cloud providers and regions.
+   - *Test Harness Documentation: https://github.com/dream-lab/XFaaS/tree/XFaaSV2.0/serwo/tests#readme*
+
 ## XFaaS Deployment processs
 
 For detailed setup instructions, please refer to [XFaaS v1 documentation](https://github.com/dream-lab/XFaaS/tree/XFaaSV1.0).
