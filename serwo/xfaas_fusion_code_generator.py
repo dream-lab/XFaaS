@@ -403,3 +403,71 @@ def generate_fused_code(
         suffix_str,
     )
     return fused_src_path, pp, fin_graph
+
+
+def materialize_fused_nodes(user_og_graph, node_ids, user_dir, suffix_str, csp_name="AWS"):
+    """
+    Reuse FusionCodeGenerator for a known fused node set (from PartitionPoint).
+    Writes fused sources under user_dir/src-fused-{suffix_str}/ and returns
+    a single dag Node dict for that fused function.
+    """
+    if not node_ids:
+        raise ValueError("materialize_fused_nodes requires non-empty node_ids")
+
+    nodes_ls = list(node_ids)
+    sub_graph_to_fuse = nx.DiGraph(generate_sub_graph(nodes_ls, user_og_graph))
+
+    import_line = ""
+    kp = "Path"
+    kn = "NodeName"
+    ep = "EntryPoint"
+    for node in sub_graph_to_fuse.nodes():
+        import_line += (
+            f"\nfrom {extract_native(sub_graph_to_fuse.nodes[node][kp])} import "
+            f"{sub_graph_to_fuse.nodes[node][ep][:-3]} as "
+            f"{sub_graph_to_fuse.nodes[node][kn]}"
+        )
+
+    max_mem = 0
+    for node in sub_graph_to_fuse.nodes():
+        max_mem = max(max_mem, user_og_graph.nodes[node]["MemoryInMB"])
+
+    # Preserve entry identity of the first topo node in the fused set
+    topo = list(nx.topological_sort(sub_graph_to_fuse))
+    start = topo[0]
+    new_node_id = user_og_graph.nodes[start]["NodeId"]
+    new_node_name = user_og_graph.nodes[start]["NodeName"]
+
+    code = FusionCodeGenerator(sub_graph_to_fuse).get_fused_code()
+    template(import_line, code)
+
+    fused_src_path = f"{user_dir}/src-fused-{suffix_str}"
+    if not os.path.exists(fused_src_path):
+        os.makedirs(fused_src_path)
+    path = f"{fused_src_path}/fused-{suffix_str}-0"
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    ls_of_paths = []
+    for id in nodes_ls:
+        user_src_path = user_og_graph.nodes[id]["Path"]
+        user_og_path = extract_native(user_src_path)
+        pth = path + "/" + user_og_path
+        if not os.path.exists(pth):
+            os.mkdir(path + "/" + user_og_path)
+        copytree(user_src_path, path + "/" + user_og_path)
+        ls_of_paths.append(path + "/" + user_og_path)
+    handle_dependencies_and_requirements(ls_of_paths, path)
+    shutil.copyfile(fusion_template_path_temp, path + "/func.py")
+    if os.path.exists(fusion_template_path_temp):
+        os.remove(fusion_template_path_temp)
+
+    return {
+        "NodeId": new_node_id,
+        "NodeName": new_node_name,
+        "Path": path,
+        "EntryPoint": "func.py",
+        "CSP": csp_name,
+        "MemoryInMB": max_mem,
+        "IsAsync": False,
+    }

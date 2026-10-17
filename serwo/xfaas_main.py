@@ -5,6 +5,7 @@ import xfaas_provenance as xfaas_provenance
 import xfaas_resource_generator as xfaas_resource_generator
 import xfaas_build as xfaas_build
 import xfaas_deploy as xfaas_deploy
+import xfaas_fusion_code_generator as xfaas_fusion_code_generator
 from python.src.utils.classes.commons.partition_point import PartitionPoint
 from python.src.utils.classes.commons.csp import CSP
 from azure.identity import DefaultAzureCredential
@@ -268,6 +269,17 @@ def generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definit
 
     csp = partition_config[0].get_left_csp().get_name()
     region = partition_config[0].get_region()
+    # Fusion materialize only when optimizer marked this unit as fused
+    if partition_config[0].get_is_fused():
+        fused_node = xfaas_fusion_code_generator.materialize_fused_nodes(
+            nx_dag,
+            partition_config[0].get_node_ids(),
+            user_wf_dir,
+            suffix_str=f"{csp}-{region}-{part_id}",
+            csp_name=csp,
+        )
+        dagg['Nodes'] = [fused_node]
+        dagg['Edges'] = []
     write_dag_for_partition( user_wf_dir, dagg,part_id,csp,region, original_dag_config)
 
 
@@ -342,7 +354,17 @@ def generate_new_dags(partition_config, xfaas_user_dag, user_wf_dir, dag_definit
 
         csp = partition_config[i].get_left_csp().get_name()
         region = partition_config[i].get_region()
-        
+        if partition_config[i].get_is_fused():
+            fused_node = xfaas_fusion_code_generator.materialize_fused_nodes(
+                nx_dag,
+                partition_config[i].get_node_ids(),
+                user_wf_dir,
+                suffix_str=f"{csp}-{region}-{part_id}",
+                csp_name=csp,
+            )
+            dagg['Nodes'] = [fused_node]
+            dagg['Edges'] = []
+
         write_dag_for_partition( user_wf_dir, dagg,part_id,csp,region, original_dag_config)
 
 def write_dag_for_partition(user_wf_dir, dagg, part_id, csp, region, original_dag_config=None):

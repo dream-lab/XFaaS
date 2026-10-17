@@ -6,14 +6,19 @@ class PartitionPoint:
     __function_name = None
     __part_id = None
     __region = None
+    __node_ids = None
+    __is_fused = None
 
-    def __init__(self, function_name, out_degree, left_csp, right_csp,part_id,region):
+    def __init__(self, function_name, out_degree, left_csp, right_csp, part_id, region,
+                 node_ids=None, is_fused=False):
         self.__function_name = function_name
         self.__left_csp = left_csp
         self.__right_csp = right_csp
         self.__out_degree = out_degree
         self.__part_id = part_id
         self.__region = region
+        self.__node_ids = list(node_ids) if node_ids is not None else []
+        self.__is_fused = bool(is_fused)
 
     def get_partition_point_name(self):
         return self.__function_name
@@ -32,6 +37,12 @@ class PartitionPoint:
 
     def get_region(self):
         return self.__region
-    
+
     def get_function_name(self):
         return self.__function_name
+
+    def get_node_ids(self):
+        return self.__node_ids
+
+    def get_is_fused(self):
+        return self.__is_fused

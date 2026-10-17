@@ -11,5 +11,7 @@
   },
   "user_pinned_nodes": {
     "0": "0"
-  }
+  },
+  "optimization_strategy": "partition",
+  "user_budget": null
 }
